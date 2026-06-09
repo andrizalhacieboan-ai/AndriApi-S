@@ -1,6 +1,5 @@
 // src/db/turso.js
 require('dotenv/config');
-
 const { createClient } = require('@libsql/client');
 
 let _db = null;
@@ -9,14 +8,16 @@ function getDb() {
   if (_db) return _db;
   const url  = process.env.TURSO_DATABASE_URL;
   const auth = process.env.TURSO_AUTH_TOKEN;
+  
   if (!url) {
-    console.warn('[DB] Turso credentials missing — using in-memory SQLite');
-    _db = createClient({ url: 'file::memory:?cache=shared' });
+    console.warn('[DB] Turso credentials missing — using local SQLite file');
+    _db = createClient({ url: 'file:./dev.db' }); // FIX DISINI
   } else {
     _db = createClient({ url, authToken: auth });
   }
   return _db;
 }
+
 
 async function initDb() {
   const db = getDb();
