@@ -35,7 +35,7 @@ app.use((req, res, next) => {
 app.get('/',          (req, res) => res.sendFile(path.join(__dirname, 'api-page/index.html')));
 app.get('/login',     (req, res) => res.sendFile(path.join(__dirname, 'api-page/auth.html')));
 app.get('/register',  (req, res) => res.sendFile(path.join(__dirname, 'api-page/auth.html')));
-app.get('/pricing',   (req, res) => res.sendFile(path.join(__dirname, 'api-page/index.html') ));
+app.get('/pricing',   (req, res) => res.sendFile(path.join(__dirname, 'api-page/index.html')));
 app.get('/docs',      (req, res) => res.sendFile(path.join(__dirname, 'api-page/docs.html')));
 
 app.get('/dashboard', (req, res, next) => {
@@ -66,21 +66,25 @@ require('./src/routes/payment')(app);
 require('./src/routes/dashboard')(app);
 require('./src/routes/admin')(app);
 
-// Auto-load API endpoint files
+// ── Auto-load API endpoint files ──────────────────────────────────────────────
+// fs.readdirSync is NOT reliable on Vercel serverless at runtime.
+// All API files must be explicitly required so Vercel bundles them.
+const apiFiles = [
+  './src/api/ai/ai-luminai',
+  './src/api/random/random-bluearchive',
+  './src/api/search/search-youtube',
+];
+
 let totalRoutes = 0;
-const apiFolder = path.join(__dirname, './src/api');
-fs.readdirSync(apiFolder).forEach(sub => {
-  const subPath = path.join(apiFolder, sub);
-  if (fs.statSync(subPath).isDirectory()) {
-    fs.readdirSync(subPath).forEach(file => {
-      if (path.extname(file) === '.js') {
-        require(path.join(subPath, file))(app);
-        totalRoutes++;
-        console.log(chalk.bgHex('#FFFF99').hex('#333').bold(` Loaded: ${file} `));
-      }
-    });
+for (const f of apiFiles) {
+  try {
+    require(f)(app);
+    totalRoutes++;
+    console.log(chalk.bgHex('#FFFF99').hex('#333').bold(` Loaded: ${path.basename(f)}.js `));
+  } catch (e) {
+    console.error(chalk.red(`[ERR] Failed to load ${f}:`), e.message);
   }
-});
+}
 console.log(chalk.bgHex('#90EE90').hex('#333').bold(` ✓ ${totalRoutes} API routes loaded `));
 
 // GET /api — info
