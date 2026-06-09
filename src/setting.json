@@ -1,0 +1,61 @@
+{
+  "name": "Andri API",
+  "version": "1.0.0",
+  "description": "Simple and Easy-to-Use API Documentation",
+  "header": {
+    "status": "Online!",
+    "imageSrc": [
+      "https://x.xcute.workers.dev/f/videos/2b8eedc1b721.mp4"
+    ],
+    "imageSize": {
+      "mobile": "80%",
+      "tablet": "40%",
+      "desktop": "40%"
+    }
+  },
+  "apiSettings": {
+    "creator": "Andri Store"
+  },
+  "links": [
+    {
+      "name": "Source Code",
+      "url": "https://snippets-lemon-seven.vercel.app/"
+    },
+    {
+      "name": "Contact Me",
+      "url": "https://wa.me/6281934874758"
+    }
+  ],
+  "categories": [
+    {
+      "name": "AI (Artificial Intelligence)",
+      "items": [
+        {
+          "name": "LuminAI",
+          "desc": "Talk with luminai",
+          "path": "/api/ai/luminai?text="
+        }
+      ]
+    },
+    {
+      "name": "Random",
+      "items": [
+        {
+          "name": "Blue Archive",
+          "desc": "Blue Archive Random Images",
+          "path": "api/random?/data="
+        }
+      ]
+    },
+    {
+      "name": "Search Tools",
+      "items": [
+        {
+          "name": "YouTube",
+          "desc": "Video search",
+          "path": "/api/search/youtube?q="
+        }
+      ]
+    }
+  ]
+}
