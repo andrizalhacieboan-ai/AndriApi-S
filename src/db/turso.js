@@ -9,10 +9,9 @@ function getDb() {
   if (_db) return _db;
   const url  = process.env.TURSO_DATABASE_URL;
   const auth = process.env.TURSO_AUTH_TOKEN;
-  if (!url || !auth) {
+  if (!url) {
     console.warn('[DB] Turso credentials missing — using in-memory SQLite');
-    
-    _db = createClient({ url: ':memory:' });
+    _db = createClient({ url: 'file::memory:?cache=shared' });
   } else {
     _db = createClient({ url, authToken: auth });
   }
@@ -143,33 +142,36 @@ async function initDb() {
   }
 
   // Seed admin
-  // FIX: require at top of function scope, not inside conditional
   const bcrypt = require('bcryptjs');
   const { generateUUID } = require('../utils/apikey');
 
   const adminEmail = process.env.ADMIN_EMAIL;
   const adminPass  = process.env.ADMIN_PASSWORD;
 
-  const adminCheck = await db.execute({
-    sql: 'SELECT id FROM users WHERE email=?',
-    args: [adminEmail]
-  });
-
-  if (adminCheck.rows.length === 0) {
-    const hashed = await bcrypt.hash(adminPass, 12);
-    const uid    = generateUUID();
-    const akId   = generateUUID();
-    const apiKey = require('../utils/apikey').generateApiKey();
-
-    await db.execute({
-      sql: `INSERT INTO users (id,name,email,password,role,plan) VALUES (?,?,?,?,?,?)`,
-      args: [uid, 'Admin', adminEmail, hashed, 'admin', 'vvip']
+  if (!adminEmail || !adminPass) {
+    console.warn('[DB] ADMIN_EMAIL or ADMIN_PASSWORD not set — skipping admin seed');
+  } else {
+    const adminCheck = await db.execute({
+      sql: 'SELECT id FROM users WHERE email=?',
+      args: [adminEmail]
     });
-    await db.execute({
-      sql: `INSERT INTO api_keys (id,user_id,key,plan,name) VALUES (?,?,?,?,?)`,
-      args: [akId, uid, apiKey, 'vvip', 'Admin Key']
-    });
-    console.log(`[DB] Admin seeded: ${adminEmail}`);
+
+    if (adminCheck.rows.length === 0) {
+      const hashed = await bcrypt.hash(adminPass, 12);
+      const uid    = generateUUID();
+      const akId   = generateUUID();
+      const apiKey = require('../utils/apikey').generateApiKey();
+
+      await db.execute({
+        sql: `INSERT INTO users (id,name,email,password,role,plan) VALUES (?,?,?,?,?,?)`,
+        args: [uid, 'Admin', adminEmail, hashed, 'admin', 'vvip']
+      });
+      await db.execute({
+        sql: `INSERT INTO api_keys (id,user_id,key,plan,name) VALUES (?,?,?,?,?)`,
+        args: [akId, uid, apiKey, 'vvip', 'Admin Key']
+      });
+      console.log(`[DB] Admin seeded: ${adminEmail}`);
+    }
   }
 
   console.log('[DB] ✓ Database initialized');
