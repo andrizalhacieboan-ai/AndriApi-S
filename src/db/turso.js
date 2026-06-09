@@ -1,6 +1,7 @@
 // src/db/turso.js
+require('dotenv/config');
 const { createClient } = require('@libsql/client');
-require('dotenv/config'); // <-- WAJIB paling atas biar .env kebaca
+ 
 
 let _db = null;
 
