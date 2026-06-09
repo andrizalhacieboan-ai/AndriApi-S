@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Dokumentasi</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef2f7;
+  --surface:#eef2f7;
+  --border:rgba(255,255,255,0.7);
+  --accent:#1e293b;
+  --accent2:#475569;
+  --green:#0d9488;
+  --warn:#d97706;
+  --red:#e11d48;
+  --text:#0f172a;
+  --muted:#64748b;
+  --mono:'Space Mono',monospace;
+  --head:'Plus Jakarta Sans',sans-serif;
+  --nm-outset:8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff;
+  --nm-inset:inset 6px 6px 12px #d1d9e6, inset -6px -6px 12px #ffffff;
+  --nm-outset-sm:4px 4px 8px #d1d9e6, -4px -4px 8px #ffffff;
+  --nm-inset-sm:inset 3px 3px 6px #d1d9e6, inset -3px -3px 6px #ffffff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--head);line-height:1.6}
+
+/* ── BACKGROUND GRID ── */
+body::before{
+  content:'';
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(15,23,42,0.012) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(15,23,42,0.012) 1px,transparent 1px);
+  background-size:40px 40px;
+  mask-image:radial-gradient(circle at center,#000 70%,transparent 100%);
+  -webkit-mask-image:radial-gradient(circle at center,#000 70%,transparent 100%);
+}
+
+/* ── NAVBAR ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:0 2rem;height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 4px 12px rgba(0,0,0,0.04);
+}
+.nav-logo{font-family:var(--mono);font-size:1rem;font-weight:700;color:var(--accent);text-decoration:none;letter-spacing:-0.5px}
+.nav-logo span{color:var(--warn)}
+.nav-links{display:flex;gap:1.5rem;list-style:none}
+.nav-links a{
+  color:var(--muted);text-decoration:none;font-size:.85rem;font-weight:600;
+  transition:all .25s;padding:.4rem .75rem;border-radius:10px;
+}
+.nav-links a:hover{color:var(--text);background:rgba(0,0,0,0.02)}
+
+/* ── LAYOUT ── */
+.wrapper{display:flex;min-height:100vh;padding-top:64px;position:relative;z-index:1}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:260px;flex-shrink:0;position:sticky;top:64px;
+  height:calc(100vh - 64px);overflow-y:auto;
+  border-right:1px solid rgba(0,0,0,0.03);
+  padding:1.5rem 1rem;
+  background:var(--surface);
+}
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.06);border-radius:4px}
+.s-section{margin-bottom:1.75rem}
+.s-label{
+  font-family:var(--mono);font-size:.6rem;color:var(--muted);
+  letter-spacing:1.5px;text-transform:uppercase;
+  padding:.5rem .85rem;margin-bottom:.35rem;font-weight:700;
+}
+.s-link{
+  display:block;padding:.55rem .85rem;border-radius:12px;
+  color:var(--muted);text-decoration:none;font-size:.82rem;font-weight:600;
+  transition:all .2s;
+}
+.s-link:hover{background:rgba(0,0,0,0.02);color:var(--text)}
+.s-link.active{
+  background:var(--surface);color:var(--accent);
+  box-shadow:var(--nm-inset-sm);
+  border:1px solid rgba(255,255,255,0.4);
+}
+
+/* ── MAIN CONTENT ── */
+.main{flex:1;padding:2.5rem 3rem;max-width:880px}
+
+h1{font-size:2.2rem;font-weight:800;letter-spacing:-1.5px;margin-bottom:.5rem;color:var(--accent)}
+h2{
+  font-size:1.25rem;font-weight:800;letter-spacing:-.3px;
+  margin-top:2.75rem;margin-bottom:1rem;padding-top:1rem;
+  border-top:1px solid rgba(0,0,0,0.04);color:var(--accent);
+}
+h3{font-size:.95rem;font-weight:700;margin-top:1.75rem;margin-bottom:.625rem;color:var(--accent2)}
+p{color:var(--muted);font-family:var(--mono);font-size:.82rem;line-height:1.8;margin-bottom:1rem}
+.lead{font-size:.92rem;color:var(--text);font-family:var(--mono);margin-bottom:2rem;line-height:1.7}
+code{font-family:var(--mono);font-size:.8rem}
+
+/* ── CODE BLOCK ── */
+pre{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:18px;padding:1.35rem 1.5rem;
+  font-family:var(--mono);font-size:.8rem;
+  overflow-x:auto;margin:1rem 0;line-height:1.75;
+  box-shadow:var(--nm-inset);
+}
+.hl-key{color:var(--accent)}.hl-val{color:var(--green)}.hl-str{color:var(--warn)}.hl-num{color:var(--accent2)}.hl-bool{color:var(--red)}.hl-cm{color:var(--muted)}
+
+/* ── METHOD BADGES ── */
+.badge-method{
+  display:inline-block;padding:.2rem .65rem;border-radius:8px;
+  font-family:var(--mono);font-size:.68rem;font-weight:700;margin-right:.5rem;
+  box-shadow:var(--nm-outset-sm);
+}
+.m-get{background:rgba(13,148,136,0.06);color:var(--green);border:1px solid rgba(13,148,136,0.12)}
+.m-post{background:rgba(30,41,59,0.04);color:var(--accent);border:1px solid rgba(30,41,59,0.08)}
+.m-put{background:rgba(217,119,6,0.05);color:var(--warn);border:1px solid rgba(217,119,6,0.1)}
+.m-delete{background:rgba(225,29,72,0.05);color:var(--red);border:1px solid rgba(225,29,72,0.1)}
+
+.endpoint-row{display:flex;align-items:baseline;gap:.75rem;margin-bottom:.5rem;flex-wrap:wrap}
+.endpoint-url{font-family:var(--mono);font-size:.88rem;color:var(--text)}
+
+/* ── TABLE ── */
+table{
+  width:100%;border-collapse:separate;border-spacing:0;
+  font-family:var(--mono);font-size:.8rem;margin:1rem 0;
+  background:var(--surface);
+  border-radius:16px;overflow:hidden;
+  box-shadow:var(--nm-outset-sm);
+  border:1px solid var(--border);
+}
+th{
+  text-align:left;padding:.75rem 1rem;font-size:.62rem;
+  letter-spacing:1px;text-transform:uppercase;color:var(--muted);
+  font-weight:700;border-bottom:1px solid rgba(0,0,0,0.04);
+  background:rgba(0,0,0,0.01);
+}
+td{
+  padding:.75rem 1rem;
+  border-bottom:1px solid rgba(0,0,0,0.025);
+  color:var(--muted);vertical-align:top;
+}
+td:first-child{color:var(--accent);font-weight:600}
+tr:last-child td{border-bottom:none}
+.tr-req{color:var(--red);font-weight:700}
+.plan-table td:first-child{font-weight:700}
+
+/* ── CARD STYLE FOR SECTIONS ── */
+.doc-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:24px;padding:2rem;
+  margin-bottom:1.75rem;
+  box-shadow:var(--nm-outset);
+}
+.doc-card-title{
+  font-size:1.05rem;font-weight:800;letter-spacing:-.3px;
+  margin-bottom:.35rem;color:var(--accent);
+}
+.doc-card-sub{
+  font-family:var(--mono);font-size:.68rem;color:var(--muted);
+  margin-bottom:1.5rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;
+}
+
+/* ── INLINE CODE ── */
+code.inline{
+  background:var(--surface);
+  padding:.15rem .5rem;border-radius:8px;
+  font-size:.78rem;
+  box-shadow:var(--nm-inset-sm);
+  border:1px solid rgba(255,255,255,0.4);
+  color:var(--warn);
+}
+
+/* ── LINKS ── */
+a{color:var(--green);text-decoration:none;transition:color .2s}
+a:hover{color:var(--accent)}
+
+/* ── STRONG HIGHLIGHT ── */
+strong.hl{color:var(--warn);font-weight:700}
+
+/* ── MOBILE ── */
+.menu-toggle{display:none;background:none;border:none;color:var(--text);font-size:1.4rem;cursor:pointer;line-height:1}
+.mobile-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.3);backdrop-filter:blur(4px);z-index:99}
+.mobile-overlay.show{display:block}
+
+@media(max-width:900px){
+  .sidebar{
+    position:fixed;left:0;top:64px;bottom:0;z-index:100;
+    transform:translateX(-100%);transition:.4s cubic-bezier(0.16,1,0.3,1);
+    box-shadow:var(--nm-outset);
+  }
+  .sidebar.open{transform:translateX(0)}
+  .main{padding:1.5rem}
+  .menu-toggle{display:block}
+  h1{font-size:1.6rem}
+}
+</style>
+</head>
+<body>
+<div class="mobile-overlay" id="mobileOv" onclick="closeSidebar()"></div>
+
+<nav>
+  <div style="display:flex;align-items:center;gap:1rem">
+    <button class="menu-toggle" onclick="openSidebar()">&#9776;</button>
+    <a href="/" class="nav-logo">AND<span>RI</span> API'S</a>
+  </div>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/dashboard">Dashboard</a></li>
+    <li><a href="/register">Daftar</a></li>
+  </ul>
+</nav>
+
+<div class="wrapper">
+<div class="sidebar" id="sidebar">
+  <div class="s-section"><div class="s-label">Getting Started</div>
+    <a class="s-link active" href="#intro">Pengenalan</a>
+    <a class="s-link" href="#auth">Autentikasi</a>
+    <a class="s-link" href="#response">Format Response</a>
+    <a class="s-link" href="#ratelimit">Rate Limiting</a>
+    <a class="s-link" href="#plans">Plans & Limit</a>
+  </div>
+  <div class="s-section"><div class="s-label">Authentication API</div>
+    <a class="s-link" href="#api-register">Register</a>
+    <a class="s-link" href="#api-login">Login</a>
+    <a class="s-link" href="#api-logout">Logout</a>
+    <a class="s-link" href="#api-me">Get Profile</a>
+  </div>
+  <div class="s-section"><div class="s-label">AI Endpoints</div>
+    <a class="s-link" href="#api-luminai">Luminai</a>
+  </div>
+  <div class="s-section"><div class="s-label">Search Endpoints</div>
+    <a class="s-link" href="#api-youtube">YouTube Search</a>
+  </div>
+  <div class="s-section"><div class="s-label">Payment</div>
+    <a class="s-link" href="#api-payment">Create Payment</a>
+    <a class="s-link" href="#api-webhook">Webhook</a>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- INTRO -->
+  <div class="doc-card">
+    <h1 id="intro">Dokumentasi API</h1>
+    <p class="lead">Andri API V1.0 — Platform API berbasis Node.js + SQLite dengan autentikasi session, rate limiting per plan, dan pembayaran otomatis via Pakasir.</p>
+  </div>
+
+  <!-- AUTH -->
+  <div class="doc-card">
+    <div class="doc-card-title" id="auth">Autentikasi API Key</div>
+    <div class="doc-card-sub">Cara mengautentikasi request ke API</div>
+    <p>Setiap request ke endpoint API harus menyertakan API key dengan format <code class="inline">Apikey+</code> diikuti 48 karakter costum. Generate key dari halaman <a href="/profile">Profile</a>.</p>
+    <h3>Query Parameter</h3>
+    <pre>GET /api/ai/luminai?text=Halo&amp;<span class="hl-key">apikey</span>=<span class="hl-str">"YOUR APIKEY"</span></pre>
+    <h3>Request Header</h3>
+    <pre><span class="hl-key">{"x-api-key"</span>: <span class="hl-str">"You Apikey"}</span></pre>
+  </div>
+
+  <!-- RESPONSE -->
+  <div class="doc-card">
+    <div class="doc-card-title" id="response">Format Response</div>
+    <div class="doc-card-sub">Struktur standar response API</div>
+
+    <h3>200 OK — Sukses</h3>
+    <pre>{
+  <span class="hl-key">"status"</span>: <span class="hl-bool">true</span>,
+  <span class="hl-key">"statusCode"</span>: <span class="hl-num">200</span>,
+  <span class="hl-key">"creator"</span>: <span class="hl-str">"Andri Store"</span>,
+  <span class="hl-key">"result"</span>: <span class="hl-str">"..."</span>,
+  <span class="hl-key">"status"</span>: <span class="hl-str">"true"</span>
+}</pre>
+
+    <h3>404 Not Found</h3>
+    <pre>{
+  <span class="hl-key">"status"</span>: <span class="hl-bool">false</span>,
+  <span class="hl-key">"statusCode"</span>: <span class="hl-num">404</span>,
+  <span class="hl-key">"message"</span>: <span class="hl-str">"Endpoint tidak ditemukan."</span>,
+  <span class="hl-key">"error"</span>: <span class="hl-str">"ENDPOINT_NOT_FOUND"</span>,
+  <span class="hl-key">"status"</span>: <span class="hl-str">"false"</span>
+}</pre>
+
+    <h3>500 Server Error</h3>
+    <pre>{
+  <span class="hl-key">"status"</span>: <span class="hl-bool">false</span>,
+  <span class="hl-key">"statusCode"</span>: <span class="hl-num">500</span>,
+  <span class="hl-key">"message"</span>: <span class="hl-str">"Internal server error."</span>,
+  <span class="hl-key">"error"</span>: <span class="hl-str">"SERVER_ERROR"</span>
+}</pre>
+
+    <h3>429 Rate Limit Exceeded</h3>
+    <pre>{
+  <span class="hl-key">"status"</span>: <span class="hl-bool">false</span>,
+  <span class="hl-key">"statusCode"</span>: <span class="hl-num">429</span>,
+  <span class="hl-key">"error"</span>: <span class="hl-str">"RATE_LIMIT_DAY"</span>,
+  <span class="hl-key">"limit"</span>: <span class="hl-num">100</span>,
+  <span class="hl-key">"used"</span>: <span class="hl-num">100</span>,
+  <span class="hl-key">"plan"</span>: <span class="hl-str">"free"</span>,
+  <span class="hl-key">"result"</span>: <span class="hl-str">"habis"</span>
+}</pre>
+  </div>
+
+  <!-- RATE LIMIT -->
+  <div class="doc-card">
+    <div class="doc-card-title" id="ratelimit">Rate Limiting</div>
+    <div class="doc-card-sub">Batas penggunaan per plan</div>
+    <p>Setiap endpoint API dibatasi berdasarkan plan yang aktif pada API key. Limit dihitung per menit, per jam, dan per hari. Jika salah satu batas terlampaui, request akan ditolak dengan response <code class="inline">429</code>.</p>
+    <p>Header response berisi informasi penggunaan saat ini:</p>
+    <pre><span class="hl-key">X-RateLimit-Limit</span>: <span class="hl-num">100</span>
+<span class="hl-key">X-RateLimit-Remaining</span>: <span class="hl-num">42</span>
+<span class="hl-key">X-RateLimit-Reset</span>: <span class="hl-num">1718000000</span></pre>
+  </div>
+
+  <!-- PLANS -->
+  <div class="doc-card">
+    <div class="doc-card-title" id="plans">Plans & Limit Request</div>
+    <div class="doc-card-sub">Perbandingan fitur tiap plan</div>
+    <p>Setelah kamu upgrade plan, limit request <strong class="hl">langsung bertambah otomatis</strong> tanpa perlu generate ulang API key.</p>
+    <table class="plan-table">
+      <thead><tr><th>Plan</th><th>Harga</th><th>Per Menit</th><th>Per Jam</th><th>Per Hari</th></tr></thead>
+      <tbody>
+        <tr><td>Free</td><td>Gratis</td><td>5</td><td>20</td><td>100</td></tr>
+        <tr><td>Premium</td><td>Rp 29.000/bln</td><td>20</td><td>100</td><td>1.000</td></tr>
+        <tr><td>VIP</td><td>Rp 59.000/bln</td><td>60</td><td>500</td><td>1.000</td></tr>
+        <tr><td>VVIP</td><td>Rp 89.000/bln</td><td>9.999</td><td>99.999</td><td>Unlimited</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- API ENDPOINTS -->
+  <div class="doc-card">
+    <div class="doc-card-title">API Endpoints</div>
+    <div class="doc-card-sub">Daftar lengkap endpoint yang tersedia</div>
+
+    <h3 id="api-register"><span class="badge-method m-post">POST</span> /api/auth/register</h3>
+    <p>Daftar akun baru. Tidak perlu API key.</p>
+    <pre>POST /api/auth/register
+Content-Type: application/json
+
+{
+  <span class="hl-key">"name"</span>: <span class="hl-str">"Nama Kamu"</span>,
+  <span class="hl-key">"email"</span>: <span class="hl-str">"kamu@email.com"</span>,
+  <span class="hl-key">"password"</span>: <span class="hl-str">"password123"</span>
+}</pre>
+
+    <h3 id="api-login"><span class="badge-method m-post">POST</span> /api/auth/login</h3>
+    <pre>POST /api/auth/login
+Content-Type: application/json
+
+{ <span class="hl-key">"email"</span>: <span class="hl-str">"..."</span>, <span class="hl-key">"password"</span>: <span class="hl-str">"..."</span> }</pre>
+
+    <h3 id="api-logout"><span class="badge-method m-post">POST</span> /api/auth/logout</h3>
+    <pre>POST /api/auth/logout  <span class="hl-cm">// Menghapus session dari DB</span></pre>
+
+    <h3 id="api-me"><span class="badge-method m-get">GET</span> /api/auth/me</h3>
+    <pre>GET /api/auth/me  <span class="hl-cm">// Perlu login (session cookie)</span></pre>
+
+    <h3 id="api-luminai"><span class="badge-method m-get">GET</span> /api/ai/luminai</h3>
+    <p>AI chat via Luminai. Memerlukan API key.</p>
+    <table><thead><tr><th>Parameter</th><th>Tipe</th><th>Wajib</th><th>Deskripsi</th></tr></thead>
+    <tbody><tr><td>text</td><td>string</td><td class="tr-req">Ya</td><td>Pertanyaan atau teks input</td></tr><tr><td>apikey</td><td>string</td><td class="tr-req">Ya</td><td>"YOU APIKEY"</td></tr></tbody></table>
+    <pre>GET /api/ai/luminai?<span class="hl-key">text</span>=<span class="hl-str">Halo apa kabar</span>&amp;<span class="hl-key">apikey</span>=<span class="hl-str">"YOU APIKEY"</span></pre>
+
+    <h3 id="api-youtube"><span class="badge-method m-get">GET</span> /api/search/youtube</h3>
+    <p>Cari video YouTube. Memerlukan API key.</p>
+    <table><thead><tr><th>Parameter</th><th>Tipe</th><th>Wajib</th><th>Deskripsi</th></tr></thead>
+    <tbody><tr><td>q</td><td>string</td><td class="tr-req">Ya</td><td>Query pencarian</td></tr><tr><td>apikey</td><td>string</td><td class="tr-req">Ya</td><td>"YOU APIKEY"</td></tr></tbody></table>
+    <pre>GET /api/search/youtube?<span class="hl-key">q</span>=<span class="hl-str">lofi music</span>&amp;<span class="hl-key">apikey</span>=<span class="hl-str">"YOU APIKEY"</span></pre>
+
+    <h3 id="api-payment"><span class="badge-method m-post">POST</span> /api/payment/create</h3>
+    <p>Buat transaksi upgrade plan via payment otomatis. Perlu login.</p>
+    <pre>POST /api/payment/create
+Content-Type: application/json
+
+{ <span class="hl-key">"plan"</span>: <span class="hl-str">"premium"</span>, <span class="hl-key">"payment_method"</span>: <span class="hl-str">"qris"</span> }
+<span class="hl-cm">// payment_method: all | qris | bni_va | bri_va | cimb_niaga_va | ...</span></pre>
+
+    <h3 id="api-webhook"><span class="badge-method m-post">POST</span> /api/payment/webhook</h3>
+    <p>Endpoint webhook dari Pakasir. Daftarkan URL ini di dashboard Pakasir: <code class="inline">{APP_URL}/api/payment/webhook</code>. Plan akan langsung aktif otomatis.</p>
+  </div>
+
+</div>
+</div>
+
+<script>
+var sidebarLinks = document.querySelectorAll('.s-link');
+var sections = [];
+
+sidebarLinks.forEach(function(link) {
+  var href = link.getAttribute('href');
+  if (href && href.charAt(0) === '#') {
+    var target = document.getElementById(href.slice(1));
+    if (target) {
+      sections.push({ id: href, el: target, link: link });
+    }
+  }
+});
+
+sidebarLinks.forEach(function(a) {
+  a.addEventListener('click', function() {
+    sidebarLinks.forEach(function(l) { l.classList.remove('active'); });
+    a.classList.add('active');
+    closeSidebar();
+  });
+});
+
+window.addEventListener('scroll', function() {
+  var scrollTop = window.scrollY || document.documentElement.scrollTop;
+  var current = null;
+  for (var i = 0; i < sections.length; i++) {
+    if (sections[i].el.getBoundingClientRect().top <= 120) {
+      current = sections[i];
+    }
+  }
+  if (current) {
+    sidebarLinks.forEach(function(l) { l.classList.remove('active'); });
+    current.link.classList.add('active');
+  }
+});
+
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('mobileOv').classList.add('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('mobileOv').classList.remove('show');
+}
+</script>
+</body>
+</html>

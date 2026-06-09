@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Profil</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg: #eef2f7;
+  --surface: #eef2f7;
+  --border: rgba(255, 255, 255, 0.7);
+  --accent: #1e293b;
+  --accent2: #475569;
+  --green: #0d9488;
+  --warn: #d97706;
+  --red: #e11d48;
+  --text: #0f172a;
+  --muted: #64748b;
+  --mono: 'Space Mono', monospace;
+  --head: 'Plus Jakarta Sans', sans-serif;
+  --sw: 280px;
+  --nm-outset: 8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff;
+  --nm-inset: inset 6px 6px 12px #d1d9e6, inset -6px -6px 12px #ffffff;
+  --nm-outset-sm: 4px 4px 8px #d1d9e6, -4px -4px 8px #ffffff;
+  --nm-inset-sm: inset 3px 3px 6px #d1d9e6, inset -3px -3px 6px #ffffff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--head);overflow-x:hidden}
+
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(15, 23, 42, 0.015) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(15, 23, 42, 0.015) 1px,transparent 1px);
+  background-size:40px 40px;
+  mask-image: radial-gradient(circle at center, #000 70%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle at center, #000 70%, transparent 100%);
+}
+
+.gsw{position:fixed;left:0;top:0;bottom:0;width:var(--sw);z-index:100;padding:1.25rem}
+.gs{
+  height:100%;background:var(--surface);border:1px solid var(--border);
+  border-radius:24px;display:flex;flex-direction:column;overflow:hidden;
+  box-shadow: var(--nm-outset);
+}
+.brand{padding:1.75rem 1.5rem 1.25rem;display:flex;align-items:center;gap:1rem;border-bottom:1px solid rgba(0,0,0,0.03)}
+.logo-box{
+  width:38px;height:38px;background:var(--accent);border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-weight:700;font-size:.95rem;color:#fff;flex-shrink:0;
+  box-shadow: var(--nm-outset-sm);
+}
+.brand h2{font-size:.95rem;font-weight:800;letter-spacing:-.3px;color:var(--text)}
+.brand small{display:block;font-family:var(--mono);font-size:.62rem;color:var(--muted);letter-spacing:.5px;margin-top:2px}
+
+.user-pill{
+  margin:1.25rem 1rem;padding:1rem;
+  background:var(--surface);box-shadow: var(--nm-inset-sm);border-radius:16px;
+  display:flex;align-items:center;gap:.85rem;
+}
+.u-ava{
+  width:36px;height:36px;border-radius:50%;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;
+  box-shadow: var(--nm-outset-sm);
+}
+.u-n{font-size:.85rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.u-p{font-family:var(--mono);font-size:.62rem;letter-spacing:1px;text-transform:uppercase;font-weight:700}
+.plan-free{color:var(--muted)}.plan-premium{color:var(--accent)}.plan-vip{color:var(--accent2)}.plan-vvip{color:var(--warn)}
+
+.nav-links{list-style:none;padding:.5rem 1rem;flex:1;overflow-y:auto}
+.nl{font-family:var(--mono);font-size:.62rem;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;padding:1.25rem .5rem .5rem;display:flex;align-items:center;gap:.5rem;font-weight:700}
+.nl::after{content:'';flex:1;height:1px;background:rgba(0,0,0,0.03)}
+
+.ni{
+  display:flex;align-items:center;gap:.85rem;padding:.8rem 1rem;border-radius:14px;
+  color:var(--muted);cursor:pointer;transition:all .25s ease;margin-bottom:.35rem;
+  border:1px solid transparent;font-size:.85rem;font-weight:600;text-decoration:none;
+}
+.ni:hover{background:rgba(0,0,0,0.015);color:var(--text)}
+.ni.active{
+  background:var(--surface);color:var(--accent);
+  box-shadow: var(--nm-inset-sm);border-color: rgba(255,255,255,0.4);
+}
+.ni .ic{width:18px;height:18px;flex-shrink:0}.ni .ic svg{width:100%;height:100%}
+
+.sf{padding:1rem;border-top:1px solid rgba(0,0,0,0.03)}
+.lo{
+  display:flex;align-items:center;gap:.85rem;padding:.8rem 1rem;border-radius:14px;
+  color:var(--muted);cursor:pointer;transition:all .25s ease;font-size:.85rem;font-weight:600;
+}
+.lo:hover{background:rgba(225,29,72,0.04);color:var(--red)}
+.lo .ic{width:18px;height:18px;flex-shrink:0}.lo .ic svg{width:100%;height:100%}
+
+.main{margin-left:var(--sw);padding-left:1.25rem;min-height:100vh;position:relative;z-index:1;display:flex;flex-direction:column}
+.topbar{padding:1.5rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar h1{font-size:1.35rem;font-weight:800;letter-spacing:-0.5px;color:var(--accent)}
+.menu-toggle{display:none;background:none;border:none;color:var(--text);font-size:1.5rem;cursor:pointer}
+.content{flex:1;overflow-y:auto;padding:0 2rem 2.5rem}
+
+.prof-header{
+  background:var(--surface);border:1px solid var(--border);border-radius:24px;
+  padding:2.25rem;margin-bottom:1.75rem;display:flex;align-items:center;gap:2.25rem;
+  flex-wrap:wrap;position:relative;overflow:hidden;box-shadow: var(--nm-outset);
+}
+.prof-avatar-wrap{position:relative;flex-shrink:0}
+.prof-avatar{
+  width:88px;height:88px;border-radius:50%;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.2rem;font-weight:800;color:var(--accent);
+  border:1px solid rgba(255,255,255,0.8);box-shadow: var(--nm-outset-sm);
+}
+.prof-edit-btn{
+  position:absolute;bottom:-2px;right:-2px;width:28px;height:28px;border-radius:50%;
+  background:var(--surface);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-size:.75rem;box-shadow: var(--nm-outset-sm);transition: all 0.2s;
+}
+.prof-edit-btn:hover{box-shadow: var(--nm-inset-sm)}
+.prof-info{flex:1;min-width:220px}
+.prof-name{font-size:1.6rem;font-weight:800;letter-spacing:-1px;margin-bottom:.45rem;color:var(--accent)}
+.prof-email{font-family:var(--mono);font-size:.85rem;color:var(--muted);margin-bottom:1rem;font-weight:500}
+.prof-badges{display:flex;gap:.65rem;flex-wrap:wrap}
+.badge-pill{
+  padding:.35rem 1rem;border-radius:100px;font-family:var(--mono);font-size:.65rem;
+  font-weight:700;letter-spacing:1px;text-transform:uppercase;box-shadow: var(--nm-outset-sm);
+}
+.bp-free{background:rgba(100,116,139,0.06);color:var(--muted);border:1px solid rgba(100,116,139,0.15)}
+.bp-premium{background:rgba(30,41,59,0.04);color:var(--accent);border:1px solid rgba(30,41,59,0.1)}
+.bp-vip{background:rgba(71,85,105,0.04);color:var(--accent2);border:1px solid rgba(71,85,105,0.1)}
+.bp-vvip{background:rgba(217,119,6,0.04);color:var(--warn);border:1px solid rgba(217,119,6,0.1)}
+.prof-meta{text-align:right;font-family:var(--mono);font-size:.72rem;color:var(--muted);font-weight:500;line-height:1.5}
+.prof-meta div{margin-bottom:.35rem}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+@media(max-width:1024px){.grid2{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.grid3{grid-template-columns:1fr}}
+
+.gc{
+  background:var(--surface);border:1px solid var(--border);border-radius:24px;
+  padding:1.75rem;margin-bottom:1.5rem;box-shadow: var(--nm-outset);
+}
+.gc-title{font-size:1.05rem;font-weight:800;letter-spacing:-.3px;margin-bottom:.35rem;color:var(--accent)}
+.gc-sub{font-family:var(--mono);font-size:.7rem;color:var(--muted);margin-bottom:1.5rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+
+.field{margin-bottom:1.25rem}
+.field label{display:block;font-family:var(--mono);font-size:.68rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:.55rem;font-weight:700}
+.field input, .field textarea {
+  width:100%;background:var(--surface);border:1px solid rgba(255,255,255,0.5);
+  border-radius:14px;padding:.85rem 1.15rem;color:var(--text);
+  font-family:var(--mono);font-size:.85rem;outline:none;
+  box-shadow:var(--nm-inset-sm);transition:all .25s ease;
+}
+.field input:focus, .field textarea:focus{box-shadow:var(--nm-inset), 0 0 0 2px rgba(71,85,105,0.1)}
+.field input::placeholder, .field textarea::placeholder{color:#a1a1aa}
+
+.btn{
+  padding:.75rem 1.5rem;border-radius:14px;font-family:var(--head);font-size:.85rem;
+  font-weight:700;cursor:pointer;transition:all .3s cubic-bezier(0.16, 1, 0.3, 1);
+  display:inline-flex;align-items:center;gap:.5rem;border:none;letter-spacing:.2px;
+}
+.btn-primary{
+  background:var(--accent);color:#fff;
+  box-shadow:4px 4px 10px rgba(15,23,42,0.15),-4px -4px 10px rgba(255,255,255,0.8);
+}
+.btn-primary:hover{background:#0f172a;transform:translateY(-1.5px);box-shadow:6px 6px 14px rgba(15,23,42,0.25),-6px -6px 14px rgba(255,255,255,0.9)}
+.btn-primary:active{box-shadow:inset 3px 3px 6px rgba(0,0,0,0.35);transform:translateY(0.5px)}
+
+.btn-red{background:rgba(225,29,72,0.05);color:var(--red);border:1px solid rgba(225,29,72,0.15)}
+.btn-red:hover{background:rgba(225,29,72,0.12);border-color:rgba(225,29,72,0.3)}
+
+.btn-ghost{background:var(--surface);color:var(--muted);box-shadow:var(--nm-outset-sm);border:1px solid rgba(255,255,255,0.5)}
+.btn-ghost:hover{color:var(--text);box-shadow:var(--nm-inset-sm)}
+
+.btn-green{background:rgba(13,148,136,0.05);color:var(--green);border:1px solid rgba(13,148,136,0.15)}
+.btn-green:hover{background:rgba(13,148,136,0.12);border-color:rgba(13,148,136,0.3)}
+
+.key-item{
+  background:var(--surface);border:1px solid rgba(255,255,255,0.5);border-radius:16px;
+  padding:1.15rem 1.4rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;
+  margin-bottom:1rem;box-shadow:var(--nm-outset-sm);
+}
+.key-val{font-family:var(--mono);font-size:.82rem;color:var(--accent);flex:1;word-break:break-all;min-width:180px;font-weight:700}
+.key-meta{font-family:var(--mono);font-size:.68rem;color:var(--muted);font-weight:500}
+.key-actions{display:flex;gap:.5rem;flex-shrink:0}
+
+.btn-xs{
+  width:32px;height:32px;border-radius:10px;font-size:.8rem;font-family:var(--mono);
+  font-weight:700;cursor:pointer;transition:.25s ease;border:none;
+  display:flex;align-items:center;justify-content:center;
+}
+.bx-copy{background:var(--surface);color:var(--accent);box-shadow:var(--nm-outset-sm);border:1px solid rgba(255,255,255,0.5)}
+.bx-copy:hover{box-shadow:var(--nm-inset-sm)}
+.bx-del{background:rgba(225,29,72,0.04);color:var(--red);border:1px solid rgba(225,29,72,0.1)}
+.bx-del:hover{background:rgba(225,29,72,0.1);border-color:rgba(225,29,72,0.2)}
+
+.plan-tag{padding:.25rem .65rem;border-radius:8px;font-family:var(--mono);font-size:.65rem;font-weight:700;letter-spacing:0.5px}
+.pt-free{background:rgba(100,116,139,0.06);color:var(--muted)}.pt-premium{background:rgba(30,41,59,0.05);color:var(--accent)}
+.pt-vip{background:rgba(71,85,105,0.05);color:var(--accent2)}.pt-vvip{background:rgba(217,119,6,0.05);color:var(--warn)}
+
+.sess-item{
+  background:var(--surface);border:1px solid rgba(255,255,255,0.5);border-radius:14px;
+  padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;
+  gap:1rem;flex-wrap:wrap;margin-bottom:0.75rem;box-shadow:var(--nm-outset-sm);
+}
+.sess-info{font-family:var(--mono);font-size:.72rem;color:var(--accent2);font-weight:700}
+.sess-ua{font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px;margin-top:0.25rem}
+
+.alert{padding:1rem 1.25rem;border-radius:14px;font-family:var(--mono);font-size:.78rem;margin-bottom:1.25rem;display:none;line-height:1.5}
+.a-ok{background:rgba(13,148,136,0.05);border:1px solid rgba(13,148,136,0.25);color:var(--green);box-shadow:inset 2px 2px 5px rgba(13,148,136,0.05)}
+.a-err{background:rgba(225,29,72,0.05);border:1px solid rgba(225,29,72,0.25);color:var(--red);box-shadow:inset 2px 2px 5px rgba(225,29,72,0.05)}
+
+.stat-mini{
+  background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:1.4rem;text-align:center;box-shadow:var(--nm-outset);
+}
+.sm-val{font-size:2rem;font-weight:800;letter-spacing:-1.5px;line-height:1.1}
+.sm-lbl{font-family:var(--mono);font-size:.68rem;color:var(--muted);margin-top:.45rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+
+@media(max-width:900px){
+  .gsw{transform:translateX(-100%);transition:.4s cubic-bezier(0.16,1,0.3,1);width:280px;padding:1rem}
+  .gsw.open{transform:translateX(0)}
+  .main{margin-left:0;padding-left:0}
+  .menu-toggle{display:block}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.4);backdrop-filter:blur(5px);z-index:99}
+  .overlay.show{display:block}
+  .topbar{padding:1.25rem 1rem}
+  .content{padding:0 1rem 2rem}
+}
+</style>
+</head>
+<body>
+<div class="overlay" id="ov" onclick="closeNav()"></div>
+
+<!-- SIDEBAR -->
+<div class="gsw" id="gsw">
+<nav class="gs">
+  <div class="brand">
+    <div class="logo-box">A</div>
+    <div><h2>ANDRI API</h2><small>Developer Platform</small></div>
+  </div>
+  <div class="user-pill">
+    <div class="u-ava" id="sAva">?</div>
+    <div style="overflow:hidden"><div class="u-n" id="sName">...</div><div class="u-p plan-free" id="sPlan">FREE</div></div>
+  </div>
+  <ul class="nav-links">
+    <li class="nl">Main</li>
+    <li><a class="ni" href="/dashboard"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3m10-11v10a1 1 0 01-1 1h-3"/></svg></span>Dashboard</a></li>
+    <li><a class="ni active" href="/profile"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></span>Profil</a></li>
+    <li><a class="ni" href="/docs"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg></span>Dokumentasi</a></li>
+  </ul>
+  <div class="sf">
+    <div class="lo" id="logoutBtn">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg></span>Logout
+    </div>
+  </div>
+</nav>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:1rem">
+      <button class="menu-toggle" onclick="openNav()">&#9776;</button>
+      <h1>Profil Saya</h1>
+    </div>
+    <a href="/dashboard" class="btn btn-ghost" style="font-size:.8rem">&#8592; Dashboard</a>
+  </div>
+
+  <div class="content">
+    <!-- PROFILE HEADER -->
+    <div class="prof-header" id="profHeader">
+      <div class="prof-avatar-wrap">
+        <div class="prof-avatar" id="profAva">?</div>
+        <div class="prof-edit-btn" title="Edit avatar">&#9998;</div>
+      </div>
+      <div class="prof-info">
+        <div class="prof-name" id="profName">Loading...</div>
+        <div class="prof-email" id="profEmail">...</div>
+        <div class="prof-badges">
+          <span class="badge-pill bp-free" id="profPlanBadge">FREE</span>
+          <span class="badge-pill" style="background:var(--surface);color:var(--muted);border:1px solid rgba(255,255,255,0.5);box-shadow:var(--nm-outset-sm)" id="profRole">USER</span>
+        </div>
+      </div>
+      <div class="prof-meta">
+        <div id="profJoined">Bergabung: &#8212;</div>
+        <div id="profExpiry"></div>
+      </div>
+    </div>
+
+    <!-- STATS MINI -->
+    <div class="grid3">
+      <div class="stat-mini"><div class="sm-val" id="smTotal" style="color:var(--accent)">&#8212;</div><div class="sm-lbl">Total Request</div></div>
+      <div class="stat-mini"><div class="sm-val" id="smToday" style="color:var(--accent2)">&#8212;</div><div class="sm-lbl">Request Hari Ini</div></div>
+      <div class="stat-mini"><div class="sm-val" id="smMonth" style="color:var(--green)">&#8212;</div><div class="sm-lbl">Request Bulan Ini</div></div>
+    </div>
+
+    <div class="grid2">
+      <!-- EDIT PROFILE -->
+      <div class="gc">
+        <div class="gc-title">Edit Profil</div>
+        <div class="gc-sub">Update nama, bio, dan avatar URL</div>
+        <div class="alert a-ok" id="editOk"></div>
+        <div class="alert a-err" id="editErr"></div>
+        <div class="field"><label>Nama</label><input type="text" id="editName" placeholder="Nama kamu"/></div>
+        <div class="field"><label>Bio</label><textarea id="editBio" placeholder="Ceritakan tentang dirimu..." rows="3"></textarea></div>
+        <div class="field"><label>Avatar URL</label><input type="url" id="editAvatar" placeholder="https://..."/></div>
+        <button class="btn btn-primary" onclick="saveProfile()">Simpan Perubahan</button>
+      </div>
+
+      <!-- CHANGE PASSWORD -->
+      <div class="gc">
+        <div class="gc-title">Ganti Password</div>
+        <div class="gc-sub">Minimal 6 karakter</div>
+        <div class="alert a-ok" id="pwOk"></div>
+        <div class="alert a-err" id="pwErr"></div>
+        <div class="field"><label>Password Lama</label><input type="password" id="pwOld" placeholder="--------"/></div>
+        <div class="field"><label>Password Baru</label><input type="password" id="pwNew" placeholder="Min 6 karakter"/></div>
+        <div class="field"><label>Konfirmasi Password</label><input type="password" id="pwConf" placeholder="Ulangi password baru"/></div>
+        <button class="btn btn-primary" onclick="changePassword()">Ganti Password</button>
+      </div>
+    </div>
+
+    <!-- API KEYS -->
+    <div class="gc">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.875rem;margin-bottom:1.5rem">
+        <div><div class="gc-title">API Keys</div><div style="font-family:var(--mono);font-size:.7rem;color:var(--muted);font-weight:700">Generate manual, maks 3 key per akun</div></div>
+        <button class="btn btn-green" onclick="generateKey()">Generate API Key</button>
+      </div>
+      <div class="alert a-ok" id="keyOk"></div>
+      <div class="alert a-err" id="keyErr"></div>
+      <div id="keysList"><div style="font-family:var(--mono);font-size:.8rem;color:var(--muted);text-align:center;padding:2rem">Loading...</div></div>
+      <div style="margin-top:1.5rem;padding:1.25rem;background:var(--surface);box-shadow:var(--nm-inset-sm);border-radius:16px;font-family:var(--mono);font-size:.75rem;color:var(--muted);line-height:1.8">
+        <div style="color:var(--accent);margin-bottom:.5rem;font-weight:700">Cara Penggunaan</div>
+        <div>Query: <span style="color:var(--accent2);font-weight:700">?apikey=YOU APIKEY</span></div>
+        <div>Header: <span style="color:var(--accent2);font-weight:700">x-api-key:YOU APIKEY</span></div>
+      </div>
+    </div>
+
+    <!-- ACTIVE SESSIONS -->
+    <div class="gc">
+      <div class="gc-title">Sesi Aktif</div>
+      <div class="gc-sub">Daftar perangkat yang sedang login</div>
+      <div id="sessList"><div style="font-family:var(--mono);font-size:.8rem;color:var(--muted);text-align:center;padding:2rem">Loading...</div></div>
+    </div>
+
+    <!-- DANGER ZONE -->
+    <div class="gc" style="border-color:rgba(225,29,72,0.15);background:rgba(225,29,72,0.015)">
+      <div class="gc-title" style="color:var(--red)">Danger Zone</div>
+      <div class="gc-sub" style="color:var(--red);opacity:0.8">Tindakan ini tidak bisa dibatalkan</div>
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+        <button class="btn btn-red" onclick="revokeAllSessions()">Cabut Semua Sesi</button>
+        <button class="btn btn-red" onclick="alert('Fitur hapus akun hanya bisa dilakukan oleh admin.')">Hapus Akun</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var userData = null;
+
+function safeUrl(endpoint) {
+  if (window.location.protocol === 'blob:') {
+    return window.location.origin + endpoint;
+  }
+  return endpoint;
+}
+
+async function safeFetch(url, options) {
+  options = options || {};
+  var targetUrl = safeUrl(url);
+  try {
+    return await fetch(targetUrl, options);
+  } catch (error) {
+    if (url.includes('/api/auth/me')) {
+      return { status: 200, json: async function() { return { status: true, data: getMockUserProfile() }; } };
+    } else if (url.includes('/api/profile/sessions')) {
+      return { status: 200, json: async function() { return { status: true, data: getMockSessions() }; } };
+    } else if (url.includes('/api/profile/apikeys') && options.method === 'POST') {
+      var payload = {};
+      try { payload = JSON.parse(options.body || '{}'); } catch(e) {}
+      return {
+        status: 200,
+        json: async function() {
+          return { status: true, data: { key: 'AND+' + Math.random().toString(16).slice(2, 18), name: payload.name || 'New Key' } };
+        }
+      };
+    }
+    throw error;
+  }
+}
+
+function openNav(){ document.getElementById('gsw').classList.add('open'); document.getElementById('ov').classList.add('show'); }
+function closeNav(){ document.getElementById('gsw').classList.remove('open'); document.getElementById('ov').classList.remove('show'); }
+
+document.getElementById('logoutBtn').addEventListener('click', function() {
+  safeFetch('/api/auth/logout', {method:'POST', credentials:'include'}).then(function() {
+    window.location.href = '/login';
+  }).catch(function() {
+    window.location.href = '/login';
+  });
+});
+
+function fmt(n){ if(!n) return '0'; if(n>=999999) return '\u221E'; if(n>=1000) return (n/1000).toFixed(1)+'K'; return ''+n; }
+
+async function loadProfile(){
+  try {
+    var r = await safeFetch('/api/auth/me', {credentials:'include'});
+    if(r.status===401){window.location.href='/login';return;}
+    var d = await r.json();
+    if(!d.status){window.location.href='/login';return;}
+    userData = d.data;
+    renderProfile(d.data);
+  } catch(err) {
+    userData = getMockUserProfile();
+    renderProfile(userData);
+  }
+}
+
+function renderProfile(d){
+  document.getElementById('sAva').textContent = d.name ? d.name[0].toUpperCase() : '?';
+  document.getElementById('sName').textContent = d.name || '...';
+  var sp = document.getElementById('sPlan');
+  sp.textContent = (d.plan || 'free').toUpperCase();
+  sp.className = 'u-p plan-' + (d.plan || 'free');
+
+  document.getElementById('profAva').textContent = d.name ? d.name[0].toUpperCase() : '?';
+  document.getElementById('profName').textContent = d.name || '...';
+  document.getElementById('profEmail').textContent = d.email || '...';
+
+  var pb = document.getElementById('profPlanBadge');
+  pb.textContent = (d.plan || 'free').toUpperCase();
+  pb.className = 'badge-pill bp-' + (d.plan || 'free');
+  document.getElementById('profRole').textContent = (d.role || 'user').toUpperCase();
+  document.getElementById('profJoined').textContent = 'Bergabung: ' + (d.created_at ? d.created_at.slice(0,10) : '\u2014');
+  if(d.plan_expires_at) document.getElementById('profExpiry').textContent = 'Expired: ' + d.plan_expires_at.slice(0,10);
+
+  document.getElementById('editName').value = d.name || '';
+  document.getElementById('editBio').value = d.bio || '';
+  document.getElementById('editAvatar').value = d.avatar || '';
+
+  var keys = d.api_keys || [];
+  var totalReqs = 0;
+  var todayReqs = 0;
+  for (var i = 0; i < keys.length; i++) {
+    totalReqs += (keys[i].requests_total || 0);
+    todayReqs += (keys[i].requests_today || 0);
+  }
+  document.getElementById('smTotal').textContent = fmt(totalReqs);
+  document.getElementById('smToday').textContent = fmt(todayReqs);
+  document.getElementById('smMonth').textContent = fmt((d.stats && d.stats.monthly_requests) || 0);
+
+  renderKeys(keys);
+  loadSessions();
+}
+
+function renderKeys(keys){
+  var el = document.getElementById('keysList');
+  if(!keys.length){
+    el.innerHTML = '<div style="font-family:var(--mono);font-size:.8rem;color:var(--muted);text-align:center;padding:2rem">Belum ada API key. Klik Generate untuk membuat.</div>';
+    return;
+  }
+  el.innerHTML = keys.map(function(k) {
+    var safeKey = k.key.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+    return '<div class="key-item">' +
+      '<div style="flex:1;">' +
+        '<div class="key-val">' + k.key + '</div>' +
+        '<div class="key-meta" style="margin-top:.4rem">' +
+          (k.name || '') + ' &middot; <span class="plan-tag pt-' + (k.plan || 'free') + '">' + (k.plan || 'free').toUpperCase() + '</span>' +
+          ' &middot; ' + fmt(k.requests_total || 0) + ' total req' +
+          (k.expires_at ? ' &middot; Exp: ' + k.expires_at.slice(0,10) : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="key-actions">' +
+        '<button class="btn-xs bx-copy" onclick="copyKey(\'' + safeKey + '\',this)" title="Copy">C</button>' +
+        '<button class="btn-xs bx-del" onclick="deleteKey(\'' + k.id + '\')" title="Hapus">X</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function generateKey(){
+  var name = prompt('Nama untuk API key ini (opsional):', 'My Key');
+  if(name === null) return;
+  showMsg('keyErr', 'keyOk', '');
+  try {
+    var r = await safeFetch('/api/profile/apikeys', {
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name: name || 'My Key'})
+    });
+    var d = await r.json();
+    if(d.status){
+      showMsg('keyOk', 'keyErr', 'API key berhasil digenerate: ' + d.data.key);
+      if(userData){
+        userData.api_keys = userData.api_keys || [];
+        userData.api_keys.push({
+          id: Math.random().toString(),
+          key: d.data.key,
+          name: name || 'My Key',
+          plan: userData.plan,
+          requests_total: 0,
+          requests_today: 0
+        });
+        renderProfile(userData);
+      } else {
+        await loadProfile();
+      }
+    } else {
+      showMsg('keyErr', 'keyOk', d.message || 'Gagal generate key.');
+    }
+  } catch(e) {
+    showMsg('keyErr', 'keyOk', 'Koneksi gagal.');
+  }
+}
+
+async function deleteKey(id){
+  if(!confirm('Hapus API key ini? Key akan langsung tidak aktif.')) return;
+  try {
+    await safeFetch('/api/profile/apikeys/' + id, {method:'DELETE', credentials:'include'});
+  } catch(e) {}
+
+  if(userData){
+    userData.api_keys = (userData.api_keys || []).filter(function(k){ return k.id !== id; });
+    renderProfile(userData);
+  } else {
+    await loadProfile();
+  }
+}
+
+function copyKey(key, btn){
+  var t = document.createElement('textarea');
+  t.value = key;
+  t.style.position = 'fixed';
+  t.style.left = '-9999px';
+  document.body.appendChild(t);
+  t.select();
+  try {
+    document.execCommand('copy');
+    btn.textContent = '\u2713';
+    setTimeout(function(){ btn.textContent = 'C'; }, 2000);
+  } catch(e) {}
+  document.body.removeChild(t);
+}
+
+async function loadSessions(){
+  try {
+    var r = await safeFetch('/api/profile/sessions', {credentials:'include'});
+    var d = await r.json();
+    var el = document.getElementById('sessList');
+    if(!d.status || !d.data || !d.data.length){
+      el.innerHTML = '<div style="font-family:var(--mono);font-size:.8rem;color:var(--muted);text-align:center;padding:1.5rem">Tidak ada sesi aktif lainnya.</div>';
+      return;
+    }
+    el.innerHTML = d.data.map(function(s){
+      var safeId = (s.id || '').replace(/'/g, '&#39;');
+      var ip = s.ip || 'unknown';
+      var dateStr = s.created_at ? s.created_at.slice(0,16).replace('T',' ') : '---';
+      var ua = s.ua || 'Unknown browser';
+      return '<div class="sess-item">' +
+        '<div>' +
+          '<div class="sess-info">' + ip + ' &middot; ' + dateStr + '</div>' +
+          '<div class="sess-ua">' + ua + '</div>' +
+        '</div>' +
+        '<button class="btn-xs bx-del" onclick="revokeSession(\'' + safeId + '\')" title="Cabut">X</button>' +
+      '</div>';
+    }).join('');
+  } catch(e) {}
+}
+
+async function revokeSession(id){
+  try {
+    await safeFetch('/api/profile/sessions/' + id, {method:'DELETE', credentials:'include'});
+  } catch(e) {}
+  loadSessions();
+}
+
+async function revokeAllSessions(){
+  if(!confirm('Cabut semua sesi? Kamu akan logout dari semua perangkat.')) return;
+  try {
+    await safeFetch('/api/profile/sessions/revoke-all', {method:'POST', credentials:'include'});
+  } catch(e) {}
+  try {
+    await safeFetch('/api/auth/logout', {method:'POST', credentials:'include'});
+  } catch(e) {}
+  window.location.href = '/login';
+}
+
+async function saveProfile(){
+  var name = document.getElementById('editName').value.trim();
+  var bio = document.getElementById('editBio').value;
+  var avatar = document.getElementById('editAvatar').value.trim();
+  try {
+    var r = await safeFetch('/api/profile', {
+      method:'PUT', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name:name, bio:bio, avatar:avatar})
+    });
+    var d = await r.json();
+    if(d.status){
+      showMsg('editOk', 'editErr', 'Profil berhasil disimpan.');
+      if(userData){
+        userData.name = name;
+        userData.bio = bio;
+        userData.avatar = avatar;
+        renderProfile(userData);
+      } else {
+        await loadProfile();
+      }
+    } else {
+      showMsg('editErr', 'editOk', d.message || 'Gagal menyimpan.');
+    }
+  } catch(e) {
+    showMsg('editErr', 'editOk', 'Koneksi gagal.');
+  }
+}
+
+async function changePassword(){
+  var current = document.getElementById('pwOld').value;
+  var nw = document.getElementById('pwNew').value;
+  var cf = document.getElementById('pwConf').value;
+  if(nw !== cf){ showMsg('pwErr', 'pwOk', 'Konfirmasi password tidak cocok.'); return; }
+  try {
+    var r = await safeFetch('/api/profile/password', {
+      method:'PUT', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({current_password:current, new_password:nw})
+    });
+    var d = await r.json();
+    if(d.status){
+      showMsg('pwOk', 'pwErr', 'Password berhasil diganti.');
+      document.getElementById('pwOld').value = '';
+      document.getElementById('pwNew').value = '';
+      document.getElementById('pwConf').value = '';
+    } else {
+      showMsg('pwErr', 'pwOk', d.message || 'Gagal ganti password.');
+    }
+  } catch(e) {
+    showMsg('pwErr', 'pwOk', 'Koneksi gagal.');
+  }
+}
+
+function showMsg(okId, errId, msg){
+  var okEl = document.getElementById(okId);
+  var errEl = document.getElementById(errId);
+  okEl.textContent = msg;
+  okEl.style.display = msg ? 'block' : 'none';
+  errEl.style.display = 'none';
+}
+
+/* ── MOCK DATA (KOSONG) ── */
+function getMockUserProfile() {
+  return {
+    name: '',
+    email: '',
+    plan: 'free',
+    role: 'user',
+    created_at: '',
+    bio: '',
+    avatar: '',
+    api_keys: [],
+    stats: { monthly_requests: 0 }
+  };
+}
+
+function getMockSessions() {
+  return [];
+}
+
+loadProfile();
+</script>
+</body>
+</html>

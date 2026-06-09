@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#eef2f7;--surface:#eef2f7;
+  --border:rgba(255,255,255,0.7);
+  --accent:#1e293b;--accent2:#475569;
+  --green:#0d9488;--warn:#d97706;--red:#e11d48;
+  --text:#0f172a;--muted:#64748b;
+  --mono:'Space Mono',monospace;--head:'Plus Jakarta Sans',sans-serif;
+  --sidebar-w:260px;
+  --nm-outset:8px 8px 16px #d1d9e6,-8px -8px 16px #ffffff;
+  --nm-inset:inset 6px 6px 12px #d1d9e6,inset -6px -6px 12px #ffffff;
+  --nm-outset-sm:4px 4px 8px #d1d9e6,-4px -4px 8px #ffffff;
+  --nm-inset-sm:inset 3px 3px 6px #d1d9e6,inset -3px -3px 6px #ffffff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--head);overflow:hidden}
+
+/* Background grid */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(15,23,42,0.012) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(15,23,42,0.012) 1px,transparent 1px);
+  background-size:40px 40px;
+  mask-image:radial-gradient(circle at center,#000 70%,transparent 100%);
+  -webkit-mask-image:radial-gradient(circle at center,#000 70%,transparent 100%);
+}
+
+/* ── NEUMORPHIC SIDEBAR ── */
+.glass-sidebar-wrapper{position:fixed;left:0;top:0;bottom:0;width:var(--sidebar-w);z-index:100;padding:1rem}
+.glass-sidebar{
+  height:100%;background:var(--surface);
+  border:1px solid var(--border);border-radius:24px;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:var(--nm-outset);
+}
+
+.brand{padding:1.5rem 1.25rem 1rem;display:flex;align-items:center;gap:.875rem;border-bottom:1px solid rgba(0,0,0,0.03)}
+.logo-box{
+  width:36px;height:36px;background:var(--accent);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-weight:700;font-size:.9rem;color:#fff;flex-shrink:0;
+  box-shadow:var(--nm-outset-sm);
+}
+.brand h2{font-size:.9rem;font-weight:800;letter-spacing:-.3px}
+.brand small{display:block;font-family:var(--mono);font-size:.62rem;color:var(--muted);letter-spacing:.5px}
+
+.user-pill{
+  margin:1rem;padding:.875rem 1rem;
+  background:var(--surface);border:1px solid rgba(255,255,255,0.4);
+  border-radius:14px;display:flex;align-items:center;gap:.75rem;
+  box-shadow:var(--nm-inset-sm);
+}
+.user-ava{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:.85rem;color:#fff;flex-shrink:0;
+}
+.user-n{font-size:.8rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.user-p{font-family:var(--mono);font-size:.6rem;letter-spacing:1px;text-transform:uppercase}
+.plan-free{color:var(--green)}.plan-premium{color:var(--accent)}.plan-vip{color:var(--accent2)}.plan-vvip{color:var(--warn)}
+
+.nav-links{list-style:none;padding:.5rem .875rem;flex:1;overflow-y:auto}
+.nav-section-label{
+  font-family:var(--mono);font-size:.6rem;color:var(--muted);
+  letter-spacing:1.5px;text-transform:uppercase;
+  padding:.75rem .375rem .35rem;display:flex;align-items:center;gap:.5rem;
+}
+.nav-section-label::after{content:'';flex:1;height:1px;background:rgba(0,0,0,0.04)}
+
+.nav-item{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.7rem .875rem;border-radius:12px;color:var(--muted);
+  cursor:pointer;transition:all .25s;margin-bottom:.2rem;
+  border:1px solid transparent;font-size:.85rem;font-weight:600;list-style:none;
+}
+.nav-item .icon{width:18px;height:18px;flex-shrink:0}
+.nav-item .icon svg{width:100%;height:100%}
+.nav-item:hover{background:rgba(0,0,0,0.015);color:var(--text)}
+.nav-item.active{
+  background:var(--surface);color:var(--accent);
+  box-shadow:var(--nm-inset-sm);border:1px solid rgba(255,255,255,0.4);
+}
+.nav-item.active .icon{color:var(--accent)}
+.nav-item a{color:inherit;text-decoration:none;display:flex;align-items:center;gap:.75rem;width:100%}
+
+.sidebar-footer{padding:.875rem;border-top:1px solid rgba(0,0,0,0.03)}
+.logout-item{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.65rem .875rem;border-radius:12px;color:var(--muted);
+  cursor:pointer;transition:all .25s;font-size:.85rem;font-weight:600;
+}
+.logout-item:hover{background:rgba(225,29,72,0.04);color:var(--red)}
+.logout-item .icon{width:18px;height:18px;flex-shrink:0}
+.logout-item .icon svg{width:100%;height:100%}
+
+/* ── MAIN ── */
+.main{margin-left:var(--sidebar-w);padding-left:1rem;height:100vh;display:flex;flex-direction:column;overflow:hidden;position:relative;z-index:1}
+.topbar{padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar h1{font-size:1.2rem;font-weight:800;letter-spacing:-.5px}
+.topbar-right{display:flex;align-items:center;gap:1rem}
+.api-status{display:flex;align-items:center;gap:.5rem;font-family:var(--mono);font-size:.72rem;color:var(--green);font-weight:700}
+.dot-live{width:7px;height:7px;background:var(--green);border-radius:50%;animation:blink 2s infinite;box-shadow:0 0 8px var(--green)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+.content{flex:1;overflow-y:auto;padding:0 1.5rem 1.5rem}
+.content::-webkit-scrollbar{width:5px}
+.content::-webkit-scrollbar-track{background:transparent}
+.content::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.06);border-radius:10px}
+
+/* ── PANEL ── */
+.panel{display:none;animation:fadeIn .4s cubic-bezier(0.16,1,0.3,1) forwards}
+.panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── NEUMORPHIC CARDS ── */
+.g-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;padding:1.5rem;transition:all .3s;
+  box-shadow:var(--nm-outset);
+}
+.g-card:hover{transform:translateY(-1px);box-shadow:10px 10px 20px #d1d9e6,-10px -10px 20px #ffffff}
+
+/* ── STATS GRID ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.25rem;margin-bottom:1.25rem}
+.stat-c{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;padding:1.25rem;position:relative;overflow:hidden;
+  box-shadow:var(--nm-outset);
+}
+.stat-c::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-c.c1::before{background:linear-gradient(90deg,var(--warn),transparent)}
+.stat-c.c2::before{background:linear-gradient(90deg,var(--accent),transparent)}
+.stat-c.c3::before{background:linear-gradient(90deg,var(--green),transparent)}
+.stat-c.c4::before{background:linear-gradient(90deg,var(--red),transparent)}
+.stat-label{font-family:var(--mono);font-size:.65rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:.7rem;font-weight:700}
+.stat-val{font-size:1.9rem;font-weight:800;letter-spacing:-2px;line-height:1;color:var(--accent)}
+.stat-sub{font-family:var(--mono);font-size:.68rem;color:var(--muted);margin-top:.4rem}
+
+/* ── CHARTS ── */
+.chart-row{display:grid;grid-template-columns:2fr 1fr;gap:1.25rem;margin-bottom:1.25rem}
+.chart-wrap{position:relative;height:180px;margin-top:.5rem}
+.c-title{font-size:.95rem;font-weight:800;letter-spacing:-.3px;color:var(--accent)}
+.c-sub{font-family:var(--mono);font-size:.68rem;color:var(--muted);margin-top:.2rem;margin-bottom:1rem;font-weight:700}
+@media(max-width:1024px){.chart-row{grid-template-columns:1fr}}
+
+/* ── PLAN BANNER ── */
+.plan-banner{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;padding:1.25rem 1.5rem;margin-bottom:1.25rem;
+  box-shadow:var(--nm-outset-sm);
+}
+.plan-info-l .plan-name{font-size:1.1rem;font-weight:800;letter-spacing:-.5px}
+.plan-badge{
+  font-family:var(--mono);font-size:.68rem;font-weight:700;
+  padding:.3rem .75rem;border-radius:100px;letter-spacing:.8px;text-transform:uppercase;
+  box-shadow:var(--nm-outset-sm);
+}
+.b-free   {background:rgba(100,116,139,0.05);color:var(--muted);border:1px solid rgba(100,116,139,0.1)}
+.b-premium{background:rgba(30,41,59,0.04);color:var(--accent);border:1px solid rgba(30,41,59,0.08)}
+.b-vip    {background:rgba(71,85,105,0.04);color:var(--accent2);border:1px solid rgba(71,85,105,0.08)}
+.b-vvip   {background:rgba(217,119,6,0.04);color:var(--warn);border:1px solid rgba(217,119,6,0.08)}
+
+/* ── USAGE BARS ── */
+.usage-group{margin-bottom:1.25rem}
+.usage-row{margin-bottom:1rem}
+.usage-head{display:flex;justify-content:space-between;margin-bottom:.4rem;font-family:var(--mono);font-size:.72rem}
+.usage-label{color:var(--muted)}
+.usage-val{color:var(--text);font-weight:700}
+.u-bar{height:6px;background:rgba(0,0,0,0.04);border-radius:3px;overflow:hidden;box-shadow:var(--nm-inset-sm)}
+.u-fill{height:100%;border-radius:3px;transition:width 1s ease}
+.u-fill.low {background:linear-gradient(90deg,var(--green),#059669)}
+.u-fill.med {background:linear-gradient(90deg,var(--warn),#b45309)}
+.u-fill.high{background:linear-gradient(90deg,var(--red),#be123c)}
+
+/* ── LIMIT GRID ── */
+.limit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;text-align:center;margin-top:.5rem}
+.limit-item{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:.875rem .5rem;box-shadow:var(--nm-inset-sm);
+}
+.limit-num{font-size:1.4rem;font-weight:800;letter-spacing:-1px}
+.limit-lbl{font-family:var(--mono);font-size:.63rem;color:var(--muted);margin-top:.25rem;font-weight:700}
+
+/* ── BUTTONS ── */
+.btn-a{
+  padding:.55rem 1.25rem;border-radius:12px;font-family:var(--head);
+  font-size:.82rem;font-weight:700;cursor:pointer;transition:all .3s;
+  text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;border:none;
+}
+.btn-accent{
+  background:var(--accent);color:#fff;
+  box-shadow:4px 4px 10px rgba(15,23,42,0.15),-4px -4px 10px rgba(255,255,255,0.8);
+}
+.btn-accent:hover{background:#0f172a;transform:translateY(-1px);box-shadow:6px 6px 14px rgba(15,23,42,0.25),-6px -6px 14px rgba(255,255,255,0.9)}
+.btn-accent:active{box-shadow:var(--nm-inset-sm);transform:translateY(.5px)}
+.btn-ghost{
+  background:var(--surface);color:var(--muted);
+  box-shadow:var(--nm-outset-sm);border:1px solid rgba(255,255,255,0.5);
+}
+.btn-ghost:hover{color:var(--text);box-shadow:var(--nm-inset-sm)}
+.btn-red{
+  background:rgba(225,29,72,0.05);color:var(--red);
+  border:1px solid rgba(225,29,72,0.15);
+}
+.btn-red:hover{background:rgba(225,29,72,0.12);border-color:rgba(225,29,72,0.3)}
+
+/* ── TABLE ── */
+.g-table{
+  width:100%;border-collapse:separate;border-spacing:0;
+  font-family:var(--mono);font-size:.78rem;
+}
+.g-table th{
+  text-align:left;padding:.65rem .875rem;font-size:.62rem;
+  letter-spacing:1px;text-transform:uppercase;color:var(--muted);
+  font-weight:700;border-bottom:1px solid rgba(0,0,0,0.04);
+  background:rgba(0,0,0,0.005);
+}
+.g-table td{padding:.65rem .875rem;border-bottom:1px solid rgba(0,0,0,0.03);color:var(--muted)}
+.g-table td:first-child{color:var(--accent);font-weight:600}
+.g-table tr:last-child td{border-bottom:none}
+.g-table tr:hover td{background:rgba(0,0,0,0.01)}
+
+/* ── TX STATUS ── */
+.tx-badge{
+  padding:.25rem .65rem;border-radius:100px;
+  font-family:var(--mono);font-size:.65rem;font-weight:700;
+  box-shadow:var(--nm-outset-sm);
+}
+.s-paid{background:rgba(13,148,136,0.05);color:var(--green);border:1px solid rgba(13,148,136,0.12)}
+.s-pending{background:rgba(217,119,6,0.05);color:var(--warn);border:1px solid rgba(217,119,6,0.12)}
+.s-confirming{background:rgba(30,41,59,0.04);color:var(--accent2);border:1px solid rgba(30,41,59,0.08)}
+.s-rejected{background:rgba(225,29,72,0.05);color:var(--red);border:1px solid rgba(225,29,72,0.12)}
+
+/* ── PLAN OPTIONS ── */
+.plan-opt{
+  background:var(--surface);border:2px solid var(--border);
+  border-radius:14px;padding:1rem;cursor:pointer;transition:all .25s;
+  box-shadow:var(--nm-outset-sm);
+}
+.plan-opt:hover{transform:translateY(-1px);box-shadow:var(--nm-outset)}
+.plan-opt[data-plan="premium"]{border-color:rgba(30,41,59,0.15)}
+.plan-opt[data-plan="premium"] .po-price{color:var(--accent)}
+.plan-opt[data-plan="vip"]{border-color:rgba(71,85,105,0.15)}
+.plan-opt[data-plan="vip"] .po-price{color:var(--accent2)}
+.plan-opt[data-plan="vvip"]{border-color:rgba(217,119,6,0.15)}
+.plan-opt[data-plan="vvip"] .po-price{color:var(--warn)}
+
+/* ── METHOD OPTIONS ── */
+.method-c{
+  background:var(--surface);border:2px solid rgba(0,0,0,0.06);
+  border-radius:14px;padding:1rem;cursor:pointer;text-align:center;transition:all .25s;
+  box-shadow:var(--nm-outset-sm);
+}
+.method-c:hover{transform:translateY(-1px);box-shadow:var(--nm-outset)}
+.method-c.m-sel{border-color:rgba(30,41,59,0.25);background:rgba(30,41,59,0.04)}
+
+/* ── PAY DETAIL ── */
+.pay-detail-card{
+  background:rgba(13,148,136,0.05);border:1px solid rgba(13,148,136,0.2);
+  border-radius:18px;padding:1.5rem;box-shadow:var(--nm-outset-sm);
+}
+
+/* ── MOBILE ── */
+.menu-toggle{display:none;background:none;border:none;color:var(--text);font-size:1.4rem;cursor:pointer;line-height:1}
+.overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.3);backdrop-filter:blur(4px);z-index:99}
+.overlay.show{display:block}
+@media(max-width:900px){
+  .glass-sidebar-wrapper{transform:translateX(-100%);transition:.4s cubic-bezier(0.16,1,0.3,1);width:260px;padding:1rem}
+  .glass-sidebar-wrapper.open{transform:translateX(0)}
+  .main{margin-left:0;padding-left:0}
+  .menu-toggle{display:block}
+}
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- ── SIDEBAR ── -->
+<div class="glass-sidebar-wrapper" id="sidebarWrap">
+  <nav class="glass-sidebar">
+    <div class="brand">
+      <div class="logo-box">A</div>
+      <div><h2>ANDRI API'S</h2><small>Developer Platform</small></div>
+    </div>
+
+    <div class="user-pill">
+      <div class="user-ava" id="sAvatar">?</div>
+      <div style="overflow:hidden">
+        <div class="user-n" id="sName">Loading...</div>
+        <div class="user-p plan-free" id="sPlan">FREE</div>
+      </div>
+    </div>
+
+    <ul class="nav-links">
+      <li class="nav-section-label">Main</li>
+      <li class="nav-item active" data-panel="overview">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3m10-11v10a1 1 0 01-1 1h-3"/></svg></span>
+        Dashboard
+      </li>
+      <li class="nav-item" data-panel="analytics">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 20V10m5 10V4m5 16v-7"/></svg></span>
+        Analytics
+      </li>
+      <li class="nav-item" data-panel="transactions">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></span>
+        Transaksi
+      </li>
+      <li class="nav-item" data-panel="payment">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg></span>
+        Upgrade Plan
+      </li>
+      <li class="nav-section-label">Account</li>
+      <li class="nav-item" onclick="window.location.href='/profile'">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></span>
+        Profil
+      </li>
+      <li class="nav-item" onclick="window.location.href='/docs'">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg></span>
+        Dokumentasi
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="logout-item" id="logoutBtn">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg></span>
+        Logout
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:1rem">
+      <button class="menu-toggle" onclick="openSidebar()">&#9776;</button>
+      <h1 id="panelTitle">Dashboard</h1>
+    </div>
+    <div class="topbar-right">
+      <div class="api-status"><div class="dot-live"></div>API Online</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ─ OVERVIEW ─ -->
+    <div class="panel active" id="panel-overview">
+      <div class="plan-banner" id="planBanner">
+        <div class="plan-info-l">
+          <div style="font-family:var(--mono);font-size:.65rem;color:var(--muted);margin-bottom:.35rem;font-weight:700">CURRENT PLAN</div>
+          <div style="display:flex;align-items:center;gap:.75rem"><span class="plan-name" id="planNameEl">&#8212;</span><span class="plan-badge b-free" id="planBadgeEl">&#8212;</span></div>
+        </div>
+        <a href="#" class="btn-a btn-accent" id="upgradeBtn" onclick="switchPanel('payment');return false">Upgrade</a>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-c c1"><div class="stat-label">Total Request</div><div class="stat-val" id="stTotal">&#8212;</div><div class="stat-sub">sejak bergabung</div></div>
+        <div class="stat-c c2"><div class="stat-label">Hari Ini</div><div class="stat-val" id="stToday">&#8212;</div><div class="stat-sub">reset tengah malam</div></div>
+        <div class="stat-c c3"><div class="stat-label">Bulan Ini</div><div class="stat-val" id="stMonth">&#8212;</div><div class="stat-sub">30 hari terakhir</div></div>
+        <div class="stat-c c4"><div class="stat-label">Sisa Hari Ini</div><div class="stat-val" id="stRemain">&#8212;</div><div class="stat-sub" id="stLimitSub">&#8212;</div></div>
+      </div>
+
+      <div class="chart-row">
+        <div class="g-card">
+          <div class="c-title">Request Harian</div>
+          <div class="c-sub">7 hari terakhir</div>
+          <div class="chart-wrap"><canvas id="dailyChart"></canvas></div>
+        </div>
+        <div class="g-card">
+          <div class="c-title">Status Code</div>
+          <div class="c-sub">distribusi response</div>
+          <div class="chart-wrap"><canvas id="statusChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="g-card usage-group">
+        <div class="c-title">Penggunaan Request</div>
+        <div class="c-sub" style="margin-bottom:1.25rem">progress vs limit plan kamu</div>
+        <div class="usage-row" id="usageDay">
+          <div class="usage-head"><span class="usage-label">Per Hari</span><span class="usage-val" id="udVal">0 / 0</span></div>
+          <div class="u-bar"><div class="u-fill low" id="udFill" style="width:0%"></div></div>
+        </div>
+        <div class="limit-grid" style="margin-top:1.25rem">
+          <div class="limit-item"><div class="limit-num" id="limMin" style="color:var(--warn)">&#8212;</div><div class="limit-lbl">Per Menit</div></div>
+          <div class="limit-item"><div class="limit-num" id="limHour" style="color:var(--accent2)">&#8212;</div><div class="limit-lbl">Per Jam</div></div>
+          <div class="limit-item"><div class="limit-num" id="limDay" style="color:var(--green)">&#8212;</div><div class="limit-lbl">Per Hari</div></div>
+        </div>
+      </div>
+
+      <div class="g-card">
+        <div class="c-title" style="margin-bottom:.5rem">Top Endpoints</div>
+        <table class="g-table" style="margin-top:.75rem">
+          <thead><tr><th>Endpoint</th><th>Requests</th></tr></thead>
+          <tbody id="epTable"><tr><td colspan="2" style="text-align:center;padding:1.5rem">Belum ada data</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─ ANALYTICS ─ -->
+    <div class="panel" id="panel-analytics">
+      <div class="chart-row" style="margin-bottom:1.25rem">
+        <div class="g-card"><div class="c-title">Tren Requests</div><div class="c-sub">7 hari terakhir</div><div class="chart-wrap" style="height:220px"><canvas id="trendChart"></canvas></div></div>
+        <div class="g-card"><div class="c-title">Status Distribusi</div><div class="c-sub">success vs error</div><div class="chart-wrap" style="height:220px"><canvas id="statusChart2"></canvas></div></div>
+      </div>
+      <div class="g-card"><div class="c-title">Top Endpoints</div><div class="c-sub">most accessed</div><div class="chart-wrap" style="height:180px;margin-top:.875rem"><canvas id="epChart"></canvas></div></div>
+    </div>
+
+    <!-- ─ TRANSACTIONS ─ -->
+    <div class="panel" id="panel-transactions">
+      <div class="g-card">
+        <div class="c-title" style="margin-bottom:1rem">Riwayat Transaksi</div>
+        <table class="g-table">
+          <thead><tr><th>Plan</th><th>Amount</th><th>Metode</th><th>Status</th><th>Tanggal</th></tr></thead>
+          <tbody id="txBody"><tr><td colspan="5" style="text-align:center;padding:2rem">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─ PAYMENT ─ -->
+    <div class="panel" id="panel-payment">
+      <div id="payMsg" class="g-card" style="display:none;margin-bottom:1rem;border-color:rgba(13,148,136,0.2);background:rgba(13,148,136,0.05)"></div>
+      <div id="payErrMsg" class="g-card" style="display:none;margin-bottom:1rem;border-color:rgba(225,29,72,0.2);background:rgba(225,29,72,0.05)"></div>
+
+      <div class="g-card" style="margin-bottom:1rem">
+        <div class="c-title">Pilih Plan</div>
+        <div class="c-sub">Upgrade untuk lebih banyak request</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.875rem;margin-top:1rem">
+          <div class="plan-opt" data-plan="premium" onclick="selPlan(this,'premium')">
+            <div style="font-weight:800">Premium</div>
+            <div class="po-price" style="font-family:var(--mono);font-size:.75rem;margin:.25rem 0">Rp 29.000/bln</div>
+            <div style="font-family:var(--mono);font-size:.68rem;color:var(--muted)">1.000 req/hari</div>
+          </div>
+          <div class="plan-opt" data-plan="vip" onclick="selPlan(this,'vip')">
+            <div style="font-weight:800">VIP</div>
+            <div class="po-price" style="font-family:var(--mono);font-size:.75rem;margin:.25rem 0">Rp 59.000/bln</div>
+            <div style="font-family:var(--mono);font-size:.68rem;color:var(--muted)">10.000 req/hari</div>
+          </div>
+          <div class="plan-opt" data-plan="vvip" onclick="selPlan(this,'vvip')">
+            <div style="font-weight:800">VVIP</div>
+            <div class="po-price" style="font-family:var(--mono);font-size:.75rem;margin:.25rem 0">Rp 89.000/bln</div>
+            <div style="font-family:var(--mono);font-size:.68rem;color:var(--muted)">Unlimited</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="g-card" style="margin-bottom:1rem">
+        <div class="c-title">Metode Pembayaran</div>
+        <div class="c-sub">Pilih cara bayar</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.875rem;margin-top:1rem" id="methodGrid">
+          <div class="method-c m-sel" data-method="pakasir" onclick="selMethod(this,'pakasir')">
+            <div style="font-size:1.5rem;margin-bottom:.5rem">&#128179;</div>
+            <div style="font-size:.82rem;font-weight:700">Pakasir</div>
+            <div style="font-family:var(--mono);font-size:.65rem;color:var(--muted);margin-top:.25rem">Qris Fast</div>
+          </div>
+          <div class="method-c" data-method="bank_transfer" onclick="selMethod(this,'bank_transfer')">
+            <div style="font-size:1.5rem;margin-bottom:.5rem">&#127974;</div>
+            <div style="font-size:.82rem;font-weight:700">Bank Transfer</div>
+            <div style="font-family:var(--mono);font-size:.65rem;color:var(--muted);margin-top:.25rem">BCA, BNI, Mandiri</div>
+          </div>
+          <div class="method-c" data-method="ewallet" onclick="selMethod(this,'ewallet')">
+            <div style="font-size:1.5rem;margin-bottom:.5rem">&#128241;</div>
+            <div style="font-size:.82rem;font-weight:700">E-Wallet</div>
+            <div style="font-family:var(--mono);font-size:.65rem;color:var(--muted);margin-top:.25rem">GoPay, OVO, DANA</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-a btn-accent" style="width:100%;justify-content:center;padding:.9rem;font-size:.9rem" onclick="doPay()">Bayar Sekarang</button>
+
+      <div id="payDetails" style="display:none;margin-top:1rem"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var D = null, charts = {}, selPlanV = 'premium', selMethodV = 'pakasir';
+
+function switchPanel(name) {
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+  document.getElementById('panel-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item[data-panel]').forEach(function(b) {
+    b.classList.toggle('active', b.dataset.panel === name);
+  });
+  var titles = {overview:'Dashboard',analytics:'Analytics',transactions:'Transaksi',payment:'Upgrade Plan'};
+  document.getElementById('panelTitle').textContent = titles[name] || name;
+  if (name === 'transactions') loadTx();
+  if (name === 'analytics' && D) renderAnalytics();
+}
+
+document.querySelectorAll('.nav-item[data-panel]').forEach(function(b) {
+  b.addEventListener('click', function() { switchPanel(b.dataset.panel); closeSidebar(); });
+});
+
+document.getElementById('logoutBtn').addEventListener('click', function() {
+  fetch('/api/auth/logout', {method:'POST',credentials:'include'}).then(function() {
+    window.location.href = '/login';
+  });
+});
+
+function openSidebar()  { document.getElementById('sidebarWrap').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
+function closeSidebar() { document.getElementById('sidebarWrap').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
+
+async function load() {
+  var r = await fetch('/api/dashboard/stats', {credentials:'include'});
+  if (r.status === 401) { window.location.href='/login'; return; }
+  var d = await r.json();
+  if (!d.status) { window.location.href='/login'; return; }
+  D = d.data; render(D);
+}
+
+function fmt(n) { if (!n) return '0'; if (n >= 999999) return '\u221E'; if (n >= 1000) return (n/1000).toFixed(1)+'K'; return ''+n; }
+
+function render(d) {
+  document.getElementById('sName').textContent   = d.user.name;
+  document.getElementById('sAvatar').textContent = d.user.name[0].toUpperCase();
+  var sp = document.getElementById('sPlan');
+  sp.textContent = d.user.plan.toUpperCase();
+  sp.className   = 'user-p plan-' + d.user.plan;
+
+  document.getElementById('planNameEl').textContent = d.user.plan_display;
+  var pb = document.getElementById('planBadgeEl');
+  pb.textContent = d.user.plan_display;
+  pb.className   = 'plan-badge b-' + d.user.plan;
+  if (d.user.plan === 'vvip') document.getElementById('upgradeBtn').style.display = 'none';
+
+  document.getElementById('stTotal') .textContent = fmt(d.stats.total_requests);
+  document.getElementById('stToday') .textContent = fmt(d.stats.today_requests);
+  document.getElementById('stMonth') .textContent = fmt(d.stats.monthly_requests);
+  document.getElementById('stRemain').textContent = fmt(d.stats.remaining_today);
+  document.getElementById('stLimitSub').textContent = 'dari ' + fmt(d.limits.per_day) + '/hari';
+
+  var pct = d.limits.per_day > 0 ? Math.min(100, (d.stats.today_requests / d.limits.per_day) * 100) : 0;
+  document.getElementById('udFill').style.width = pct + '%';
+  document.getElementById('udFill').className   = 'u-fill ' + (pct > 90 ? 'high' : pct > 70 ? 'med' : 'low');
+  document.getElementById('udVal').textContent  = fmt(d.stats.today_requests) + ' / ' + fmt(d.limits.per_day);
+  document.getElementById('limMin') .textContent = fmt(d.limits.per_minute);
+  document.getElementById('limHour').textContent = fmt(d.limits.per_hour);
+  document.getElementById('limDay') .textContent = fmt(d.limits.per_day);
+
+  if (d.charts.top_endpoints.length) {
+    document.getElementById('epTable').innerHTML = d.charts.top_endpoints.map(function(e) {
+      return '<tr><td>' + e.endpoint + '</td><td>' + fmt(e.count) + '</td></tr>';
+    }).join('');
+  }
+
+  renderOvCharts(d.charts);
+}
+
+function days7() {
+  var a = [];
+  for (var i = 6; i >= 0; i--) {
+    var d = new Date(); d.setDate(d.getDate() - i);
+    a.push(d.toISOString().split('T')[0]);
+  }
+  return a;
+}
+
+function co() {
+  return {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: {display: false},
+      tooltip: {
+        backgroundColor: '#0f172a', titleColor: '#f0f4f8', bodyColor: '#64748b',
+        borderColor: 'rgba(0,0,0,0.08)', borderWidth: 1, padding: 10, cornerRadius: 8
+      }
+    },
+    scales: {
+      x: {grid: {color: 'rgba(0,0,0,0.04)'}, ticks: {color: '#64748b', font: {size: 9, family: 'Space Mono'}}},
+      y: {grid: {color: 'rgba(0,0,0,0.04)'}, ticks: {color: '#64748b', font: {size: 9, family: 'Space Mono'}}}
+    }
+  };
+}
+
+function renderOvCharts(c) {
+  var lbls = days7();
+  var data = lbls.map(function(d) { var f = c.daily_usage.find(function(u) { return u.date === d; }); return f ? f.count : 0; });
+
+  if (charts.daily) charts.daily.destroy();
+  charts.daily = new Chart(document.getElementById('dailyChart'), {
+    type: 'line',
+    data: {
+      labels: lbls.map(function(d) { return d.slice(5); }),
+      datasets: [{
+        data: data,
+        borderColor: '#d97706',
+        backgroundColor: 'rgba(217,119,6,0.04)',
+        tension: .4, fill: true,
+        pointBackgroundColor: '#d97706',
+        pointRadius: 3, borderWidth: 2.5
+      }]
+    },
+    options: co()
+  });
+
+  var sMap = {'200':0,'400':0,'429':0,'500':0};
+  c.status_distribution.forEach(function(s) { var k = String(s.status_code); if (sMap[k] !== undefined) sMap[k] += parseInt(s.count); });
+  if (charts.status) charts.status.destroy();
+  charts.status = new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['200','400','429','500'],
+      datasets: [{
+        data: Object.values(sMap),
+        backgroundColor: ['#0d9488','#d97706','#475569','#e11d48'],
+        borderWidth: 0, hoverOffset: 6
+      }]
+    },
+    options: Object.assign({}, co(), {
+      cutout: '68%',
+      scales: {x: {display: false}, y: {display: false}},
+      plugins: {legend: {position: 'bottom', labels: {color: '#64748b', font: {size: 10, family: 'Space Mono'}, padding: 10}}}
+    })
+  });
+}
+
+function renderAnalytics() {
+  if (!D) return;
+  var c = D.charts;
+  var lbls = days7();
+  var data = lbls.map(function(d) { var f = c.daily_usage.find(function(u) { return u.date === d; }); return f ? f.count : 0; });
+
+  if (charts.trend) charts.trend.destroy();
+  charts.trend = new Chart(document.getElementById('trendChart'), {
+    type: 'bar',
+    data: {
+      labels: lbls.map(function(d) { return d.slice(5); }),
+      datasets: [{
+        data: data,
+        backgroundColor: 'rgba(30,41,59,0.08)',
+        borderColor: '#1e293b',
+        borderWidth: 2, borderRadius: 5
+      }]
+    },
+    options: co()
+  });
+
+  if (charts.status2) charts.status2.destroy();
+  charts.status2 = new Chart(document.getElementById('statusChart2'), {
+    type: 'pie',
+    data: {
+      labels: c.status_distribution.map(function(s) { return s.status_code + ''; }),
+      datasets: [{
+        data: c.status_distribution.map(function(s) { return s.count; }),
+        backgroundColor: ['#0d9488','#d97706','#475569','#e11d48'],
+        borderWidth: 0
+      }]
+    },
+    options: Object.assign({}, co(), {
+      scales: {x: {display: false}, y: {display: false}},
+      plugins: {legend: {position: 'bottom', labels: {color: '#64748b', font: {size: 10, family: 'Space Mono'}}}}
+    })
+  });
+
+  if (c.top_endpoints.length && document.getElementById('epChart')) {
+    if (charts.ep) charts.ep.destroy();
+    charts.ep = new Chart(document.getElementById('epChart'), {
+      type: 'bar', indexAxis: 'y',
+      data: {
+        labels: c.top_endpoints.map(function(e) { return e.endpoint; }),
+        datasets: [{
+          data: c.top_endpoints.map(function(e) { return e.count; }),
+          backgroundColor: 'rgba(71,85,105,0.15)',
+          borderColor: '#475569',
+          borderWidth: 2, borderRadius: 4
+        }]
+      },
+      options: co()
+    });
+  }
+}
+
+/* ── PAYMENT ── */
+function selPlan(el, p) {
+  document.querySelectorAll('.plan-opt').forEach(function(o) { o.style.opacity = '0.5'; });
+  el.style.opacity = '1'; selPlanV = p;
+}
+
+function selMethod(el, m) {
+  document.querySelectorAll('.method-c').forEach(function(o) { o.classList.remove('m-sel'); });
+  el.classList.add('m-sel');
+  selMethodV = m;
+}
+
+async function doPay() {
+  document.getElementById('payMsg').style.display = 'none';
+  document.getElementById('payErrMsg').style.display = 'none';
+  try {
+    var r = await fetch('/api/payment/create', {
+      method: 'POST', credentials: 'include',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({plan: selPlanV, payment_method: selMethodV, bank_name: selMethodV === 'bank_transfer' ? 'BCA' : undefined, ewallet_provider: selMethodV === 'ewallet' ? 'GoPay' : undefined})
+    });
+    var d = await r.json();
+    if (!d.status) {
+      var e = document.getElementById('payErrMsg');
+      e.textContent = d.message; e.style.display = 'block'; return;
+    }
+
+    var pd  = document.getElementById('payDetails');
+    var dat = d.data;
+    var html = '<div class="pay-detail-card">';
+    if (selMethodV === 'pakasir') {
+      html += '<div style="font-family:var(--mono);font-size:.7rem;color:var(--muted);margin-bottom:.5rem;font-weight:700">PAYMENT URL</div>' +
+              '<a href="' + dat.payment_url + '" target="_blank" class="btn-a btn-accent" style="width:100%;justify-content:center;margin-bottom:1rem">Bayar via Pakasir</a>' +
+              '<div style="font-family:var(--mono);font-size:.7rem;color:var(--muted)">Order ID: ' + dat.order_id + '</div>';
+    } else if (selMethodV === 'bank_transfer') {
+      html += '<div style="font-family:var(--mono);font-size:.7rem;color:var(--muted);margin-bottom:.25rem;font-weight:700">JUMLAH TRANSFER</div>' +
+              '<div style="font-size:1.4rem;font-weight:800;color:var(--accent);margin-bottom:1rem">Rp ' + dat.amount.toLocaleString('id-ID') + '</div>' +
+              '<div style="font-family:var(--mono);font-size:.7rem;color:var(--muted)">Bank: ' + dat.bank.bank + ' &bull; ' + dat.bank.number + ' &bull; ' + dat.bank.name + '</div>' +
+              '<div style="font-family:var(--mono);font-size:.72rem;color:var(--muted);margin-top:.75rem">' + dat.instructions.map(function(i) { return '&bull; ' + i; }).join('<br>') + '</div>';
+    } else {
+      html += '<div style="font-family:var(--mono);font-size:.7rem;color:var(--muted);margin-bottom:.25rem;font-weight:700">TRANSFER KE</div>' +
+              '<div style="font-size:1.1rem;font-weight:800;color:var(--accent2);margin-bottom:.5rem">' + dat.ewallet.provider + ' &bull; ' + dat.ewallet.number + '</div>' +
+              '<div style="font-size:1.4rem;font-weight:800;color:var(--green);margin-bottom:.75rem">Rp ' + dat.amount.toLocaleString('id-ID') + '</div>' +
+              '<div style="font-family:var(--mono);font-size:.72rem;color:var(--muted)">' + dat.instructions.map(function(i) { return '&bull; ' + i; }).join('<br>') + '</div>';
+    }
+    html += '</div>';
+    pd.innerHTML = html; pd.style.display = 'block';
+    var m = document.getElementById('payMsg'); m.textContent = 'Pesanan berhasil dibuat!'; m.style.display = 'block';
+  } catch (err) {
+    var em = document.getElementById('payErrMsg'); em.textContent = 'Koneksi gagal.'; em.style.display = 'block';
+  }
+}
+
+/* ── TX ── */
+async function loadTx() {
+  var tbody = document.getElementById('txBody');
+  try {
+    var r = await fetch('/api/payment/history', {credentials:'include'});
+    var d = await r.json();
+    if (!d.status || !d.data.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--muted)">Belum ada transaksi</td></tr>';
+      return;
+    }
+    tbody.innerHTML = d.data.map(function(t) {
+      return '<tr>' +
+        '<td>' + (t.plan ? t.plan.toUpperCase() : '') + '</td>' +
+        '<td>Rp ' + (t.amount || 0).toLocaleString('id-ID') + '</td>' +
+        '<td>' + t.payment_method + '</td>' +
+        '<td><span class="tx-badge s-' + t.status + '">' + t.status + '</span></td>' +
+        '<td>' + (t.created_at ? t.created_at.slice(0,10) : '') + '</td>' +
+      '</tr>';
+    }).join('');
+  } catch (err) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--muted)">Gagal memuat</td></tr>';
+  }
+}
+
+load();
+</script>
+</body>
+</html>

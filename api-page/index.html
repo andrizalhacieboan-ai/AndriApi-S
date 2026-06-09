@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Andri API'S</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg: #eef2f7;
+  --surface: #eef2f7;
+  --border: rgba(255, 255, 255, 0.8);
+  --accent: #1e293b;
+  --accent2: #475569;
+  --green: #0d9488;
+  --warn: #d97706;
+  --red: #e11d48;
+  --text: #0f172a;
+  --muted: #64748b;
+  --mono: 'Space Mono', monospace;
+  --head: 'Plus Jakarta Sans', sans-serif;
+  --nm-outset: 8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff;
+  --nm-inset: inset 6px 6px 12px #d1d9e6, inset -6px -6px 12px #ffffff;
+  --nm-outset-sm: 4px 4px 8px #d1d9e6, -4px -4px 8px #ffffff;
+  --nm-inset-sm: inset 3px 3px 6px #d1d9e6, inset -3px -3px 6px #ffffff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--head);overflow-x:hidden}
+
+.grid-lines{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(15, 23, 42, 0.015) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(15, 23, 42, 0.015) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image: radial-gradient(circle at center, #000 60%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle at center, #000 60%, transparent 100%);
+}
+
+nav {
+  position: fixed;top: 1.5rem;left: 50%;transform: translateX(-50%);
+  width: calc(100% - 3rem);max-width: 1200px;z-index: 200;
+  background: var(--surface);border: 1px solid var(--border);
+  border-radius: 24px;padding: 0 1.75rem;height: 72px;
+  display: flex;align-items:center;justify-content:space-between;
+  box-shadow: var(--nm-outset);
+}
+.nav-logo{
+  font-family: var(--mono);font-size: 1.15rem;font-weight: 700;
+  color: var(--accent);text-decoration: none;letter-spacing: -0.5px;
+}
+.nav-logo span{color: var(--muted)}
+.nav-links{display:flex;gap:.5rem;list-style:none;align-items:center}
+
+.nav-links li a{
+  position:relative;display:flex;align-items:center;
+  padding:.55rem 1.1rem;border-radius:14px;
+  color:var(--muted);text-decoration:none;font-size:.85rem;font-weight:600;
+  transition:all .25s ease;transform-style:preserve-3d;perspective:400px;
+}
+.nav-links li a::before{
+  content:'';position:absolute;inset:0;border-radius:14px;
+  background:var(--surface);box-shadow: var(--nm-inset-sm);
+  opacity:0;transition:opacity .25s, transform .25s;transform:translateZ(-4px);
+}
+.nav-links li a:hover{color:var(--text)}
+.nav-links li a:hover::before{opacity:1;transform:translateZ(0)}
+.nav-links li a:active{transform:scale(.95) rotateX(6deg)}
+.nav-links li{transform-style:preserve-3d;perspective:600px}
+
+.nav-cta{display:flex;gap:.75rem;align-items:center}
+.btn{
+  padding:.7rem 1.5rem;border-radius:14px;font-size:.85rem;font-weight:700;
+  cursor:pointer;text-decoration:none;transition:all .3s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family:var(--head);display:inline-flex;align-items:center;gap:.5rem;
+  border:none;letter-spacing:.2px;
+}
+.btn-ghost{
+  background: var(--surface);color: var(--muted);
+  box-shadow: var(--nm-outset-sm);border: 1px solid rgba(255,255,255,0.4);
+}
+.btn-ghost:hover{color: var(--text);box-shadow: var(--nm-inset-sm)}
+.btn-primary{
+  background: var(--accent);color: #ffffff;font-weight: 800;
+  box-shadow: 4px 4px 10px rgba(15, 23, 42, 0.15), -4px -4px 10px rgba(255, 255, 255, 0.8);
+}
+.btn-primary:hover{
+  background: #0f172a;transform: translateY(-1px);
+  box-shadow: 6px 6px 14px rgba(15, 23, 42, 0.25), -6px -6px 14px rgba(255, 255, 255, 0.9);
+}
+.btn-primary:active{box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.3)}
+
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .8s cubic-bezier(0.16, 1, 0.3, 1),transform .8s cubic-bezier(0.16, 1, 0.3, 1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-left{opacity:0;transform:translateX(-30px);transition:opacity .8s cubic-bezier(0.16, 1, 0.3, 1),transform .8s cubic-bezier(0.16, 1, 0.3, 1)}
+.reveal-left.visible{opacity:1;transform:translateX(0)}
+.reveal-right{opacity:0;transform:translateX(30px);transition:opacity .8s cubic-bezier(0.16, 1, 0.3, 1),transform .8s cubic-bezier(0.16, 1, 0.3, 1)}
+.reveal-right.visible{opacity:1;transform:translateX(0)}
+.reveal-scale{opacity:0;transform:scale(.92);transition:opacity .8s cubic-bezier(0.16, 1, 0.3, 1),transform .8s cubic-bezier(0.16, 1, 0.3, 1)}
+.reveal-scale.visible{opacity:1;transform:scale(1)}
+.stagger-1{transition-delay:.05s}.stagger-2{transition-delay:.1s}.stagger-3{transition-delay:.15s}
+.stagger-4{transition-delay:.2s}.stagger-5{transition-delay:.25s}.stagger-6{transition-delay:.3s}
+
+.hero{
+  position:relative;min-height:100vh;display:flex;align-items:center;
+  justify-content:center;text-align:center;padding:10rem 1.5rem 6rem;z-index:1;
+}
+.badge{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background: var(--surface);box-shadow: var(--nm-inset-sm);
+  color: var(--muted);padding:.5rem 1.25rem;border-radius:100px;
+  font-size:.72rem;font-family:var(--mono);font-weight:700;letter-spacing:1px;margin-bottom:2.25rem;
+}
+.badge-dot{width:8px;height:8px;background:var(--green);border-radius:50%;box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+h1.hero-h{font-size:clamp(2.4rem,6vw,4.5rem);font-weight:800;letter-spacing:-2px;line-height:1.1;margin-bottom:1.75rem;color:var(--accent)}
+h1.hero-h .gr{background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-p{font-size:1rem;color:var(--muted);max-width:600px;margin:0 auto 2.75rem;line-height:1.8;font-family:var(--mono)}
+.hero-actions{display:flex;gap:1.15rem;justify-content:center;flex-wrap:wrap;margin-bottom:4.5rem}
+
+.terminal{
+  background: #1e222b;border-radius: 20px;max-width: 700px;margin: 0 auto;
+  text-align: left;overflow:hidden;
+  box-shadow: inset 4px 4px 8px #111318, inset -4px -4px 8px #2b313e, 8px 8px 24px rgba(166, 180, 200, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.t-header{background: #15181e; padding:1rem 1.5rem;display:flex;align-items:center;gap:.6rem;border-bottom:1px solid rgba(255,255,255,0.02)}
+.dot{width:12px;height:12px;border-radius:50%}
+.dr{background:#ff5f57;box-shadow: 0 0 6px #ff5f57}.dy{background:#febc2e;box-shadow: 0 0 6px #febc2e}.dg{background:#28c840;box-shadow: 0 0 6px #28c840}
+.t-title{font-family:var(--mono);font-size:.72rem;color: #5c6370;margin:0 auto;font-weight:700;letter-spacing:0.5px}
+.t-body{padding:1.75rem;font-family:var(--mono);font-size:.82rem;line-height:1.8;color: #abb2bf}
+.tc{color: #5c6370;font-weight:500}.tk{color: #c678dd}.tv{color: #98c379}
+.ts{color: #d19a66}.tn{color: #61afef}.tb{color: #e06c75}
+
+.stats-bar{
+  position:relative;z-index:1;padding:3rem 2rem;
+  background: var(--surface);box-shadow: var(--nm-inset);
+  display:flex;justify-content:center;gap:6rem;flex-wrap:wrap;
+}
+.stat-item{text-align:center}
+.stat-n{
+  font-size:2.5rem;font-weight:800;letter-spacing:-1px;
+  color: var(--accent);font-family:var(--mono);
+}
+.stat-l{font-size:.72rem;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:.5rem;font-weight:700}
+
+section{position:relative;z-index:1;padding:8rem 2rem}
+.container{max-width:1150px;margin:0 auto}
+.s-tag{font-family:var(--mono);font-size:.7rem;color:var(--accent2);
+  letter-spacing:3px;text-transform:uppercase;margin-bottom:1.25rem;display:flex;align-items:center;gap:.75rem;font-weight:700}
+.s-tag::before{content:'';width:24px;height:2px;background:var(--accent2)}
+.s-h{font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800;letter-spacing:-1.5px;margin-bottom:1.5rem;line-height:1.2;color: var(--accent)}
+.s-p{color:var(--muted);font-family:var(--mono);font-size:.85rem;line-height:1.8;max-width:550px}
+
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2rem;margin-top:4.5rem}
+.feat-card{
+  background: var(--surface);border-radius:24px;padding:2.5rem;cursor:default;
+  transform-style:preserve-3d;perspective:800px;transition:all .3s ease;
+  position:relative;overflow:hidden;box-shadow: var(--nm-outset);border: 1px solid rgba(255,255,255,0.6);
+}
+.feat-card:hover{box-shadow: var(--nm-inset);border-color: rgba(255,255,255,0.2)}
+.feat-icon{font-size:2.2rem;margin-bottom:1.5rem;display:inline-block}
+.feat-card h3{font-size:1.1rem;font-weight:800;margin-bottom:.75rem;letter-spacing:-.3px;color:var(--accent)}
+.feat-card p{color:var(--muted);font-family:var(--mono);font-size:.8rem;line-height:1.8}
+
+.plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;margin-top:4.5rem}
+.plan-card{
+  background: var(--surface);border-radius:26px;padding:2.5rem;
+  position:relative;overflow:hidden;transform-style:preserve-3d;perspective:800px;
+  transition:all .3s ease;box-shadow: var(--nm-outset);border: 1px solid rgba(255,255,255,0.6);
+}
+.plan-card:hover{transform:translateY(-4px) !important}
+
+.plan-card.pop{
+  background: var(--accent);color: #f8fafc;
+  box-shadow: 12px 12px 24px rgba(15, 23, 42, 0.25), -12px -12px 24px rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.plan-card.pop:hover{box-shadow: 16px 16px 32px rgba(15, 23, 42, 0.3), -16px -16px 32px rgba(255, 255, 255, 0.9)}
+.pop-badge{
+  position:absolute;top:1.5rem;right:1.5rem;
+  background: #f8fafc;color: var(--accent);font-size:.62rem;font-weight:800;
+  padding:.35rem .85rem;border-radius:100px;letter-spacing:1px;font-family:var(--mono);
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.15);
+}
+.plan-tier{font-size:.72rem;font-family:var(--mono);color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:.85rem;font-weight:700}
+.plan-card.pop .plan-tier {color: #94a3b8}
+.plan-price{font-size:2.5rem;font-weight:800;letter-spacing:-1px;margin-bottom:.35rem;line-height:1;color: var(--accent)}
+.plan-card.pop .plan-price{color: #ffffff}
+.plan-sub{font-family:var(--mono);font-size:.72rem;color:var(--muted);margin-bottom:2rem}
+.plan-card.pop .plan-sub{color: #cbd5e1}
+.plan-feats{list-style:none;margin-bottom:2.25rem}
+.plan-feats li{padding:.6rem 0;font-family:var(--mono);font-size:.78rem;color:var(--accent2);
+  border-bottom:1px solid rgba(0,0,0,.04);display:flex;align-items:center;gap:.65rem}
+.plan-card.pop .plan-feats li{color: #cbd5e1; border-bottom: 1px solid rgba(255,255,255,0.03)}
+.plan-feats li::before{content:'\2192';color:var(--accent2);font-size:.7rem;flex-shrink:0}
+.plan-feats li.hl::before{content:'\26A1';color:var(--accent2)}
+.plan-card.pop .plan-feats li::before{color: #38bdf8}
+
+.c-free .plan-price{color:var(--green)}
+.c-vip .plan-price{color:var(--accent2)}
+.c-vvip .plan-price{color: var(--warn)}
+.btn-plan{width:100%;text-align:center;justify-content:center;display:flex}
+
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:3rem;margin-top:4.5rem}
+.step{text-align:center}
+.step-num{
+  width:60px;height:60px;border-radius:50%;background: var(--surface);
+  box-shadow: var(--nm-outset-sm);display:flex;align-items:center;justify-content:center;
+  margin:0 auto 2rem;font-family:var(--mono);font-weight:700;color:var(--accent);font-size:.95rem;transition: all 0.3s;
+}
+.step:hover .step-num {box-shadow: var(--nm-inset-sm)}
+.step h4{font-size:1.1rem;font-weight:800;margin-bottom:.75rem;color:var(--accent)}
+.step p{font-family:var(--mono);font-size:.78rem;color:var(--muted);line-height:1.8}
+
+.pm-grid{display:flex;flex-wrap:wrap;gap:.85rem;margin-top:3rem}
+.pm-badge{
+  background: var(--surface);border-radius:14px;padding:.85rem 1.65rem;
+  font-family:var(--mono);font-size:.78rem;color:var(--muted);display:flex;
+  align-items:center;gap:.65rem;transition:all .25s ease;cursor:default;
+  transform-style:preserve-3d;box-shadow: var(--nm-outset-sm);border: 1px solid rgba(255,255,255,0.4);
+}
+.pm-badge:hover{color:var(--text);transform:translateY(-3px) scale(1.02);box-shadow: var(--nm-outset)}
+
+footer{
+  position:relative;z-index:1;border-top: 1px solid rgba(0,0,0,0.03);
+  padding:4rem 2rem;text-align:center;background: var(--surface);
+  box-shadow: inset 0 10px 20px #d1d9e6, inset 0 -10px 20px #ffffff;
+}
+.foot-logo{font-family:var(--mono);font-size:1.3rem;font-weight:800;color:var(--accent);margin-bottom:1.25rem;letter-spacing: 0.5px}
+.foot-links{display:flex;gap:2rem;justify-content:center;margin-bottom:2rem;flex-wrap:wrap}
+.foot-links a{color:var(--muted);text-decoration:none;font-size:.85rem;transition:color .2s;font-family:var(--mono);font-weight:600}
+.foot-links a:hover{color:var(--text)}
+.foot-copy{color:var(--muted);font-family:var(--mono);font-size:.75rem;letter-spacing:0.3px}
+
+@media(max-width:900px){
+  nav{top:0;width:100%;border-radius:0;border-left:none;border-right:none;border-top:none;padding:0 1.5rem;height:68px}
+  .hero{padding-top:9rem}
+}
+@media(max-width:768px){
+  .nav-links{display:none}
+  .stats-bar{gap:3rem 2rem;justify-content:space-around;padding:2.5rem 1rem}
+}
+</style>
+</head>
+<body>
+<div class="grid-lines"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">ANDRI<span>API'S</span></a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#plans">Pricing</a></li>
+    <li><a href="/docs">Docs</a></li>
+    <li><a href="#payment">Payment</a></li>
+  </ul>
+  <div class="nav-cta" id="navCta">
+    <a href="/login" class="btn btn-ghost">Login</a>
+    <a href="/register" class="btn btn-primary">Get API Key &#8594;</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div>
+    <div class="badge reveal"><div class="badge-dot"></div>API Status: Operational</div>
+    <h1 class="hero-h reveal stagger-1">Build Faster<br>with <span class="gr">Andri API'S</span></h1>
+    <p class="hero-p reveal stagger-2">Platform API production-ready untuk developer Indonesia. AI, search, media, dan lebih banyak lagi — dengan rate limiting cerdas.</p>
+    <div class="hero-actions reveal stagger-3">
+      <a href="/register" class="btn btn-primary">Mulai Gratis</a>
+      <a href="/docs" class="btn btn-ghost">Dokumentasi</a>
+      <a href="#plans" class="btn btn-ghost">Lihat Plans</a>
+    </div>
+
+    <div class="terminal reveal stagger-4">
+      <div class="t-header">
+        <div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div>
+        <span class="t-title">Response — GET /api/ai/luminai</span>
+      </div>
+      <div class="t-body">
+        <div><span class="tc">// 200 OK</span></div>
+        <div>{</div>
+        <div>&nbsp;&nbsp;<span class="tk">"status"</span>: <span class="tb">true</span>,</div>
+        <div>&nbsp;&nbsp;<span class="tk">"statusCode"</span>: <span class="tn">200</span>,</div>
+        <div>&nbsp;&nbsp;<span class="tk">"creator"</span>: <span class="ts">"Andri Store"</span>,</div>
+        <div>&nbsp;&nbsp;<span class="tk">"request"</span>: <span class="ts">"Halo!"</span>,</div>
+        <div>&nbsp;&nbsp;<span class="tk">"respon"</span>: <span class="ts">"{Iya,ada yang bisa saya bantu?}"</span></div>
+        <div>}</div>
+        <br>
+        <div><span class="tc">// 429 Rate Limit Exceeded</span></div>
+        <div>{</div>
+        <div>&nbsp;&nbsp;<span class="tk">"status"</span>: <span class="tb">false</span>,</div>
+        <div>&nbsp;&nbsp;<span class="tk">"statusCode"</span>: <span class="tn">429</span>,</div>
+        <div>&nbsp;&nbsp;<span class="tk">"error"</span>: <span class="ts">"RATE_LIMIT_DAY"</span>,</div>
+        <div>&nbsp;&nbsp;<span class="tk">"limit"</span>: <span class="tn">Habis</span>, <span class="tk">"plan"</span>: <span class="ts">"free"</span></div>
+        <div>}</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-item reveal"><div class="stat-n" id="statUptime" data-target="0">&#8212;</div><div class="stat-l">Uptime %</div></div>
+  <div class="stat-item reveal stagger-1"><div class="stat-n" id="statEndpoints" data-target="0">&#8212;</div><div class="stat-l">API Endpoints</div></div>
+  <div class="stat-item reveal stagger-2"><div class="stat-n" id="statPlans" data-target="0">&#8212;</div><div class="stat-l">Plan Tiers</div></div>
+  <div class="stat-item reveal stagger-3"><div class="stat-n" id="statSupport" data-target="0">&#8212;</div><div class="stat-l">Support Hours</div></div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <div class="s-tag reveal">Platform Features</div>
+    <h2 class="s-h reveal stagger-1">Semua yang kamu<br>butuhkan</h2>
+    <p class="s-p reveal stagger-2">Dari API key generation, rate limiting per plan, dashboard analytics, hingga payment otomatis.</p>
+
+    <div class="features-grid">
+      <div class="feat-card reveal stagger-1"><div class="feat-icon">&#128273;</div><h3>Smart API Keys</h3><p>Setiap key berawalan <code style="color:var(--accent2)">AND+</code> dengan 48 karakter custom. Generate manual dari halaman profile kapan pun.</p></div>
+      <div class="feat-card reveal stagger-2"><div class="feat-icon">&#9889;</div><h3>Rate Limiting per Plan</h3><p>Limit per menit, jam, dan hari. Setelah beli plan, limit langsung bertambah otomatis tanpa restart.</p></div>
+      <div class="feat-card reveal stagger-3"><div class="feat-icon">&#128202;</div><h3>Dashboard Analytics</h3><p>Grafik penggunaan harian, top endpoints, status code distribution, dan monitoring real-time.</p></div>
+<div class="feat-card reveal stagger-4">
+  <div class="feat-icon">🚀</div><h3>RESS API</h3><p>Backend API dengan plugin system. Setiap endpoint memiliki autentikasi, rate limiting, dan analytics bawaan..</p></div>
+      <div class="feat-card reveal stagger-5"><div class="feat-icon">&#128451;</div><h3>SQLite Database</h3><p>Semua data tersimpan di Database (libSQL) — serverless, distributed, ultra-cepat.</p></div>
+      <div class="feat-card reveal stagger-6"><div class="feat-icon">&#128737;</div><h3>Session Auth</h3><p>Autentikasi berbasis session yang disimpan di Database libSQL. Bcrypt password hashing, IP logging, CORS protection.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PLANS -->
+<section id="plans" style="background:rgba(0,0,0,0.01);border-top:1px solid rgba(0,0,0,0.03);border-bottom:1px solid rgba(0,0,0,0.03)">
+  <div class="container">
+    <div class="s-tag reveal">Pricing</div>
+    <h2 class="s-h reveal stagger-1">Pilih Plan<br>yang Tepat</h2>
+    <p class="s-p reveal stagger-2">Mulai gratis selamanya. Upgrade kapanpun, limit langsung bertambah otomatis.</p>
+
+    <div class="plans-grid">
+      <div class="plan-card c-free reveal stagger-1">
+        <div class="plan-tier">Free</div>
+        <div class="plan-price">Rp 0</div>
+        <div class="plan-sub">selamanya gratis</div>
+        <ul class="plan-feats">
+          <li class="hl">100 req/hari</li><li class="hl">20 req/jam</li><li class="hl">5 req/menit</li>
+          <li>Endpoint public</li><li>Community support</li>
+        </ul>
+        <a href="/register" class="btn btn-ghost btn-plan">Mulai Gratis</a>
+      </div>
+
+      <div class="plan-card c-premium pop reveal stagger-2">
+        <div class="pop-badge">POPULAR</div>
+        <div class="plan-tier">Premium</div>
+        <div class="plan-price">Rp 29K</div>
+        <div class="plan-sub">/bulan &#183; bayar via QRIS</div>
+        <ul class="plan-feats">
+          <li class="hl">100 req/hari</li><li class="hl">100 req/jam</li><li class="hl">20 req/menit</li>
+          <li> Akses semua endpoint</li><li>Priority support</li><li>Priority queue</li>
+        </ul>
+        <a href="/register" class="btn btn-primary btn-plan" style="background:#f8fafc; color:#0f172a; box-shadow: 2px 2px 8px rgba(0,0,0,0.1)">Upgrade Premium</a>
+      </div>
+
+      <div class="plan-card c-vip reveal stagger-3">
+        <div class="plan-tier">VIP</div>
+        <div class="plan-price">Rp 59K</div>
+        <div class="plan-sub">/bulan &#183; bayar via QRIS</div>
+        <ul class="plan-feats">
+          <li class="hl">1.000 req/hari</li><li class="hl">500 req/jam</li><li class="hl">60 req/menit</li>
+          <li>Akses semua endpoint</li><li>24/7 support</li><li>Custom rate limit</li>
+        </ul>
+        <a href="/register" class="btn btn-ghost btn-plan">Upgrade VIP</a>
+      </div>
+
+      <div class="plan-card c-vvip reveal stagger-4">
+        <div class="plan-tier">VVIP</div>
+        <div class="plan-price">Rp 89K</div>
+        <div class="plan-sub">/bulan &#183; bayar via QRIS</div>
+        <ul class="plan-feats">
+          <li class="hl">Unlimited requests</li>
+          <li>Rate limit: Unlimited req/menit</li><li>Priority queue tertinggi</li><li>Generated 3 Apikeys</li><li>Akses semua endpoint</li>
+        </ul>
+        <a href="/register" class="btn btn-ghost btn-plan" style="font-weight: 800;">Go VVIP</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section>
+  <div class="container">
+    <div class="s-tag reveal">How It Works</div>
+    <h2 class="s-h reveal stagger-1">Mulai dalam<br>3 langkah</h2>
+
+    <div class="steps">
+      <div class="step reveal stagger-1">
+        <div class="step-num">01</div>
+        <h4>Daftar Akun</h4>
+        <p>Buat akun gratis. Langsung masuk dashboard, generate API key dari halaman Profile.</p>
+      </div>
+      <div class="step reveal stagger-2">
+        <div class="step-num">02</div>
+        <h4>Pilih Plan</h4>
+        <p>Gunakan free plan atau upgrade via Pakasir. Pembayaran otomatis — plan aktif instan.</p>
+      </div>
+      <div class="step reveal stagger-3">
+        <div class="step-num">03</div>
+        <h4>Mulai Coding</h4>
+        <p>Sertakan API key di setiap request. Monitor usage real-time di dashboard analytics.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PAYMENT -->
+<section id="payment" style="background:rgba(0,0,0,0.01);border-top:1px solid rgba(0,0,0,0.03)">
+  <div class="container">
+    <div class="s-tag reveal">Payment via Pakasir</div>
+    <h2 class="s-h reveal stagger-1">Bayar otomatis,<br>plan aktif instan</h2>
+    <p class="s-p reveal stagger-2">Semua pembayaran diproses otomatis via Pakasir. Tidak perlu upload bukti transfer manual.</p>
+
+    <div class="pm-grid">
+      <div class="pm-badge reveal stagger-1">QRIS</div>
+      <div class="pm-badge reveal stagger-2">BNI Virtual Account</div>
+      <div class="pm-badge reveal stagger-3">BRI Virtual Account</div>
+      <div class="pm-badge reveal stagger-4">BCA Virtual Account</div>
+      <div class="pm-badge reveal stagger-5">GoPay</div>
+      <div class="pm-badge reveal stagger-6">OVO</div>
+      <div class="pm-badge reveal stagger-1">DANA</div>
+      <div class="pm-badge reveal stagger-2">ShopeePay</div>
+      <div class="pm-badge reveal stagger-3">Credit Card</div>
+      <div class="pm-badge reveal stagger-4">Indomaret</div>
+      <div class="pm-badge reveal stagger-5">Alfamart</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-logo">AND+API</div>
+  <div class="foot-links">
+    <a href="/">Home</a><a href="/docs">Docs</a><a href="#plans">Pricing</a>
+    <a href="/login">Login</a><a href="/register">Register</a>
+    <a href="/admin">Admin</a>
+  </div>
+  <p class="foot-copy">&#169; 2025 Andri API &#183; Node.js + Turso + Pakasir &#183; No JWT</p>
+</footer>
+
+<script>
+/* ── UTILITY ── */
+function safeUrl(endpoint) {
+  if (window.location.protocol === 'blob:') {
+    return window.location.origin + endpoint;
+  }
+  return endpoint;
+}
+
+/* ── SCROLL REVEAL ── */
+var ro = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      ro.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12 });
+
+document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.reveal-scale').forEach(function(el) {
+  ro.observe(el);
+});
+
+/* ── COUNTER ANIMATION ── */
+function animateCounter(el, target) {
+  var dec = target % 1 !== 0;
+  var cur = 0;
+  var step = target / 60;
+  var t = setInterval(function() {
+    cur = Math.min(cur + step, target);
+    el.textContent = dec ? cur.toFixed(1) : Math.floor(cur);
+    if (cur >= target) clearInterval(t);
+  }, 16);
+}
+
+var co = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
+    if (!e.isIntersecting) return;
+    var el = e.target;
+    var target = parseFloat(el.dataset.target);
+    if (target > 0) {
+      animateCounter(el, target);
+    }
+    co.unobserve(el);
+  });
+}, { threshold: .5 });
+
+document.querySelectorAll('[data-target]').forEach(function(el) {
+  co.observe(el);
+});
+
+/* ── LOAD STATS FROM API ── */
+function applyStats(data) {
+  var map = {
+    'statUptime':    data.uptime || 0,
+    'statEndpoints': data.endpoints || 0,
+    'statPlans':     data.plans || 0,
+    'statSupport':   data.support_hours || 0
+  };
+  var keys = Object.keys(map);
+  for (var i = 0; i < keys.length; i++) {
+    var el = document.getElementById(keys[i]);
+    if (el) {
+      el.dataset.target = map[keys[i]];
+      el.textContent = map[keys[i]] > 0 ? '0' : '\u2014';
+    }
+  }
+  /* Re-observe supaya counter animasi jalan saat visible */
+  document.querySelectorAll('[data-target]').forEach(function(el) {
+    co.observe(el);
+  });
+}
+
+fetch(safeUrl('/api/stats'), { credentials: 'include' })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.status && d.data) {
+      applyStats(d.data);
+    }
+  })
+  .catch(function() {});
+
+/* ── 3D CARD EFFECT ── */
+document.querySelectorAll('.feat-card,.plan-card,.pm-badge').forEach(function(card) {
+  card.addEventListener('mousemove', function(e) {
+    var r = card.getBoundingClientRect();
+    var x = (e.clientX - r.left) / r.width - .5;
+    var y = (e.clientY - r.top) / r.height - .5;
+    var intensity = card.classList.contains('pop') ? 5 : 10;
+    card.style.transform = 'perspective(800px) rotateY(' + (x * intensity) + 'deg) rotateX(' + (-y * intensity) + 'deg) translateZ(8px)';
+  });
+  card.addEventListener('mouseleave', function() {
+    card.style.transform = '';
+    card.style.transition = 'transform .4s ease, box-shadow .3s, border-color .3s';
+    setTimeout(function() { card.style.transition = ''; }, 400);
+  });
+});
+
+/* ── 3D NAV LINK EFFECT ── */
+document.querySelectorAll('.nav-links li a').forEach(function(a) {
+  a.addEventListener('mousemove', function(e) {
+    var r = a.getBoundingClientRect();
+    var x = (e.clientX - r.left) / r.width - .5;
+    var y = (e.clientY - r.top) / r.height - .5;
+    a.style.transform = 'perspective(300px) rotateY(' + (x * 18) + 'deg) rotateX(' + (-y * 18) + 'deg) translateZ(4px)';
+  });
+  a.addEventListener('mouseleave', function() {
+    a.style.transition = 'transform .35s ease, color .2s';
+    a.style.transform = '';
+    setTimeout(function() { a.style.transition = ''; }, 350);
+  });
+});
+
+/* ── AUTH CHECK ── */
+fetch(safeUrl('/api/auth/me'), { credentials: 'include' })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.status && d.data) {
+      var isAdmin = d.data.role === 'admin';
+      var name = d.data.name || 'User';
+      var href = isAdmin ? '/admin' : '/profile';
+      document.getElementById('navCta').innerHTML =
+        '<a href="/dashboard" class="btn btn-ghost">Dashboard</a>' +
+        '<a href="' + href + '" class="btn btn-primary">' + name + '</a>';
+    }
+  })
+  .catch(function() {});
+</script>
+</body>
+</html>
