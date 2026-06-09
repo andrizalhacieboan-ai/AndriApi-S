@@ -11,7 +11,7 @@ function getDb() {
   const auth = process.env.TURSO_AUTH_TOKEN;
   if (!url || !auth) {
     console.warn('[DB] Turso credentials missing — using in-memory SQLite');
-    // FIX: @libsql/client uses ':memory:' not 'file::memory:'
+    
     _db = createClient({ url: ':memory:' });
   } else {
     _db = createClient({ url, authToken: auth });
@@ -147,8 +147,8 @@ async function initDb() {
   const bcrypt = require('bcryptjs');
   const { generateUUID } = require('../utils/apikey');
 
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@andrapi.com';
-  const adminPass  = process.env.ADMIN_PASSWORD || 'Admin@1234';
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPass  = process.env.ADMIN_PASSWORD;
 
   const adminCheck = await db.execute({
     sql: 'SELECT id FROM users WHERE email=?',
