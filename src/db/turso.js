@@ -1,7 +1,7 @@
 // src/db/turso.js
 require('dotenv/config');
+
 const { createClient } = require('@libsql/client');
- 
 
 let _db = null;
 
@@ -9,10 +9,10 @@ function getDb() {
   if (_db) return _db;
   const url  = process.env.TURSO_DATABASE_URL;
   const auth = process.env.TURSO_AUTH_TOKEN;
-  
   if (!url || !auth) {
-    console.warn('[DB] Turso credentials missing — using local SQLite file');
-    _db = createClient({ url: 'file:./dev.db' }); // <-- ganti ini
+    console.warn('[DB] Turso credentials missing — using in-memory SQLite');
+    // FIX: @libsql/client uses ':memory:' not 'file::memory:'
+    _db = createClient({ url: ':memory:' });
   } else {
     _db = createClient({ url, authToken: auth });
   }
@@ -39,7 +39,6 @@ async function initDb() {
     )
   `);
 
-  // Sessions table — replaces JWT
   await db.execute(`
     CREATE TABLE IF NOT EXISTS sessions (
       id         TEXT PRIMARY KEY,
@@ -126,25 +125,50 @@ async function initDb() {
   if (planCount.rows[0].c === 0) {
     const plans = [
       { id:'plan_free',    name:'Free',    slug:'free',    price:0,      day:100,    hour:20,   min:5,    sort:0, feat:['100 req/hari','20 req/jam','5 req/menit','Endpoint dasar','Community support'] },
-      { id:'plan_premium', name:'Premium', slug:'premium', price:29000,  day:1000,   hour:100,  min:20,   sort:1, feat:['1.000 req/hari','100 req/jam','20 req/menit','Semua endpoint','100 requests / bulan dengan Standard Plan'] },
-      { id:'plan_vip',     name:'VIP',     slug:'vip',     price:59000,  day:10000,  hour:500,  min:60,   sort:2, feat:['10.000 req/hari','500 req/jam','60 req/menit','Semua endpoint','24/7 support','Custom rate limit'] },
-      { id:'plan_vvip',    name:'VVIP',    slug:'vvip',    price:89000, day:999999, hour:99999,min:9999, sort:3, feat:['Unlimited requests','Dedicated support','SLA guarantee','Custom integrasi','API consulting'] },
+      { id:'plan_premium', name:'Premium', slug:'premium', price:29000,  day:1000,   hour:100,  min:20,   sort:1, feat:['1.000 req/hari','100 req/jam','20 req/menit','Semua endpoint','Priority support','Dashboard analytics'] },
+      { id:'plan_vip',     name:'VIP',     slug:'vip',     price:79000,  day:10000,  hour:500,  min:60,   sort:2, feat:['10.000 req/hari','500 req/jam','60 req/menit','Semua endpoint','24/7 support','Advanced analytics','Custom rate limit'] },
+      { id:'plan_vvip',    name:'VVIP',    slug:'vvip',    price:199000, day:999999, hour:99999,min:9999, sort:3, feat:['Unlimited requests','Dedicated support','White-label','SLA guarantee','Custom integrasi','API consulting'] },
     ];
     for (const p of plans) {
-      await db.execute({ sql:`INSERT OR IGNORE INTO plans VALUES (?,?,?,?,?,?,?,?,?,1)`, args:[p.id,p.name,p.slug,p.price,p.day,p.hour,p.min,JSON.stringify(p.feat),p.sort] });
+      await db.execute({
+        sql: `INSERT OR IGNORE INTO plans VALUES (?,?,?,?,?,?,?,?,?,1)`,
+        // FIX: explicit cast all values to avoid undefined being passed as arg
+        args: [
+          String(p.id), String(p.name), String(p.slug),
+          Number(p.price), Number(p.day), Number(p.hour), Number(p.min),
+          JSON.stringify(p.feat), Number(p.sort)
+        ]
+      });
     }
   }
 
   // Seed admin
+  // FIX: require at top of function scope, not inside conditional
   const bcrypt = require('bcryptjs');
   const { generateUUID } = require('../utils/apikey');
-  const adminEmail = process.env.ADMIN_EMAIL;
-  const adminPass  = process.env.ADMIN_PASSWORD;
-  const adminCheck = await db.execute({ sql:'SELECT id FROM users WHERE email=?', args:[adminEmail] });
+
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@andrapi.com';
+  const adminPass  = process.env.ADMIN_PASSWORD || 'Admin@1234';
+
+  const adminCheck = await db.execute({
+    sql: 'SELECT id FROM users WHERE email=?',
+    args: [adminEmail]
+  });
+
   if (adminCheck.rows.length === 0) {
     const hashed = await bcrypt.hash(adminPass, 12);
-    const uid = generateUUID();
-    await db.execute({ sql:`INSERT INTO users (id,name,email,password,role,plan) VALUES (?,?,?,?,'admin','vvip')`, args:[uid,'Admin',adminEmail,hashed] });
+    const uid    = generateUUID();
+    const akId   = generateUUID();
+    const apiKey = require('../utils/apikey').generateApiKey();
+
+    await db.execute({
+      sql: `INSERT INTO users (id,name,email,password,role,plan) VALUES (?,?,?,?,?,?)`,
+      args: [uid, 'Admin', adminEmail, hashed, 'admin', 'vvip']
+    });
+    await db.execute({
+      sql: `INSERT INTO api_keys (id,user_id,key,plan,name) VALUES (?,?,?,?,?)`,
+      args: [akId, uid, apiKey, 'vvip', 'Admin Key']
+    });
     console.log(`[DB] Admin seeded: ${adminEmail}`);
   }
 
