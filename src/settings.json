@@ -43,7 +43,7 @@
         {
           "name": "Blue Archive",
           "desc": "Blue Archive Random Images",
-          "path": "api/random?/data="
+          "path": "api/random?data="
         }
       ]
     },
