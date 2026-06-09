@@ -119,6 +119,8 @@ async function initDb() {
       is_active                INTEGER DEFAULT 1
     )
   `);
+  
+await db.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active INTEGER DEFAULT 1`);
 
   // Seed plans
   const planCount = await db.execute('SELECT COUNT(*) as c FROM plans');
