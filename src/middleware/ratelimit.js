@@ -4,8 +4,8 @@ const { getDb } = require('../db/turso');
 // ── Plan limits — MATCHES plans table ──────────────────────────────────────
 const PLAN_LIMITS = {
   free:    { per_day: 100,    per_hour: 20,    per_minute: 5    },
-  premium: { per_day: 100,   per_hour: 100,   per_minute: 20   },
-  vip:     { per_day: 1000,  per_hour: 500,   per_minute: 60   },
+  premium: { per_day: 1000,  per_hour: 100,   per_minute: 20   },
+  vip:     { per_day: 10000, per_hour: 500,   per_minute: 60   },
   vvip:    { per_day: 999999, per_hour: 99999, per_minute: 9999 },
 };
 
