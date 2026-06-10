@@ -22,7 +22,7 @@ module.exports = function(app) {
   app.get('/api/payment/plans', async (req, res) => {
     try {
       const db = getDb();
-      const r  = await db.execute('SELECT * FROM plans WHERE is_active=1 ORDER BY sort_order ASC');
+      const r  = await db.execute('SELECT id,name,slug,price,request_limit_per_day,request_limit_per_hour,request_limit_per_minute,features,sort_order,is_active FROM plans WHERE is_active=1 ORDER BY sort_order ASC');
       return res.status(200).json({
         status:true, statusCode:200,
         data: r.rows.map(p => ({ ...p, features: JSON.parse(p.features || '[]') }))
@@ -119,7 +119,7 @@ module.exports = function(app) {
   app.get('/api/payment/history', requireAuthJson, async (req, res) => {
     try {
       const db = getDb();
-      const r  = await db.execute({ sql:`SELECT * FROM transactions WHERE user_id=? ORDER BY created_at DESC LIMIT 30`, args:[req.user.id] });
+      const r  = await db.execute({ sql:`SELECT id,user_id,plan,amount,payment_method,payment_type,status,bank_name,account_number,proof_url,admin_notes,expires_at,paid_at,created_at FROM transactions WHERE user_id=? ORDER BY created_at DESC LIMIT 30`, args:[req.user.id] });
       return res.status(200).json({ status:true, statusCode:200, data: r.rows });
     } catch (err) {
       return res.status(500).json({ status:false, statusCode:500, message:'Server error.', error:'SERVER_ERROR' });
@@ -162,7 +162,7 @@ module.exports = function(app) {
 
       const db = getDb();
       // Find transaction by midtrans_order_id
-      const tx = await db.execute({ sql:'SELECT * FROM transactions WHERE midtrans_order_id=?', args:[order_id] });
+      const tx = await db.execute({ sql:'SELECT id,user_id,plan,amount,payment_method,payment_type,status,bank_name,account_number,expires_at,paid_at,created_at FROM transactions WHERE midtrans_order_id=?', args:[order_id] });
       if (tx.rows.length === 0) return res.status(404).json({ status:false, message:'Transaction not found' });
 
       const t = tx.rows[0];
