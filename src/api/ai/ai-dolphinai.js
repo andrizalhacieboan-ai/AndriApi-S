@@ -1,4 +1,4 @@
-const { dolphinai } = require('./dolphinai');
+const { dolphinai } = require('./dolphin');
 const { apiKeyMiddleware } = require('../../middleware/ratelimit'); // ← ganti
 
 module.exports = function(app) {
