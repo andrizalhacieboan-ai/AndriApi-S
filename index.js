@@ -65,7 +65,7 @@ require('./src/routes/admin')(app);
 
 // API endpoint files
 const apiFiles = [
-  './src/api/ai/ai-luminai',
+  './src/api/ai/ai-dolphinai',
   './src/api/random/random-bluearchive',
   './src/api/search/search-youtube',
 ];
