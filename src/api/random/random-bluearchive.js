@@ -17,7 +17,7 @@ module.exports = function(app) {
     }
   }
 
-  app.get('/random/ba', apiKeyMiddleware, async (req, res) => {
+  app.get('/api/random/ba', apiKeyMiddleware, async (req, res) => {
     try {
       const img = await bluearchive();
       res.writeHead(200, {
