@@ -38,14 +38,16 @@
         }
       ]
     },
-    {
+{
       "name": "Random",
       "items": [
         {
           "name": "Blue Archive",
           "desc": "Blue Archive Random Images",
-          "path": "/api/random/baimg=",
-          "innerDesc": ""
+          "method": "GET",
+          "path": "/random/ba",
+          "innerDesc": "Klik Execute untuk mendapatkan gambar random Blue Archive.",
+          "params": []
         }
       ]
     },
