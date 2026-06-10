@@ -6,6 +6,7 @@
 <title>Andri API'S</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
+/* ========== SAME STYLES AS BEFORE (keep all) ========== */
 :root{
   --bg: #eef2f7;
   --surface: #eef2f7;
@@ -223,7 +224,6 @@ section{position:relative;z-index:1;padding:8rem 2rem}
 }
 .pm-badge:hover{color:var(--text);transform:translateY(-3px) scale(1.02);box-shadow: var(--nm-outset)}
 
-/* API Console styles */
 .api-console-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -355,7 +355,7 @@ footer{
   </div>
 </nav>
 
-<!-- HERO (sama seperti sebelumnya) -->
+<!-- HERO -->
 <section class="hero">
   <div>
     <div class="badge reveal"><div class="badge-dot"></div>API Status: Operational</div>
@@ -393,7 +393,7 @@ footer{
 <!-- PAYMENT -->
 <section id="payment" style="background:rgba(0,0,0,0.01);border-top:1px solid rgba(0,0,0,0.03)"><div class="container"><div class="s-tag reveal">Payment via Pakasir</div><h2 class="s-h reveal stagger-1">Bayar otomatis,<br>plan aktif instan</h2><p class="s-p reveal stagger-2">Semua pembayaran diproses otomatis via Pakasir.</p><div class="pm-grid"><div class="pm-badge">QRIS</div><div class="pm-badge">BNI VA</div><div class="pm-badge">BRI VA</div><div class="pm-badge">BCA VA</div><div class="pm-badge">GoPay</div><div class="pm-badge">OVO</div><div class="pm-badge">DANA</div><div class="pm-badge">ShopeePay</div><div class="pm-badge">Credit Card</div><div class="pm-badge">Indomaret</div><div class="pm-badge">Alfamart</div></div></div></section>
 
-<!-- API CONSOLE (dengan Preview, Headers, CURL) -->
+<!-- API CONSOLE -->
 <section id="api-console" style="background:rgba(0,0,0,0.02);border-top:1px solid rgba(0,0,0,0.03);border-bottom:1px solid rgba(0,0,0,0.03)">
   <div class="container">
     <div class="s-tag reveal">Try API Console</div>
@@ -492,17 +492,32 @@ fetch(safeUrl('/api/stats'), { credentials: 'include' })
     }
   }).catch(() => {});
 
-/* ========== AUTH CHECK & NAV UPDATE ========== */
-fetch(safeUrl('/api/auth/me'), { credentials: 'include' })
-  .then(r => r.json()).then(d => {
-    if (d.status && d.data) {
-      let name = d.data.name || 'User';
-      let href = d.data.role === 'admin' ? '/admin' : '/profile';
+/* ========== AUTH & API KEY ========== */
+let userApiKey = null;
+let userPlan = null;
+
+async function loadUserAndApiKey() {
+  try {
+    const res = await fetch(safeUrl('/api/auth/me'), { credentials: 'include' });
+    const data = await res.json();
+    if (data.status && data.data) {
+      const name = data.data.name || 'User';
+      const href = data.data.role === 'admin' ? '/admin' : '/profile';
       document.getElementById('navCta').innerHTML = `<a href="/dashboard" class="btn btn-ghost">Dashboard</a><a href="${href}" class="btn btn-primary">${name}</a>`;
+      userPlan = data.data.plan;
+      // Ambil API key pertama yang aktif
+      if (data.data.api_keys && data.data.api_keys.length > 0) {
+        userApiKey = data.data.api_keys[0].key;
+      } else {
+        console.warn('Tidak ada API key ditemukan, user mungkin belum generate');
+      }
     } else {
       document.getElementById('navCta').innerHTML = `<a href="/login" class="btn btn-ghost">Login</a><a href="/register" class="btn btn-primary">Get API Key →</a>`;
     }
-  }).catch(() => {});
+  } catch(e) { console.error(e); }
+}
+
+loadUserAndApiKey();
 
 /* ========== LOAD ENDPOINTS FROM settings.json ========== */
 let endpointsList = [];
@@ -562,7 +577,8 @@ function openApiModal(api) {
   currentApi = api;
   document.getElementById('apiModalTitle').innerText = `${api.method} ${api.name}`;
   document.getElementById('apiModalDesc').innerText = api.desc || '';
-  document.getElementById('apiModalEndpoint').innerText = `${api.method} ${api.path}`;
+  const fullPath = api.path.startsWith('http') ? api.path : window.location.origin + api.path;
+  document.getElementById('apiModalEndpoint').innerText = `${api.method} ${fullPath}`;
   const paramsContainer = document.getElementById('apiModalParams');
   if (api.params && api.params.length) {
     let html = '<label class="form-label fw-bold">Parameter</label>';
@@ -581,7 +597,6 @@ function openApiModal(api) {
   document.getElementById('apiModalExecuteBtn').disabled = false;
   lastResponseHeaders = null;
   lastResponseData = null;
-  // Hapus event listener lama, pasang baru
   document.getElementById('apiModalExecuteBtn').onclick = executeApiRequest;
   new bootstrap.Modal(document.getElementById('apiModal')).show();
 }
@@ -593,8 +608,12 @@ async function executeApiRequest() {
     let val = inp.value.trim();
     if (val) params[inp.dataset.param] = val;
   });
-  let url = api.path;
-  let options = { method: api.method, credentials: 'include', headers: { 'Content-Type': 'application/json' } };
+  let url = api.path.startsWith('http') ? api.path : window.location.origin + api.path;
+  let options = {
+    method: api.method,
+    credentials: 'include', // tetap pakai session untuk preview
+    headers: { 'Content-Type': 'application/json' }
+  };
   if (api.method.toUpperCase() === 'GET') {
     let qs = new URLSearchParams(params).toString();
     if (qs) url += '?' + qs;
@@ -602,19 +621,26 @@ async function executeApiRequest() {
     options.body = JSON.stringify(params);
   }
 
-  // Generate curl command
-  let curlCmd = `curl -X ${api.method} '${url}'`;
-  if (options.headers) {
-    for (let [k, v] of Object.entries(options.headers)) {
-      curlCmd += ` \\\n  -H '${k}: ${v}'`;
+  // --- Generate CURL command with API key (tanpa session cookie) ---
+  let curlUrl = url;
+  let curlCmd = `curl -X ${api.method} '${curlUrl}'`;
+  // Jika ada API key user, gunakan query parameter (contoh seperti api.siputzx.my.id)
+  if (userApiKey) {
+    // Untuk GET, tambahkan ?apikey=... , untuk POST bisa juga query parameter atau header
+    if (api.method.toUpperCase() === 'GET') {
+      let separator = curlUrl.includes('?') ? '&' : '?';
+      curlCmd = `curl -X ${api.method} '${curlUrl}${separator}apikey=${userApiKey}'`;
+    } else {
+      // Untuk POST, kita bisa tambahkan header x-api-key (atau query parameter)
+      curlCmd = `curl -X ${api.method} '${curlUrl}' \\\n  -H 'Content-Type: application/json' \\\n  -H 'x-api-key: ${userApiKey}' \\\n  -d '${JSON.stringify(params)}'`;
     }
+  } else {
+    // fallback tanpa API key (hanya untuk dokumentasi)
+    curlCmd = `# API key tidak ditemukan, silakan login dan generate API key di profile\ncurl -X ${api.method} '${curlUrl}'`;
   }
-  if (options.body) {
-    curlCmd += ` \\\n  -d '${JSON.stringify(params)}'`;
-  }
-  curlCmd += ` \\\n  --cookie 'sid=YOUR_SESSION_COOKIE'`; // instruksi umum
   lastCurlCommand = curlCmd;
 
+  // --- Preview execution (tetap pakai session, tapi curl sudah pakai API key) ---
   const loader = document.getElementById('apiModalLoader');
   const responseMeta = document.getElementById('responseMeta');
   const responseTabs = document.getElementById('responseTabs');
@@ -637,13 +663,9 @@ async function executeApiRequest() {
     const endTime = performance.now();
     const elapsed = Math.round(endTime - startTime);
     const contentType = res.headers.get('Content-Type') || '';
-    // Kumpulkan headers
     let headersObj = {};
-    for (let [key, val] of res.headers.entries()) {
-      headersObj[key] = val;
-    }
+    for (let [key, val] of res.headers.entries()) { headersObj[key] = val; }
     lastResponseHeaders = headersObj;
-    // Baca body
     let bodyText = '';
     if (contentType.startsWith('image/')) {
       const blob = await res.blob();
@@ -657,23 +679,14 @@ async function executeApiRequest() {
       bodyText = await res.text();
       lastResponseData = bodyText;
     }
-    // Tampilkan metadata
     responseStatusSpan.innerHTML = `<span class="badge-status">${res.status} ${res.statusText}</span>`;
     responseTimeSpan.innerText = elapsed;
     responseMeta.style.display = 'flex';
-    // Isi tab Preview
-    if (contentType.startsWith('image/')) {
-      previewContent.innerHTML = bodyText;
-    } else {
-      previewContent.innerText = bodyText;
-    }
-    // Isi tab Headers
+    if (contentType.startsWith('image/')) previewContent.innerHTML = bodyText;
+    else previewContent.innerText = bodyText;
     let headersText = '';
-    for (let [k, v] of Object.entries(headersObj)) {
-      headersText += `${k}: ${v}\n`;
-    }
+    for (let [k, v] of Object.entries(headersObj)) headersText += `${k}: ${v}\n`;
     headersContent.innerText = headersText;
-    // Isi tab CURL
     curlContent.innerText = lastCurlCommand;
     responseTabs.style.display = 'flex';
     responseTabContent.style.display = 'block';
@@ -689,13 +702,11 @@ async function executeApiRequest() {
   } finally {
     loader.classList.add('d-none');
     document.getElementById('apiModalExecuteBtn').disabled = false;
-    // Aktifkan tab pertama
     const firstTab = new bootstrap.Tab(document.getElementById('preview-tab'));
     firstTab.show();
   }
 }
 
-// Clear response
 document.getElementById('clearResponseBtn')?.addEventListener('click', () => {
   document.getElementById('responseMeta').style.display = 'none';
   document.getElementById('responseTabs').style.display = 'none';
@@ -707,7 +718,7 @@ document.getElementById('clearResponseBtn')?.addEventListener('click', () => {
 
 loadEndpointsForConsole();
 
-/* ========== 3D CARD EFFECTS ========== */
+/* ========== 3D EFFECTS ========== */
 document.querySelectorAll('.feat-card,.plan-card,.pm-badge').forEach(card => {
   card.addEventListener('mousemove', function(e) {
     let r = this.getBoundingClientRect();
