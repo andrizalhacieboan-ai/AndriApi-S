@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Andri API'S</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 /* ========== SAME STYLES AS BEFORE (keep all) ========== */
 :root{
@@ -339,7 +340,6 @@ footer{
 <body>
 <div class="grid-lines"></div>
 
-<!-- NAV -->
 <nav>
   <a href="/" class="nav-logo">ANDRI<span>API'S</span></a>
   <ul class="nav-links" id="navLinks">
@@ -355,7 +355,6 @@ footer{
   </div>
 </nav>
 
-<!-- HERO -->
 <section class="hero">
   <div>
     <div class="badge reveal"><div class="badge-dot"></div>API Status: Operational</div>
@@ -367,25 +366,22 @@ footer{
       <a href="#plans" class="btn btn-ghost">Lihat Plans</a>
     </div>
     <div class="terminal reveal stagger-4">
-      <div class="t-header"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div><span class="t-title">Response — GET api/ai/ai-dolphin</span></div>
-      <div class="t-body"><div><span class="tc">200 OK</span></div><div><span class="tv"></span></div><br><div><span class="tc">CURL GET X</span></div><div>{<span class="tk">"fetch('https://andri-api-v1.vercel.app/api/ai/dolphin', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'x-api-key': 'AND+xxxxxxxx'
-  },
-  body: JSON.stringify({
-    prompt: 'Jelaskan konsep karma dalam satu paragraf',
-    template: 'summarize'
-  })
-})
-.then(res => res.json())
-.then(data => console.log(data.data));"</span>:<span class="tb">succes</span>, <span class="tk">"message"</span>:<span class="ts">"Login required."</span>}</div></div>
+      <div class="t-header"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div><span class="t-title">Response — GET /api/ai/dolphin</span></div>
+      <div class="t-body">
+        <div><span class="tc">Status: 200 OK</span></div>
+        <br>
+        <div>{</div>
+        <div>&nbsp;&nbsp;<span class="tk">"status"</span>: <span class="tv">true</span>,</div>
+        <div>&nbsp;&nbsp;<span class="tk">"message"</span>: <span class="ts">"Success generating response"</span>,</div>
+        <div>&nbsp;&nbsp;<span class="tk">"data"</span>: {</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tn">"result"</span>: <span class="tv">"Karma adalah konsep bahwa setiap tindakan memiliki konsekuensi yang setara..."</span></div>
+        <div>&nbsp;&nbsp;}</div>
+        <div>}</div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- STATS BAR -->
 <div class="stats-bar">
   <div class="stat-item reveal"><div class="stat-n" id="statUptime" data-target="0">—</div><div class="stat-l">Uptime %</div></div>
   <div class="stat-item reveal stagger-1"><div class="stat-n" id="statEndpoints" data-target="0">—</div><div class="stat-l">API Endpoints</div></div>
@@ -393,19 +389,14 @@ footer{
   <div class="stat-item reveal stagger-3"><div class="stat-n" id="statSupport" data-target="0">—</div><div class="stat-l">Support Hours</div></div>
 </div>
 
-<!-- FEATURES -->
 <section id="features"><div class="container"><div class="s-tag reveal">Platform Features</div><h2 class="s-h reveal stagger-1">Semua yang kamu<br>butuhkan</h2><p class="s-p reveal stagger-2">Dari API key generation, rate limiting per plan, dashboard analytics, hingga payment otomatis.</p><div class="features-grid"><div class="feat-card reveal stagger-1"><div class="feat-icon">🔑</div><h3>Smart API Keys</h3><p>Setiap key berawalan <code>AND+</code> dengan 48 karakter custom.</p></div><div class="feat-card reveal stagger-2"><div class="feat-icon">⚡</div><h3>Rate Limiting per Plan</h3><p>Limit per menit, jam, dan hari.</p></div><div class="feat-card reveal stagger-3"><div class="feat-icon">📊</div><h3>Dashboard Analytics</h3><p>Grafik penggunaan harian, top endpoints, dll.</p></div><div class="feat-card reveal stagger-4"><div class="feat-icon">🚀</div><h3>RESS API</h3><p>Backend dengan plugin system.</p></div><div class="feat-card reveal stagger-5"><div class="feat-icon">🗃️</div><h3>SQLite Database</h3><p>libSQL serverless.</p></div><div class="feat-card reveal stagger-6"><div class="feat-icon">👤</div><h3>Session Auth</h3><p>Autentikasi session, bcrypt, IP logging.</p></div></div></div></section>
 
-<!-- PLANS -->
-<section id="plans" style="background:rgba(0,0,0,0.01);border-top:1px solid rgba(0,0,0,0.03);border-bottom:1px solid rgba(0,0,0,0.03)"><div class="container"><div class="s-tag reveal">Pricing</div><h2 class="s-h reveal stagger-1">Pilih Plan<br>yang Tepat</h2><p class="s-p reveal stagger-2">Mulai gratis selamanya. Upgrade kapanpun, limit langsung bertambah otomatis.</p><div class="plans-grid"><div class="plan-card c-free reveal stagger-1"><div class="plan-tier">Free</div><div class="plan-price">Rp 0</div><div class="plan-sub">selamanya gratis</div><ul class="plan-feats"><li class="hl">100 req/hari</li><li class="hl">20 req/jam</li><li class="hl">5 req/menit</li><li>Endpoint public</li><li>Community support</li></ul><a href="/register" class="btn btn-ghost btn-plan">Mulai Gratis</a></div><div class="plan-card c-premium pop reveal stagger-2"><div class="pop-badge">POPULAR</div><div class="plan-tier">Premium</div><div class="plan-price">Rp 29K</div><div class="plan-sub">/bulan · QRIS</div><ul class="plan-feats"><li class="hl">1000 req/hari</li><li class="hl">100 req/jam</li><li class="hl">20 req/menit</li><li>Akses semua endpoint</li><li>Priority support</li></ul><a href="/register" class="btn btn-primary btn-plan" style="background:#f8fafc; color:#0f172a;">Upgrade Premium</a></div><div class="plan-card c-vip reveal stagger-3"><div class="plan-tier">VIP</div><div class="plan-price">Rp 59K</div><div class="plan-sub">/bulan · QRIS</div><ul class="plan-feats"><li class="hl">10.000 req/hari</li><li class="hl">500 req/jam</li><li class="hl">60 req/menit</li><li>Akses semua endpoint</li><li>24/7 support</li></ul><a href="/register" class="btn btn-ghost btn-plan">Upgrade VIP</a></div><div class="plan-card c-vvip reveal stagger-4"><div class="plan-tier">VVIP</div><div class="plan-price">Rp 89K</div><div class="plan-sub">/bulan · QRIS</div><ul class="plan-feats"><li class="hl">Unlimited requests</li><li>Unlimited rate</li><li>Priority queue tertinggi</li><li>3 API keys</li></ul><a href="/register" class="btn btn-ghost btn-plan">Go VVIP</a></div></div></div></section>
+<section id="plans" style="background:rgba(0,0,0,0.01);border-top:1px solid rgba(0,0,0,0.03);border-bottom:1px solid rgba(0,0,0,0.03)"><div class="container"><div class="s-tag reveal">Pricing</div><h2 class="s-h reveal stagger-1">Pilih Plan<br>yang Tepat</h2><p class="s-p reveal stagger-2">Mulai gratis selamanya. Upgrade kapanpun, limit langsung bertambah otomatis.</p><div class="plans-grid"><div class="plan-card c-free reveal stagger-1"><div class="plan-tier">Free</div><div class="plan-price">Rp 0</div><div class="plan-sub">selamanya gratis</div><ul class="plan-feats"><li class="hl">100 req/hari</li><li class="hl">20 req/jam</li><li class="hl">5 req/menit</li><li>Endpoint public</li><li>Community support</li></ul><a href="/register" class="btn btn-ghost btn-plan">Mulai Gratis</a></div><div class="plan-card c-premium pop reveal stagger-2"><div class="pop-badge">POPULAR</div><div class="plan-tier">Premium</div><div class="plan-price">Rp 29K</div><div class="plan-sub">/bulan · QRIS</div><ul class="plan-feats"><li class="hl">1000 req/hari</li><li class="hl">100 req/jam</li><li class="hl">20 req/menit</li><li>Akses semua endpoint</li><li>Priority support</li></ul><a href="/register" class="btn btn-primary btn-plan" style="background:#f8fafc; color:#0f172a;">Upgrade Premium</a></div><div class="plan-card c-vip reveal stagger-3"><div class="plan-tier">VIP</div><div class="plan-price">Rp 79K</div><div class="plan-sub">/bulan · QRIS</div><ul class="plan-feats"><li class="hl">10.000 req/hari</li><li class="hl">500 req/jam</li><li class="hl">60 req/menit</li><li>Akses semua endpoint</li><li>24/7 support</li></ul><a href="/register" class="btn btn-ghost btn-plan">Upgrade VIP</a></div><div class="plan-card c-vvip reveal stagger-4"><div class="plan-tier">VVIP</div><div class="plan-price">Rp 199K</div><div class="plan-sub">/bulan · QRIS</div><ul class="plan-feats"><li class="hl">Unlimited requests</li><li>Unlimited rate</li><li>Priority queue tertinggi</li><li>3 API keys</li></ul><a href="/register" class="btn btn-ghost btn-plan">Go VVIP</a></div></div></div></section>
 
-<!-- HOW IT WORKS -->
 <section><div class="container"><div class="s-tag reveal">How It Works</div><h2 class="s-h reveal stagger-1">Mulai dalam<br>3 langkah</h2><div class="steps"><div class="step reveal stagger-1"><div class="step-num">01</div><h4>Daftar Akun</h4><p>Buat akun gratis. Langsung masuk dashboard.</p></div><div class="step reveal stagger-2"><div class="step-num">02</div><h4>Pilih Plan</h4><p>Gunakan free atau upgrade via Pakasir.</p></div><div class="step reveal stagger-3"><div class="step-num">03</div><h4>Mulai Coding</h4><p>Sertakan API key atau gunakan session.</p></div></div></div></section>
 
-<!-- PAYMENT -->
 <section id="payment" style="background:rgba(0,0,0,0.01);border-top:1px solid rgba(0,0,0,0.03)"><div class="container"><div class="s-tag reveal">Payment via Pakasir</div><h2 class="s-h reveal stagger-1">Bayar otomatis,<br>plan aktif instan</h2><p class="s-p reveal stagger-2">Semua pembayaran diproses otomatis via Pakasir.</p><div class="pm-grid"><div class="pm-badge">QRIS</div><div class="pm-badge">BNI VA</div><div class="pm-badge">BRI VA</div><div class="pm-badge">BCA VA</div><div class="pm-badge">GoPay</div><div class="pm-badge">OVO</div><div class="pm-badge">DANA</div><div class="pm-badge">ShopeePay</div><div class="pm-badge">Credit Card</div><div class="pm-badge">Indomaret</div><div class="pm-badge">Alfamart</div></div></div></section>
 
-<!-- API CONSOLE -->
 <section id="api-console" style="background:rgba(0,0,0,0.02);border-top:1px solid rgba(0,0,0,0.03);border-bottom:1px solid rgba(0,0,0,0.03)">
   <div class="container">
     <div class="s-tag reveal">Try API Console</div>
@@ -415,7 +406,6 @@ footer{
   </div>
 </section>
 
-<!-- MODAL dengan Tabs (Preview, Headers, CURL) -->
 <div class="modal fade" id="apiModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -456,7 +446,6 @@ footer{
 
 <footer><div class="foot-logo">ANDRI API</div><div class="foot-links"><a href="/">Home</a><a href="/docs">Docs</a><a href="#plans">Pricing</a><a href="/login">Login</a><a href="/register">Register</a><a href="/admin">Admin</a></div><p class="foot-copy">© 2026 Andri API · Hak cipta</p></footer>
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -517,7 +506,6 @@ async function loadUserAndApiKey() {
       const href = data.data.role === 'admin' ? '/admin' : '/profile';
       document.getElementById('navCta').innerHTML = `<a href="/dashboard" class="btn btn-ghost">Dashboard</a><a href="${href}" class="btn btn-primary">${name}</a>`;
       userPlan = data.data.plan;
-      // Ambil API key pertama yang aktif
       if (data.data.api_keys && data.data.api_keys.length > 0) {
         userApiKey = data.data.api_keys[0].key;
       } else {
@@ -561,13 +549,16 @@ async function loadEndpointsForConsole() {
     document.getElementById('consoleApis').innerHTML = '<div class="text-danger">Gagal memuat daftar API. Pastikan file settings.json tersedia.</div>';
   }
 }
+
 function renderConsoleCards(apis) {
   const container = document.getElementById('consoleApis');
   if (!container) return;
   if (!apis.length) { container.innerHTML = '<div class="text-muted">Belum ada endpoint.</div>'; return; }
   let html = '';
   apis.forEach(api => {
-    html += `<div class="api-card" data-api='${JSON.stringify(api)}'><span class="api-method">${api.method}</span><h4>${escapeHtml(api.name)}</h4><p>${escapeHtml(api.desc || '')}</p><button class="btn btn-sm btn-dark try-console-btn">Try</button></div>`;
+    // Escape single quotes to prevent breaking data attribute layout string parsing
+    const apiStr = JSON.stringify(api).replace(/'/g, "&apos;");
+    html += `<div class="api-card" data-api='${apiStr}'><span class="api-method">${api.method}</span><h4>${escapeHtml(api.name)}</h4><p>${escapeHtml(api.desc || '')}</p><button class="btn btn-sm btn-dark try-console-btn">Try</button></div>`;
   });
   container.innerHTML = html;
   document.querySelectorAll('.try-console-btn').forEach(btn => {
@@ -601,7 +592,6 @@ function openApiModal(api) {
   } else {
     paramsContainer.innerHTML = '<div class="alert alert-info">Tidak ada parameter yang diperlukan.</div>';
   }
-  // Reset tampilan respons
   document.getElementById('responseMeta').style.display = 'none';
   document.getElementById('responseTabs').style.display = 'none';
   document.getElementById('responseTabContent').style.display = 'none';
@@ -623,7 +613,7 @@ async function executeApiRequest() {
   let url = api.path.startsWith('http') ? api.path : window.location.origin + api.path;
   let options = {
     method: api.method,
-    credentials: 'include', // tetap pakai session untuk preview
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' }
   };
   if (api.method.toUpperCase() === 'GET') {
@@ -633,26 +623,20 @@ async function executeApiRequest() {
     options.body = JSON.stringify(params);
   }
 
-  // --- Generate CURL command with API key (tanpa session cookie) ---
   let curlUrl = url;
   let curlCmd = `curl -X ${api.method} '${curlUrl}'`;
-  // Jika ada API key user, gunakan query parameter (contoh seperti api.siputzx.my.id)
   if (userApiKey) {
-    // Untuk GET, tambahkan ?apikey=... , untuk POST bisa juga query parameter atau header
     if (api.method.toUpperCase() === 'GET') {
       let separator = curlUrl.includes('?') ? '&' : '?';
       curlCmd = `curl -X ${api.method} '${curlUrl}${separator}apikey=${userApiKey}'`;
     } else {
-      // Untuk POST, kita bisa tambahkan header x-api-key (atau query parameter)
       curlCmd = `curl -X ${api.method} '${curlUrl}' \\\n  -H 'Content-Type: application/json' \\\n  -H 'x-api-key: ${userApiKey}' \\\n  -d '${JSON.stringify(params)}'`;
     }
   } else {
-    // fallback tanpa API key (hanya untuk dokumentasi)
     curlCmd = `# API key tidak ditemukan, silakan login dan generate API key di profile\ncurl -X ${api.method} '${curlUrl}'`;
   }
   lastCurlCommand = curlCmd;
 
-  // --- Preview execution (tetap pakai session, tapi curl sudah pakai API key) ---
   const loader = document.getElementById('apiModalLoader');
   const responseMeta = document.getElementById('responseMeta');
   const responseTabs = document.getElementById('responseTabs');
