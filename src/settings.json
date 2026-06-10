@@ -33,7 +33,8 @@
         {
           "name": "LuminAI",
           "desc": "Talk with luminai",
-          "path": "/api/ai/luminai?text="
+          "path": "/api/ai/luminai?text=",
+          "innerDesc": "Masukkan teks pertanyaan atau pesan untuk dikirim ke LuminAI."
         }
       ]
     },
@@ -43,7 +44,8 @@
         {
           "name": "Blue Archive",
           "desc": "Blue Archive Random Images",
-          "path": "api/random?data="
+          "path": "/random/ba",
+          "innerDesc": ""
         }
       ]
     },
@@ -52,8 +54,9 @@
       "items": [
         {
           "name": "YouTube",
-          "desc": "Video search",
-          "path": "/api/search/youtube?q="
+          "desc": "Search YouTube videos",
+          "path": "/api/search/youtube?q=",
+          "innerDesc": "Masukkan kata kunci video YouTube yang ingin dicari."
         }
       ]
     }
