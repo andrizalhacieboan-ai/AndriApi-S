@@ -191,18 +191,52 @@ async function initDb() {
     await db.execute(sql);
   }
 
-  // ── Auto-Migration: Inject missing columns for existing production tables ──
-  try {
-    await db.execute(`ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1`);
-  } catch (e) {
-    // Silently ignore if column already exists
+  // ── Auto-migrate: add missing columns to existing tables ──────────────────
+  // Safe to run on every startup — uses ADD COLUMN IF NOT EXISTS pattern
+  const migrations = [
+    // users table
+    `ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1`,
+    `ALTER TABLE users ADD COLUMN plan_expires_at TEXT`,
+    `ALTER TABLE users ADD COLUMN avatar TEXT`,
+    `ALTER TABLE users ADD COLUMN bio TEXT`,
+    `ALTER TABLE users ADD COLUMN updated_at TEXT DEFAULT (datetime('now'))`,
+    // api_keys table
+    `ALTER TABLE api_keys ADD COLUMN is_active INTEGER DEFAULT 1`,
+    `ALTER TABLE api_keys ADD COLUMN requests_today INTEGER DEFAULT 0`,
+    `ALTER TABLE api_keys ADD COLUMN requests_total INTEGER DEFAULT 0`,
+    `ALTER TABLE api_keys ADD COLUMN last_reset_date TEXT DEFAULT (date('now'))`,
+    `ALTER TABLE api_keys ADD COLUMN expires_at TEXT`,
+    // transactions table
+    `ALTER TABLE transactions ADD COLUMN payment_type TEXT`,
+    `ALTER TABLE transactions ADD COLUMN bank_name TEXT`,
+    `ALTER TABLE transactions ADD COLUMN account_number TEXT`,
+    `ALTER TABLE transactions ADD COLUMN proof_url TEXT`,
+    `ALTER TABLE transactions ADD COLUMN admin_notes TEXT`,
+    `ALTER TABLE transactions ADD COLUMN midtrans_order_id TEXT`,
+    `ALTER TABLE transactions ADD COLUMN expires_at TEXT`,
+    `ALTER TABLE transactions ADD COLUMN paid_at TEXT`,
+    `ALTER TABLE transactions ADD COLUMN updated_at TEXT DEFAULT (datetime('now'))`,
+    // api_logs table
+    `ALTER TABLE api_logs ADD COLUMN api_key_id TEXT`,
+    `ALTER TABLE api_logs ADD COLUMN user_id TEXT`,
+    `ALTER TABLE api_logs ADD COLUMN method TEXT DEFAULT 'GET'`,
+    `ALTER TABLE api_logs ADD COLUMN status_code INTEGER`,
+    `ALTER TABLE api_logs ADD COLUMN response_time INTEGER`,
+    `ALTER TABLE api_logs ADD COLUMN ip_address TEXT`,
+    `ALTER TABLE api_logs ADD COLUMN user_agent TEXT`,
+  ];
+
+  for (const sql of migrations) {
+    try {
+      await db.execute(sql);
+    } catch (e) {
+      // "duplicate column name" is expected for already-existing columns — ignore
+      if (!e.message.includes('duplicate column') && !e.message.includes('already exists')) {
+        console.warn('[DB] Migration warning:', e.message);
+      }
+    }
   }
-  try {
-    await db.execute(`ALTER TABLE api_keys ADD COLUMN is_active INTEGER DEFAULT 1`);
-  } catch (e) {
-    // Silently ignore if column already exists
-  }
-  // ───────────────────────────────────────────────────────────────────────────
+  console.log('[DB] ✓ Migrations applied');
 
   // Seed plans
   const planCount = await db.execute('SELECT COUNT(*) as c FROM plans');
