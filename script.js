@@ -3,6 +3,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     const body = document.body;
     body.classList.add("no-scroll");
 
+    // Cek apakah user sudah login (session)
+    let isLoggedIn = false;
+    let userPlan = 'free';
+    try {
+        const me = await fetch('/api/auth/me', { credentials: 'include' });
+        const data = await me.json();
+        if (data.status) {
+            isLoggedIn = true;
+            userPlan = data.data.plan;
+            console.log('Logged in as', data.data.name);
+        } else {
+            // Redirect ke login jika belum login
+            window.location.href = '/login';
+            return;
+        }
+    } catch(e) {
+        window.location.href = '/login';
+        return;
+    }
+
     try {
         const settings = await fetch('/src/settings.json').then(res => res.json());
 
@@ -55,6 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const sortedItems = [...category.items].sort((a, b) => a.name.localeCompare(b.name));
             const categoryContent = sortedItems.map((item, index, array) => {
                 const isLastItem = index === array.length - 1;
+                const methodClass = (item.method || 'GET').toLowerCase();
                 return `
                 <div class="col-md-6 col-lg-4 api-item ${isLastItem ? 'mb-4' : 'mb-2'}"
                      data-name="${item.name}" data-desc="${item.desc || ''}">
@@ -63,12 +84,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <h5 class="mb-0" style="font-size:18px;">${item.name}</h5>
                             <p class="text-muted mb-0" style="font-size:0.8rem;">${item.desc || ''}</p>
                         </div>
-                        <button class="btn btn-dark btn-sm get-api-btn"
-                            data-api-path="${item.path}"
-                            data-api-name="${item.name}"
-                            data-api-desc="${item.desc || ''}"
-                            data-inner-desc="${item.innerDesc || ''}">
-                            GET
+                        <button class="btn btn-dark btn-sm try-api-btn"
+                            data-method="${item.method || 'GET'}"
+                            data-path="${item.path}"
+                            data-name="${item.name}"
+                            data-desc="${item.desc || ''}"
+                            data-inner-desc="${item.innerDesc || ''}"
+                            data-params='${JSON.stringify(item.params || [])}'>
+                            ${item.method || 'GET'}
                         </button>
                     </div>
                 </div>`;
@@ -92,12 +115,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // ── GET button click ──────────────────────────────────────────────────
-        document.addEventListener('click', event => {
-            const btn = event.target.closest('.get-api-btn');
+        // ── Try API button click ──────────────────────────────────────────────
+        document.addEventListener('click', async event => {
+            const btn = event.target.closest('.try-api-btn');
             if (!btn) return;
 
-            const { apiPath, apiName, apiDesc, innerDesc } = btn.dataset;
+            const method = btn.dataset.method;
+            const apiPath = btn.dataset.path;
+            const apiName = btn.dataset.name;
+            const apiDesc = btn.dataset.desc;
+            const innerDesc = btn.dataset.innerDesc;
+            const params = JSON.parse(btn.dataset.params || '[]');
 
             const modal = new bootstrap.Modal(document.getElementById('apiResponseModal'));
             const refs = {
@@ -110,131 +138,116 @@ document.addEventListener('DOMContentLoaded', async () => {
                 submitBtn:  document.getElementById('submitQueryBtn'),
             };
 
-            // Reset modal state
-            refs.label.textContent   = apiName;
-            refs.desc.textContent    = apiDesc;
+            // Reset modal
+            refs.label.textContent = apiName;
+            refs.desc.textContent = apiDesc;
             refs.content.textContent = '';
             refs.endpoint.textContent = '';
             refs.spinner.classList.add('d-none');
             refs.content.classList.add('d-none');
             refs.endpoint.classList.add('d-none');
             refs.inputWrap.innerHTML = '';
-            refs.submitBtn.classList.add('d-none');
-            refs.submitBtn.disabled  = false;
+            refs.submitBtn.classList.remove('d-none');
+            refs.submitBtn.disabled = false;
+            refs.submitBtn.textContent = `Execute ${method}`;
 
-            // Parse params from path (keys with empty string value = required input)
-            // e.g. "/api/ai/luminai?text=" → param "text" needs input
-            const [basePath, queryStr] = apiPath.split('?');
-            const params = queryStr ? new URLSearchParams(queryStr) : new URLSearchParams();
-
-            // Find params that need user input (value is empty)
-            const inputParams = [];
-            params.forEach((val, key) => { if (val === '') inputParams.push(key); });
-
-            // Also add apikey field always
-            const needApiKey = true;
-
-            if (inputParams.length > 0 || needApiKey) {
-                const paramContainer = document.createElement('div');
-                paramContainer.className = 'param-container';
-
-                // Input fields for query params
-                inputParams.forEach((param, i) => {
+            // Jika ada parameter yang perlu diisi user (dari settings item.params)
+            if (params.length > 0) {
+                const container = document.createElement('div');
+                container.className = 'param-container';
+                params.forEach((p, idx) => {
                     const group = document.createElement('div');
-                    group.className = i < inputParams.length - 1 ? 'mb-2' : 'mb-2';
-
+                    group.className = 'mb-2';
                     const input = document.createElement('input');
-                    input.type        = 'text';
-                    input.className   = 'form-control';
-                    input.placeholder = `Enter ${param}...`;
-                    input.dataset.param = param;
-                    input.required    = true;
-                    input.addEventListener('input', validateInputs);
-
+                    input.type = 'text';
+                    input.className = 'form-control';
+                    input.placeholder = `${p.name} ${p.required ? '(wajib)' : '(opsional)'}`;
+                    input.dataset.param = p.name;
+                    input.required = p.required || false;
+                    if (p.required) input.addEventListener('input', validateInputs);
                     group.appendChild(input);
-                    paramContainer.appendChild(group);
+                    container.appendChild(group);
                 });
-
-                // API Key field
-                const apikeyGroup = document.createElement('div');
-                apikeyGroup.className = 'mb-2';
-                const apikeyInput = document.createElement('input');
-                apikeyInput.type        = 'text';
-                apikeyInput.className   = 'form-control';
-                apikeyInput.placeholder = 'API Key (opsional untuk Free)';
-                apikeyInput.dataset.param = 'apikey';
-                apikeyInput.addEventListener('input', validateInputs);
-                apikeyGroup.appendChild(apikeyInput);
-                paramContainer.appendChild(apikeyGroup);
-
-                // innerDesc
                 if (innerDesc) {
-                    const descDiv = document.createElement('div');
-                    descDiv.className   = 'text-muted mt-2';
-                    descDiv.style.fontSize = '13px';
-                    descDiv.innerHTML   = innerDesc.replace(/\n/g, '<br>');
-                    paramContainer.appendChild(descDiv);
+                    const info = document.createElement('div');
+                    info.className = 'text-muted small mt-2';
+                    info.innerHTML = innerDesc;
+                    container.appendChild(info);
                 }
-
-                refs.inputWrap.appendChild(paramContainer);
-                refs.submitBtn.classList.remove('d-none');
-
+                refs.inputWrap.appendChild(container);
                 refs.submitBtn.onclick = () => {
                     const inputs = refs.inputWrap.querySelectorAll('input');
-                    const newParams = new URLSearchParams();
                     let valid = true;
-
+                    const paramValues = {};
                     inputs.forEach(inp => {
-                        if (inp.dataset.param !== 'apikey' && !inp.value.trim()) {
+                        if (inp.required && !inp.value.trim()) {
                             valid = false;
                             inp.classList.add('is-invalid');
                         } else {
                             inp.classList.remove('is-invalid');
-                            if (inp.value.trim()) newParams.append(inp.dataset.param, inp.value.trim());
+                            if (inp.value.trim()) paramValues[inp.dataset.param] = inp.value.trim();
                         }
                     });
-
                     if (!valid) return;
 
-                    // Build final URL
-                    const finalUrl = `${window.location.origin}${basePath}?${newParams.toString()}`;
-                    refs.inputWrap.innerHTML = '';
-                    refs.submitBtn.classList.add('d-none');
-                    handleApiRequest(finalUrl, refs, apiName);
+                    // Execute API request with session cookie (no API key needed)
+                    executeApiRequest(method, apiPath, paramValues, refs);
                 };
             } else {
-                // No params needed — hit directly
-                const finalUrl = `${window.location.origin}${basePath}`;
-                handleApiRequest(finalUrl, refs, apiName);
+                // No parameters needed
+                refs.inputWrap.innerHTML = '<div class="alert alert-info">Tidak ada parameter yang diperlukan. Klik Execute.</div>';
+                refs.submitBtn.onclick = () => {
+                    executeApiRequest(method, apiPath, {}, refs);
+                };
             }
 
             modal.show();
         });
 
         function validateInputs() {
-            const inputs = document.querySelectorAll('.param-container input[required]');
-            document.getElementById('submitQueryBtn').disabled =
-                !Array.from(inputs).every(i => i.value.trim() !== '');
+            const requiredInputs = document.querySelectorAll('.param-container input[required]');
+            const submitBtn = document.getElementById('submitQueryBtn');
+            if (submitBtn) {
+                submitBtn.disabled = !Array.from(requiredInputs).every(i => i.value.trim() !== '');
+            }
         }
 
-        async function handleApiRequest(apiUrl, refs, apiName) {
+        async function executeApiRequest(method, path, params, refs) {
             refs.spinner.classList.remove('d-none');
             refs.content.classList.add('d-none');
+            refs.endpoint.classList.add('d-none');
+            refs.submitBtn.disabled = true;
+
+            let url = path;
+            let options = {
+                method: method,
+                credentials: 'include', // kirim cookie session
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            if (method.toUpperCase() === 'GET') {
+                const query = new URLSearchParams(params).toString();
+                if (query) url += '?' + query;
+            } else {
+                options.body = JSON.stringify(params);
+            }
+
+            // Tampilkan URL endpoint
+            refs.endpoint.textContent = `${method} ${url}`;
+            refs.endpoint.classList.remove('d-none');
 
             try {
-                const response = await fetch(apiUrl);
+                const response = await fetch(url, options);
                 const contentType = response.headers.get('Content-Type') || '';
-
-                refs.endpoint.textContent = apiUrl;
-                refs.endpoint.classList.remove('d-none');
 
                 if (contentType.startsWith('image/')) {
                     const blob = await response.blob();
-                    const img  = document.createElement('img');
-                    img.src           = URL.createObjectURL(blob);
-                    img.alt           = apiName;
-                    img.style.maxWidth   = '100%';
-                    img.style.height     = 'auto';
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(blob);
+                    img.alt = refs.label.textContent;
+                    img.style.maxWidth = '100%';
                     img.style.borderRadius = '5px';
                     refs.content.innerHTML = '';
                     refs.content.appendChild(img);
@@ -247,6 +260,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } finally {
                 refs.spinner.classList.add('d-none');
                 refs.content.classList.remove('d-none');
+                refs.submitBtn.disabled = false;
             }
         }
 
