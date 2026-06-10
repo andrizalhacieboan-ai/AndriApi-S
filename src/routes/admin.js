@@ -63,9 +63,9 @@ module.exports = function(app) {
     try {
       const db = getDb();
       const [user, keys, txs, logs] = await Promise.all([
-        db.execute({ sql:'SELECT * FROM users WHERE id=?', args:[req.params.id] }),
-        db.execute({ sql:'SELECT * FROM api_keys WHERE user_id=?', args:[req.params.id] }),
-        db.execute({ sql:'SELECT * FROM transactions WHERE user_id=? ORDER BY created_at DESC LIMIT 10', args:[req.params.id] }),
+        db.execute({ sql:'SELECT id,name,email,role,plan,plan_expires_at,avatar,bio,is_active,created_at FROM users WHERE id=?', args:[req.params.id] }),
+        db.execute({ sql:'SELECT id,user_id,key,name,plan,is_active,requests_today,requests_total,last_reset_date,expires_at,created_at FROM api_keys WHERE user_id=?', args:[req.params.id] }),
+        db.execute({ sql:'SELECT id,user_id,plan,amount,payment_method,payment_type,status,bank_name,account_number,proof_url,admin_notes,expires_at,paid_at,created_at FROM transactions WHERE user_id=? ORDER BY created_at DESC LIMIT 10', args:[req.params.id] }),
         db.execute({ sql:`SELECT endpoint, COUNT(*) as c FROM api_logs WHERE user_id=? GROUP BY endpoint ORDER BY c DESC LIMIT 5`, args:[req.params.id] }),
       ]);
       if (user.rows.length === 0) return res.status(404).json({ status:false, statusCode:404, message:'User tidak ditemukan.' });
@@ -144,7 +144,7 @@ module.exports = function(app) {
   app.post('/api/admin/transactions/:id/approve', requireAdmin, async (req, res) => {
     try {
       const db = getDb();
-      const tx = await db.execute({ sql:'SELECT * FROM transactions WHERE id=?', args:[req.params.id] });
+      const tx = await db.execute({ sql:'SELECT id,user_id,plan,amount,payment_method,payment_type,status,bank_name,account_number,proof_url,admin_notes,expires_at,paid_at,created_at,updated_at FROM transactions WHERE id=?', args:[req.params.id] });
       if (tx.rows.length === 0) return res.status(404).json({ status:false, statusCode:404, message:'Transaksi tidak ditemukan.' });
 
       const t = tx.rows[0];
