@@ -28,13 +28,15 @@
   ],
   "categories": [
     {
-      "name": "AI (Artificial Intelligence)",
-      "items": [
-        {
-          "name": "LuminAI",
-          "desc": "Talk with luminai",
-          "path": "/api/ai/luminai?text=",
-          "innerDesc": "Masukkan teks pertanyaan atau pesan untuk dikirim ke LuminAI."
+          "name": "Dolphin AI",
+          "desc": "Chat with Dolphin 24B AI (logical, creative, summarize, code)",
+          "method": "POST",
+          "path": "/api/ai/dolphin",
+          "innerDesc": "Masukkan pesan. Template opsional: logical, creative, summarize, code-beginner, code-advanced (default logical).",
+          "params": [
+            { "name": "prompt", "required": true, "type": "text" },
+            { "name": "template", "required": false, "type": "text", "default": "logical" }
+          ]
         }
       ]
     },
