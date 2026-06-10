@@ -278,7 +278,43 @@ section{position:relative;z-index:1;padding:8rem 2rem}
 .param-input {
   margin-bottom: 0.75rem;
 }
-
+.response-tabs {
+  margin-top: 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+.response-tabs .nav-link {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+  padding: 0.5rem 1rem;
+}
+.response-tabs .nav-link.active {
+  color: var(--accent);
+  border-bottom: 2px solid var(--accent);
+  background: transparent;
+}
+.response-pane {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  max-height: 400px;
+  overflow: auto;
+}
+.response-meta {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.7rem;
+  font-family: var(--mono);
+}
+.badge-status {
+  background: #198754;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
 footer{
   position:relative;z-index:1;border-top: 1px solid rgba(0,0,0,0.03);
   padding:4rem 2rem;text-align:center;background: var(--surface);
@@ -319,7 +355,7 @@ footer{
   </div>
 </nav>
 
-<!-- HERO -->
+<!-- HERO (sama seperti sebelumnya) -->
 <section class="hero">
   <div>
     <div class="badge reveal"><div class="badge-dot"></div>API Status: Operational</div>
@@ -330,19 +366,9 @@ footer{
       <a href="/docs" class="btn btn-ghost">Dokumentasi</a>
       <a href="#plans" class="btn btn-ghost">Lihat Plans</a>
     </div>
-
     <div class="terminal reveal stagger-4">
-      <div class="t-header">
-        <div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div>
-        <span class="t-title">Response — GET /random/ba</span>
-      </div>
-      <div class="t-body">
-        <div><span class="tc">// 200 OK (Image)</span></div>
-        <div><span class="tv">[Binary Image Data]</span></div>
-        <br>
-        <div><span class="tc">// 401 Unauthorized</span></div>
-        <div>{<span class="tk">"status"</span>:<span class="tb">false</span>, <span class="tk">"message"</span>:<span class="ts">"Login required."</span>}</div>
-      </div>
+      <div class="t-header"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div><span class="t-title">Response — GET /random/ba</span></div>
+      <div class="t-body"><div><span class="tc">// 200 OK (Image)</span></div><div><span class="tv">[Binary Image Data]</span></div><br><div><span class="tc">// 401 Unauthorized</span></div><div>{<span class="tk">"status"</span>:<span class="tb">false</span>, <span class="tk">"message"</span>:<span class="ts">"Login required."</span>}</div></div>
     </div>
   </div>
 </section>
@@ -356,46 +382,18 @@ footer{
 </div>
 
 <!-- FEATURES -->
-<section id="features">
-  <div class="container">
-    <div class="s-tag reveal">Platform Features</div>
-    <h2 class="s-h reveal stagger-1">Semua yang kamu<br>butuhkan</h2>
-    <p class="s-p reveal stagger-2">Dari API key generation, rate limiting per plan, dashboard analytics, hingga payment otomatis.</p>
-    <div class="features-grid">
-      <div class="feat-card reveal stagger-1"><div class="feat-icon">🔑</div><h3>Smart API Keys</h3><p>Setiap key berawalan <code>AND+</code> dengan 48 karakter custom.</p></div>
-      <div class="feat-card reveal stagger-2"><div class="feat-icon">⚡</div><h3>Rate Limiting per Plan</h3><p>Limit per menit, jam, dan hari.</p></div>
-      <div class="feat-card reveal stagger-3"><div class="feat-icon">📊</div><h3>Dashboard Analytics</h3><p>Grafik penggunaan harian, top endpoints, dll.</p></div>
-      <div class="feat-card reveal stagger-4"><div class="feat-icon">🚀</div><h3>RESS API</h3><p>Backend dengan plugin system.</p></div>
-      <div class="feat-card reveal stagger-5"><div class="feat-icon">🗃️</div><h3>SQLite Database</h3><p>libSQL serverless.</p></div>
-      <div class="feat-card reveal stagger-6"><div class="feat-icon">👤</div><h3>Session Auth</h3><p>Autentikasi session, bcrypt, IP logging.</p></div>
-    </div>
-  </div>
-</section>
+<section id="features"><div class="container"><div class="s-tag reveal">Platform Features</div><h2 class="s-h reveal stagger-1">Semua yang kamu<br>butuhkan</h2><p class="s-p reveal stagger-2">Dari API key generation, rate limiting per plan, dashboard analytics, hingga payment otomatis.</p><div class="features-grid"><div class="feat-card reveal stagger-1"><div class="feat-icon">🔑</div><h3>Smart API Keys</h3><p>Setiap key berawalan <code>AND+</code> dengan 48 karakter custom.</p></div><div class="feat-card reveal stagger-2"><div class="feat-icon">⚡</div><h3>Rate Limiting per Plan</h3><p>Limit per menit, jam, dan hari.</p></div><div class="feat-card reveal stagger-3"><div class="feat-icon">📊</div><h3>Dashboard Analytics</h3><p>Grafik penggunaan harian, top endpoints, dll.</p></div><div class="feat-card reveal stagger-4"><div class="feat-icon">🚀</div><h3>RESS API</h3><p>Backend dengan plugin system.</p></div><div class="feat-card reveal stagger-5"><div class="feat-icon">🗃️</div><h3>SQLite Database</h3><p>libSQL serverless.</p></div><div class="feat-card reveal stagger-6"><div class="feat-icon">👤</div><h3>Session Auth</h3><p>Autentikasi session, bcrypt, IP logging.</p></div></div></div></section>
 
 <!-- PLANS -->
-<section id="plans" style="background:rgba(0,0,0,0.01);border-top:1px solid rgba(0,0,0,0.03);border-bottom:1px solid rgba(0,0,0,0.03)">
-  <div class="container">
-    <div class="s-tag reveal">Pricing</div>
-    <h2 class="s-h reveal stagger-1">Pilih Plan<br>yang Tepat</h2>
-    <p class="s-p reveal stagger-2">Mulai gratis selamanya. Upgrade kapanpun, limit langsung bertambah otomatis.</p>
-    <div class="plans-grid">
-      <div class="plan-card c-free reveal stagger-1"><div class="plan-tier">Free</div><div class="plan-price">Rp 0</div><div class="plan-sub">selamanya gratis</div><ul class="plan-feats"><li class="hl">100 req/hari</li><li class="hl">20 req/jam</li><li class="hl">5 req/menit</li><li>Endpoint public</li><li>Community support</li></ul><a href="/register" class="btn btn-ghost btn-plan">Mulai Gratis</a></div>
-      <div class="plan-card c-premium pop reveal stagger-2"><div class="pop-badge">POPULAR</div><div class="plan-tier">Premium</div><div class="plan-price">Rp 29K</div><div class="plan-sub">/bulan · QRIS</div><ul class="plan-feats"><li class="hl">1000 req/hari</li><li class="hl">100 req/jam</li><li class="hl">20 req/menit</li><li>Akses semua endpoint</li><li>Priority support</li></ul><a href="/register" class="btn btn-primary btn-plan" style="background:#f8fafc; color:#0f172a;">Upgrade Premium</a></div>
-      <div class="plan-card c-vip reveal stagger-3"><div class="plan-tier">VIP</div><div class="plan-price">Rp 59K</div><div class="plan-sub">/bulan · QRIS</div><ul class="plan-feats"><li class="hl">10.000 req/hari</li><li class="hl">500 req/jam</li><li class="hl">60 req/menit</li><li>Akses semua endpoint</li><li>24/7 support</li></ul><a href="/register" class="btn btn-ghost btn-plan">Upgrade VIP</a></div>
-      <div class="plan-card c-vvip reveal stagger-4"><div class="plan-tier">VVIP</div><div class="plan-price">Rp 89K</div><div class="plan-sub">/bulan · QRIS</div><ul class="plan-feats"><li class="hl">Unlimited requests</li><li>Unlimited rate</li><li>Priority queue tertinggi</li><li>3 API keys</li></ul><a href="/register" class="btn btn-ghost btn-plan">Go VVIP</a></div>
-    </div>
-  </div>
-</section>
+<section id="plans" style="background:rgba(0,0,0,0.01);border-top:1px solid rgba(0,0,0,0.03);border-bottom:1px solid rgba(0,0,0,0.03)"><div class="container"><div class="s-tag reveal">Pricing</div><h2 class="s-h reveal stagger-1">Pilih Plan<br>yang Tepat</h2><p class="s-p reveal stagger-2">Mulai gratis selamanya. Upgrade kapanpun, limit langsung bertambah otomatis.</p><div class="plans-grid"><div class="plan-card c-free reveal stagger-1"><div class="plan-tier">Free</div><div class="plan-price">Rp 0</div><div class="plan-sub">selamanya gratis</div><ul class="plan-feats"><li class="hl">100 req/hari</li><li class="hl">20 req/jam</li><li class="hl">5 req/menit</li><li>Endpoint public</li><li>Community support</li></ul><a href="/register" class="btn btn-ghost btn-plan">Mulai Gratis</a></div><div class="plan-card c-premium pop reveal stagger-2"><div class="pop-badge">POPULAR</div><div class="plan-tier">Premium</div><div class="plan-price">Rp 29K</div><div class="plan-sub">/bulan · QRIS</div><ul class="plan-feats"><li class="hl">1000 req/hari</li><li class="hl">100 req/jam</li><li class="hl">20 req/menit</li><li>Akses semua endpoint</li><li>Priority support</li></ul><a href="/register" class="btn btn-primary btn-plan" style="background:#f8fafc; color:#0f172a;">Upgrade Premium</a></div><div class="plan-card c-vip reveal stagger-3"><div class="plan-tier">VIP</div><div class="plan-price">Rp 59K</div><div class="plan-sub">/bulan · QRIS</div><ul class="plan-feats"><li class="hl">10.000 req/hari</li><li class="hl">500 req/jam</li><li class="hl">60 req/menit</li><li>Akses semua endpoint</li><li>24/7 support</li></ul><a href="/register" class="btn btn-ghost btn-plan">Upgrade VIP</a></div><div class="plan-card c-vvip reveal stagger-4"><div class="plan-tier">VVIP</div><div class="plan-price">Rp 89K</div><div class="plan-sub">/bulan · QRIS</div><ul class="plan-feats"><li class="hl">Unlimited requests</li><li>Unlimited rate</li><li>Priority queue tertinggi</li><li>3 API keys</li></ul><a href="/register" class="btn btn-ghost btn-plan">Go VVIP</a></div></div></div></section>
 
 <!-- HOW IT WORKS -->
 <section><div class="container"><div class="s-tag reveal">How It Works</div><h2 class="s-h reveal stagger-1">Mulai dalam<br>3 langkah</h2><div class="steps"><div class="step reveal stagger-1"><div class="step-num">01</div><h4>Daftar Akun</h4><p>Buat akun gratis. Langsung masuk dashboard.</p></div><div class="step reveal stagger-2"><div class="step-num">02</div><h4>Pilih Plan</h4><p>Gunakan free atau upgrade via Pakasir.</p></div><div class="step reveal stagger-3"><div class="step-num">03</div><h4>Mulai Coding</h4><p>Sertakan API key atau gunakan session.</p></div></div></div></section>
 
 <!-- PAYMENT -->
-<section id="payment" style="background:rgba(0,0,0,0.01);border-top:1px solid rgba(0,0,0,0.03)">
-  <div class="container"><div class="s-tag reveal">Payment via Pakasir</div><h2 class="s-h reveal stagger-1">Bayar otomatis,<br>plan aktif instan</h2><p class="s-p reveal stagger-2">Semua pembayaran diproses otomatis via Pakasir.</p><div class="pm-grid"><div class="pm-badge">QRIS</div><div class="pm-badge">BNI VA</div><div class="pm-badge">BRI VA</div><div class="pm-badge">BCA VA</div><div class="pm-badge">GoPay</div><div class="pm-badge">OVO</div><div class="pm-badge">DANA</div><div class="pm-badge">ShopeePay</div><div class="pm-badge">Credit Card</div><div class="pm-badge">Indomaret</div><div class="pm-badge">Alfamart</div></div></div>
-</section>
+<section id="payment" style="background:rgba(0,0,0,0.01);border-top:1px solid rgba(0,0,0,0.03)"><div class="container"><div class="s-tag reveal">Payment via Pakasir</div><h2 class="s-h reveal stagger-1">Bayar otomatis,<br>plan aktif instan</h2><p class="s-p reveal stagger-2">Semua pembayaran diproses otomatis via Pakasir.</p><div class="pm-grid"><div class="pm-badge">QRIS</div><div class="pm-badge">BNI VA</div><div class="pm-badge">BRI VA</div><div class="pm-badge">BCA VA</div><div class="pm-badge">GoPay</div><div class="pm-badge">OVO</div><div class="pm-badge">DANA</div><div class="pm-badge">ShopeePay</div><div class="pm-badge">Credit Card</div><div class="pm-badge">Indomaret</div><div class="pm-badge">Alfamart</div></div></div></section>
 
-<!-- API CONSOLE (Try API tanpa API key) -->
+<!-- API CONSOLE (dengan Preview, Headers, CURL) -->
 <section id="api-console" style="background:rgba(0,0,0,0.02);border-top:1px solid rgba(0,0,0,0.03);border-bottom:1px solid rgba(0,0,0,0.03)">
   <div class="container">
     <div class="s-tag reveal">Try API Console</div>
@@ -405,13 +403,41 @@ footer{
   </div>
 </section>
 
-<!-- MODAL untuk eksekusi API -->
+<!-- MODAL dengan Tabs (Preview, Headers, CURL) -->
 <div class="modal fade" id="apiModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
-      <div class="modal-header"><div><h5 class="modal-title" id="apiModalTitle"></h5><p class="text-muted small mb-0" id="apiModalDesc"></p></div><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-      <div class="modal-body"><pre id="apiModalEndpoint" class="bg-light p-2 rounded small"></pre><div id="apiModalParams"></div><div id="apiModalLoader" class="d-none text-center py-3"><div class="spinner-border text-primary"></div><p class="mt-2">Mengeksekusi...</p></div><pre id="apiModalResponse" class="bg-dark text-white p-3 rounded d-none" style="max-height: 400px; overflow: auto;"></pre></div>
-      <div class="modal-footer"><button id="apiModalExecuteBtn" class="btn btn-primary">Execute</button><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button></div>
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title" id="apiModalTitle"></h5>
+          <p class="text-muted small mb-0" id="apiModalDesc"></p>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <pre id="apiModalEndpoint" class="bg-light p-2 rounded small"></pre>
+        <div id="apiModalParams"></div>
+        <div class="response-meta" id="responseMeta" style="display:none;">
+          <span><span id="responseStatus"></span></span>
+          <span>⏱️ <span id="responseTime"></span> ms</span>
+          <button id="clearResponseBtn" class="btn btn-sm btn-secondary">Clear</button>
+        </div>
+        <div id="apiModalLoader" class="d-none text-center py-3"><div class="spinner-border text-primary"></div><p class="mt-2">Mengeksekusi...</p></div>
+        <ul class="nav nav-tabs response-tabs" id="responseTabs" role="tablist" style="display:none;">
+          <li class="nav-item" role="presentation"><button class="nav-link active" id="preview-tab" data-bs-toggle="tab" data-bs-target="#preview" type="button" role="tab">Preview</button></li>
+          <li class="nav-item" role="presentation"><button class="nav-link" id="headers-tab" data-bs-toggle="tab" data-bs-target="#headers" type="button" role="tab">Headers</button></li>
+          <li class="nav-item" role="presentation"><button class="nav-link" id="curl-tab" data-bs-toggle="tab" data-bs-target="#curl" type="button" role="tab">CURL</button></li>
+        </ul>
+        <div class="tab-content response-pane" id="responseTabContent" style="display:none;">
+          <div class="tab-pane fade show active" id="preview" role="tabpanel"><pre id="previewContent" style="margin:0;font-family:monospace;white-space:pre-wrap;"></pre></div>
+          <div class="tab-pane fade" id="headers" role="tabpanel"><pre id="headersContent" style="margin:0;font-family:monospace;white-space:pre-wrap;"></pre></div>
+          <div class="tab-pane fade" id="curl" role="tabpanel"><pre id="curlContent" style="margin:0;font-family:monospace;white-space:pre-wrap;"></pre></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="apiModalExecuteBtn" class="btn btn-primary">Execute Request</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+      </div>
     </div>
   </div>
 </div>
@@ -528,6 +554,10 @@ function renderConsoleCards(apis) {
 function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
 
 let currentApi = null;
+let lastResponseHeaders = null;
+let lastResponseData = null;
+let lastCurlCommand = '';
+
 function openApiModal(api) {
   currentApi = api;
   document.getElementById('apiModalTitle').innerText = `${api.method} ${api.name}`;
@@ -543,11 +573,19 @@ function openApiModal(api) {
   } else {
     paramsContainer.innerHTML = '<div class="alert alert-info">Tidak ada parameter yang diperlukan.</div>';
   }
-  document.getElementById('apiModalResponse').classList.add('d-none');
+  // Reset tampilan respons
+  document.getElementById('responseMeta').style.display = 'none';
+  document.getElementById('responseTabs').style.display = 'none';
+  document.getElementById('responseTabContent').style.display = 'none';
   document.getElementById('apiModalLoader').classList.add('d-none');
+  document.getElementById('apiModalExecuteBtn').disabled = false;
+  lastResponseHeaders = null;
+  lastResponseData = null;
+  // Hapus event listener lama, pasang baru
   document.getElementById('apiModalExecuteBtn').onclick = executeApiRequest;
   new bootstrap.Modal(document.getElementById('apiModal')).show();
 }
+
 async function executeApiRequest() {
   const api = currentApi;
   const params = {};
@@ -563,43 +601,110 @@ async function executeApiRequest() {
   } else {
     options.body = JSON.stringify(params);
   }
+
+  // Generate curl command
+  let curlCmd = `curl -X ${api.method} '${url}'`;
+  if (options.headers) {
+    for (let [k, v] of Object.entries(options.headers)) {
+      curlCmd += ` \\\n  -H '${k}: ${v}'`;
+    }
+  }
+  if (options.body) {
+    curlCmd += ` \\\n  -d '${JSON.stringify(params)}'`;
+  }
+  curlCmd += ` \\\n  --cookie 'sid=YOUR_SESSION_COOKIE'`; // instruksi umum
+  lastCurlCommand = curlCmd;
+
   const loader = document.getElementById('apiModalLoader');
-  const responsePre = document.getElementById('apiModalResponse');
+  const responseMeta = document.getElementById('responseMeta');
+  const responseTabs = document.getElementById('responseTabs');
+  const responseTabContent = document.getElementById('responseTabContent');
+  const previewContent = document.getElementById('previewContent');
+  const headersContent = document.getElementById('headersContent');
+  const curlContent = document.getElementById('curlContent');
+  const responseStatusSpan = document.getElementById('responseStatus');
+  const responseTimeSpan = document.getElementById('responseTime');
+
   loader.classList.remove('d-none');
-  responsePre.classList.add('d-none');
+  responseMeta.style.display = 'none';
+  responseTabs.style.display = 'none';
+  responseTabContent.style.display = 'none';
   document.getElementById('apiModalExecuteBtn').disabled = true;
+
+  const startTime = performance.now();
   try {
     const res = await fetch(url, options);
+    const endTime = performance.now();
+    const elapsed = Math.round(endTime - startTime);
     const contentType = res.headers.get('Content-Type') || '';
-    if (!res.ok) {
-      let errorText = await res.text();
-      if (contentType.includes('application/json')) {
-        try { let errJson = JSON.parse(errorText); errorText = JSON.stringify(errJson, null, 2); } catch(e) {}
-      }
-      responsePre.innerText = `HTTP ${res.status}\n${errorText.slice(0, 1000)}`;
-      responsePre.classList.remove('d-none');
-      return;
+    // Kumpulkan headers
+    let headersObj = {};
+    for (let [key, val] of res.headers.entries()) {
+      headersObj[key] = val;
     }
+    lastResponseHeaders = headersObj;
+    // Baca body
+    let bodyText = '';
     if (contentType.startsWith('image/')) {
       const blob = await res.blob();
       const imgUrl = URL.createObjectURL(blob);
-      responsePre.innerHTML = `<img src="${imgUrl}" style="max-width:100%; border-radius:8px;">`;
+      bodyText = `<img src="${imgUrl}" style="max-width:100%; border-radius:8px;">`;
     } else if (contentType.includes('application/json')) {
       const data = await res.json();
-      responsePre.innerText = JSON.stringify(data, null, 2);
+      bodyText = JSON.stringify(data, null, 2);
+      lastResponseData = data;
     } else {
-      const text = await res.text();
-      responsePre.innerText = text;
+      bodyText = await res.text();
+      lastResponseData = bodyText;
     }
-    responsePre.classList.remove('d-none');
+    // Tampilkan metadata
+    responseStatusSpan.innerHTML = `<span class="badge-status">${res.status} ${res.statusText}</span>`;
+    responseTimeSpan.innerText = elapsed;
+    responseMeta.style.display = 'flex';
+    // Isi tab Preview
+    if (contentType.startsWith('image/')) {
+      previewContent.innerHTML = bodyText;
+    } else {
+      previewContent.innerText = bodyText;
+    }
+    // Isi tab Headers
+    let headersText = '';
+    for (let [k, v] of Object.entries(headersObj)) {
+      headersText += `${k}: ${v}\n`;
+    }
+    headersContent.innerText = headersText;
+    // Isi tab CURL
+    curlContent.innerText = lastCurlCommand;
+    responseTabs.style.display = 'flex';
+    responseTabContent.style.display = 'block';
   } catch (err) {
-    responsePre.innerText = `Network Error: ${err.message}`;
-    responsePre.classList.remove('d-none');
+    responseStatusSpan.innerHTML = `<span class="badge-status bg-danger">Error</span>`;
+    responseTimeSpan.innerText = '0';
+    responseMeta.style.display = 'flex';
+    previewContent.innerText = `Network Error: ${err.message}`;
+    headersContent.innerText = '';
+    curlContent.innerText = lastCurlCommand;
+    responseTabs.style.display = 'flex';
+    responseTabContent.style.display = 'block';
   } finally {
     loader.classList.add('d-none');
     document.getElementById('apiModalExecuteBtn').disabled = false;
+    // Aktifkan tab pertama
+    const firstTab = new bootstrap.Tab(document.getElementById('preview-tab'));
+    firstTab.show();
   }
 }
+
+// Clear response
+document.getElementById('clearResponseBtn')?.addEventListener('click', () => {
+  document.getElementById('responseMeta').style.display = 'none';
+  document.getElementById('responseTabs').style.display = 'none';
+  document.getElementById('responseTabContent').style.display = 'none';
+  document.getElementById('previewContent').innerText = '';
+  document.getElementById('headersContent').innerText = '';
+  document.getElementById('curlContent').innerText = '';
+});
+
 loadEndpointsForConsole();
 
 /* ========== 3D CARD EFFECTS ========== */
