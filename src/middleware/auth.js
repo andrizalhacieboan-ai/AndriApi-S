@@ -1,12 +1,9 @@
-// src/middleware/auth.js  
 const { getDb } = require('../db/turso');
 const { generateSessionId } = require('../utils/apikey');
 const crypto = require('crypto');
 
 const SESSION_COOKIE = 'sid';
 const SESSION_TTL_DAYS = 7;
-
-// ── helpers ──────────────────────────────────────────────────────────────────
 
 function signValue(val, secret) {
   const hmac = crypto.createHmac('sha256', secret || 'default-secret');
@@ -22,9 +19,29 @@ function unsignValue(signed, secret) {
   return val;
 }
 
-// ── create session ────────────────────────────────────────────────────────────
+// Pastikan tabel sessions ada (fallback)
+async function ensureSessionsTable() {
+  const db = getDb();
+  try {
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS sessions (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        expires_at TEXT NOT NULL,
+        ip TEXT,
+        ua TEXT,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `);
+  } catch (err) {
+    console.error('[Auth] Failed to ensure sessions table:', err.message);
+    throw err;
+  }
+}
 
 async function createSession(userId, req, res) {
+  await ensureSessionsTable(); // fallback safety
   const db = getDb();
   const sid = generateSessionId();
   const expires = new Date();
@@ -45,8 +62,6 @@ async function createSession(userId, req, res) {
   return sid;
 }
 
-// ── destroy session ───────────────────────────────────────────────────────────
-
 async function destroySession(req, res) {
   const signed = req.cookies?.[SESSION_COOKIE];
   if (signed) {
@@ -57,8 +72,6 @@ async function destroySession(req, res) {
   }
   res.clearCookie(SESSION_COOKIE);
 }
-
-// ── resolve session → user ────────────────────────────────────────────────────
 
 async function resolveUser(req) {
   const signed = req.cookies?.[SESSION_COOKIE];
@@ -78,8 +91,6 @@ async function resolveUser(req) {
   return result.rows[0];
 }
 
-// ── middleware: web pages (redirect to /login) ───────────────────────────────
-
 function requireAuth(req, res, next) {
   resolveUser(req).then(user => {
     if (!user) return res.redirect('/login');
@@ -88,27 +99,21 @@ function requireAuth(req, res, next) {
   }).catch(() => res.redirect('/login'));
 }
 
-// ── middleware: API endpoints (return JSON) ──────────────────────────────────
-
 function requireAuthJson(req, res, next) {
   resolveUser(req).then(user => {
-    if (!user) return res.status(401).json({ status:false, statusCode:401, message:'Login required.', error:'UNAUTHORIZED' });
+    if (!user) return res.status(401).json({ status: false, statusCode: 401, message: 'Login required.', error: 'UNAUTHORIZED' });
     req.user = user;
     next();
-  }).catch(() => res.status(500).json({ status:false, statusCode:500, message:'Auth error.', error:'SERVER_ERROR' }));
+  }).catch(() => res.status(500).json({ status: false, statusCode: 500, message: 'Auth error.', error: 'SERVER_ERROR' }));
 }
-
-// ── middleware: admin only ────────────────────────────────────────────────────
 
 function requireAdmin(req, res, next) {
   resolveUser(req).then(user => {
-    if (!user || user.role !== 'admin') return res.status(403).json({ status:false, statusCode:403, message:'Admin only.', error:'FORBIDDEN' });
+    if (!user || user.role !== 'admin') return res.status(403).json({ status: false, statusCode: 403, message: 'Admin only.', error: 'FORBIDDEN' });
     req.user = user;
     next();
-  }).catch(() => res.status(403).json({ status:false, statusCode:403, message:'Forbidden.', error:'FORBIDDEN' }));
+  }).catch(() => res.status(403).json({ status: false, statusCode: 403, message: 'Forbidden.', error: 'FORBIDDEN' }));
 }
-
-// ── middleware: admin web page ────────────────────────────────────────────────
 
 function requireAdminPage(req, res, next) {
   resolveUser(req).then(user => {
