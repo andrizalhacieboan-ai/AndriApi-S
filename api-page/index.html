@@ -367,21 +367,12 @@ footer{
       <a href="#plans" class="btn btn-ghost">Lihat Plans</a>
     </div>
     <div class="terminal reveal stagger-4">
-  <div class="t-header">
-    <div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div>
-    <span class="t-title">Response — POST /api/ai/dolphin</span>
-  </div>
-  <div class="t-body" id="dolphin-body">
-    <div><span class="tc">// Loading...</span></div>
-  </div>
-</div>
-
-<script>
-fetch('https://andri-api-v1.vercel.app/api/ai/dolphin', {
+      <div class="t-header"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div><span class="t-title">Response — GET /random/ba</span></div>
+      <div class="t-body"><div><span class="tc">200 OK</span></div><div><span class="tv"></span></div><br><div><span class="tc">fetch('https://andri-api-v1.vercel.app/api/ai/dolphin', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'x-api-key': 'YOU APIKEY'
+    'x-api-key': 'AND+xxxxxxxx'
   },
   body: JSON.stringify({
     prompt: 'Jelaskan konsep karma dalam satu paragraf',
@@ -389,23 +380,9 @@ fetch('https://andri-api-v1.vercel.app/api/ai/dolphin', {
   })
 })
 .then(res => res.json())
-.then(data => {
-  const body = document.getElementById('dolphin-body');
-  
-  // Ini yang di-ubah: ganti [Binary Image Data] jadi data.data
-  if (data.data) {
-    body.innerHTML = `<div><span class="tc">// 200 OK</span></div>
-                      <div><span class="tv">${data.data}</span></div>`;
-  } else {
-    body.innerHTML = `<div><span class="tc">// 401 Unauthorized</span></div>
-                      <div>{<span class="tk">"status"</span>:<span class="tb">false</span>, <span class="tk">"message"</span>:<span class="ts">"Login required."</span>}</div>`;
-  }
-})
-.catch(err => {
-  document.getElementById('dolphin-body').innerHTML = 
-    `<div><span class="tc">// Error</span></div><div><span class="ts">${err.message}</span></div>`;
-});
-</script>
+.then(data => console.log(data.data));</span></div><div>{<span class="tk">"status"</span>:<span class="tb">true</span>, <span class="tk">"message"</span>:<span class="ts">"Login required."</span>}</div></div>
+    </div>
+  </div>
 </section>
 
 <!-- STATS BAR -->
