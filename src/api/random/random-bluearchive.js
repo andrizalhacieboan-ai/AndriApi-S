@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { requireAuthJson } = require('../../middleware/auth'); // ✅ pakai session, bukan API key
+const { apiKeyMiddleware } = require('../../middleware/ratelimit');
 
 module.exports = function(app) {
   async function getBlueArchiveImage() {
@@ -16,8 +16,8 @@ module.exports = function(app) {
     }
   }
 
-  // Endpoint: GET /random/ba
-  app.get('/random/ba', requireAuthJson, async (req, res) => {
+  // Endpoint: GET /api/random/ba
+  app.get('/api/random/ba', apiKeyMiddleware, async (req, res) => {
     try {
       const imgBuffer = await getBlueArchiveImage();
       res.writeHead(200, {
