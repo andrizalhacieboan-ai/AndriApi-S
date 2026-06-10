@@ -13,7 +13,7 @@ module.exports = function(app) {
 
       const [user, keys, daily, topEp, statusDist, monthly, txs] = await Promise.all([
         db.execute({ sql:'SELECT id,name,email,plan,role,avatar,bio,plan_expires_at,created_at FROM users WHERE id=?', args:[uid] }),
-        db.execute({ sql:'SELECT * FROM api_keys WHERE user_id=? ORDER BY created_at DESC', args:[uid] }),
+        db.execute({ sql:'SELECT id,user_id,key,name,plan,is_active,requests_today,requests_total,last_reset_date,expires_at,created_at FROM api_keys WHERE user_id=? ORDER BY created_at DESC', args:[uid] }),
         db.execute({ sql:`SELECT DATE(created_at) as date, COUNT(*) as count FROM api_logs WHERE user_id=? AND created_at>=date('now','-7 days') GROUP BY DATE(created_at) ORDER BY date ASC`, args:[uid] }),
         db.execute({ sql:`SELECT endpoint, COUNT(*) as count FROM api_logs WHERE user_id=? GROUP BY endpoint ORDER BY count DESC LIMIT 5`, args:[uid] }),
         db.execute({ sql:`SELECT status_code, COUNT(*) as count FROM api_logs WHERE user_id=? AND status_code IS NOT NULL GROUP BY status_code`, args:[uid] }),
