@@ -9,7 +9,6 @@ function makeTursoClient(url, authToken) {
   const httpUrl = url.replace(/^libsql:\/\//, 'https://');
 
   async function execute(sqlOrObj, args) {
-    // Accept both: execute('SQL', [args]) and execute({ sql, args })
     let sql, params;
     if (typeof sqlOrObj === 'string') {
       sql    = sqlOrObj;
@@ -19,7 +18,6 @@ function makeTursoClient(url, authToken) {
       params = sqlOrObj.args || [];
     }
 
-    // Convert params: undefined/null → null, others stay as-is
     const safeParams = params.map(v => (v === undefined ? null : v));
 
     const body = {
@@ -86,7 +84,6 @@ function makeTursoClient(url, authToken) {
 }
 
 // ── In-memory SQLite fallback (for local dev without Turso) ──────────────────
-let _betterSqlite = null;
 function makeLocalClient(db) {
   return {
     execute(sqlOrObj, args) {
@@ -95,7 +92,6 @@ function makeLocalClient(db) {
       const safe   = params.map(v => (v === undefined ? null : v));
       try {
         const stmt = db.prepare(sql);
-        // Is it a SELECT?
         if (/^\s*SELECT/i.test(sql)) {
           const rows = stmt.all(...safe);
           return Promise.resolve({ rows, rowsAffected: 0 });
@@ -123,7 +119,6 @@ function getDb() {
     _db = makeTursoClient(url, token);
     console.log('[DB] Using Turso remote database');
   } else {
-    // Local fallback: better-sqlite3 in-memory
     try {
       const Database = require('better-sqlite3');
       const sqliteDb = new Database(':memory:');
@@ -191,23 +186,11 @@ async function initDb() {
     await db.execute(sql);
   }
 
-  // ── Auto-Migration: Inject missing columns for existing production tables ──
-  try {
-    await db.execute(`ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1`);
-  } catch (e) {}
-  
-  try {
-    await db.execute(`ALTER TABLE api_keys ADD COLUMN is_active INTEGER DEFAULT 1`);
-  } catch (e) {}
-
-  try {
-    await db.execute(`ALTER TABLE sessions ADD COLUMN ip TEXT`);
-  } catch (e) {}
-
-  try {
-    await db.execute(`ALTER TABLE sessions ADD COLUMN ua TEXT`);
-  } catch (e) {}
-  // ───────────────────────────────────────────────────────────────────────────
+  // ── Auto-Migration: Menjaga kompatibilitas database lama ──
+  try { await db.execute(`ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1`); } catch (e) {}
+  try { await db.execute(`ALTER TABLE api_keys ADD COLUMN is_active INTEGER DEFAULT 1`); } catch (e) {}
+  try { await db.execute(`ALTER TABLE sessions ADD COLUMN ip TEXT`); } catch (e) {}
+  try { await db.execute(`ALTER TABLE sessions ADD COLUMN ua TEXT`); } catch (e) {}
 
   // Seed plans
   const planCount = await db.execute('SELECT COUNT(*) as c FROM plans');
@@ -230,9 +213,7 @@ async function initDb() {
   const adminEmail = process.env.ADMIN_EMAIL;
   const adminPass  = process.env.ADMIN_PASSWORD;
 
-  if (!adminEmail || !adminPass) {
-    console.warn('[DB] ADMIN_EMAIL or ADMIN_PASSWORD not set — skipping admin seed');
-  } else {
+  if (adminEmail && adminPass) {
     const bcrypt = require('bcryptjs');
     const { generateUUID, generateApiKey } = require('../utils/apikey');
 
@@ -242,7 +223,7 @@ async function initDb() {
       const uid    = generateUUID();
       const akId   = generateUUID();
       await db.execute({ sql:`INSERT INTO users (id,name,email,password,role,plan) VALUES (?,?,?,?,?,?)`, args:[uid,'Admin',adminEmail,hashed,'admin','vvip'] });
-      await db.execute({ sql:`INSERT INTO api_keys (id,user_id,key,plan,name) VALUES (?,?,?,?,?)`, args:[akId,uid,generateApiKey(),'vvip','Admin Key'] });
+      await db.execute({ sql:`INSERT INTO api_keys (id,user_id,key,plan,name) VALUES (?,?,?,'free','Default Key')`, args:[akId,uid,generateApiKey()] });
       console.log(`[DB] Admin seeded: ${adminEmail}`);
     }
   }
