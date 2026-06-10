@@ -29,8 +29,8 @@ module.exports = function(app) {
       const hashed = await bcrypt.hash(password, 12);
       const uid    = generateUUID();
       const akId   = generateUUID();
-      // Note: API key is NOT auto-generated. User generate manual dari profile.
 
+      // Secara default, pendaftaran baru langsung mendapatkan Default API Key gratisan (plan free)
       await db.execute({ sql:`INSERT INTO users (id,name,email,password,plan) VALUES (?,?,?,?,'free')`, args:[uid, name.trim(), email.toLowerCase(), hashed] });
       await db.execute({ sql:`INSERT INTO api_keys (id,user_id,key,plan,name) VALUES (?,?,?,'free','Default Key')`, args:[akId, uid, generateApiKey()] });
 
