@@ -41,15 +41,25 @@ async function ensureSessionsTable() {
 }
 
 async function createSession(userId, req, res) {
-  await ensureSessionsTable(); // fallback safety
   const db = getDb();
   const sid = generateSessionId();
   const expires = new Date();
   expires.setDate(expires.getDate() + SESSION_TTL_DAYS);
+  
+  // Ambil waktu sekarang dari server Node.js / Vercel
+  const now = new Date().toISOString(); 
 
   await db.execute({
-    sql: `INSERT INTO sessions (id, user_id, expires_at, ip, ua) VALUES (?,?,?,?,?)`,
-    args: [sid, userId, expires.toISOString(), req.ip || '', req.headers['user-agent'] || '']
+    // Kita tambahkan kolom created_at langsung di dalam query INSERT-nya
+    sql: `INSERT INTO sessions (id, user_id, expires_at, ip, ua, created_at) VALUES (?,?,?,?,?,?)`,
+    args: [
+      sid, 
+      userId, 
+      expires.toISOString(), 
+      req.ip || '', 
+      req.headers['user-agent'] || '', 
+      now // Data waktu dikirim langsung dari sini, bypass masalah default DB!
+    ]
   });
 
   const signed = signValue(sid, process.env.SESSION_SECRET);
