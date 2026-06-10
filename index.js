@@ -1,14 +1,13 @@
 require('dotenv').config();
 
-const express     = require('express');
-const chalk       = require('chalk');
-const fs          = require('fs');
-const cors        = require('cors');
-const path        = require('path');
-const cookieParser= require('cookie-parser');
+const express      = require('express');
+const chalk        = require('chalk');
+const path         = require('path');
+const cors         = require('cors');
+const cookieParser = require('cookie-parser');
 
-const { initDb } = require('./src/db/turso');
-const { resolveUser, requireAuth, requireAdminPage } = require('./src/middleware/auth');
+const { initDb }     = require('./src/db/turso');
+const { resolveUser } = require('./src/middleware/auth');
 
 const app  = express();
 const PORT = process.env.PORT || 4000;
@@ -21,7 +20,7 @@ app.use(cors({ credentials: true, origin: true }));
 app.use(cookieParser());
 app.use('/assets', express.static(path.join(__dirname, 'api-page/assets')));
 
-// Global creator tag
+// ── Global creator tag ────────────────────────────────────────────────────────
 app.use((req, res, next) => {
   const orig = res.json.bind(res);
   res.json = function(d) {
@@ -31,32 +30,29 @@ app.use((req, res, next) => {
   next();
 });
 
-// ── Page routes ──────────────────────────────────────────────────────────────
-app.get('/',          (req, res) => res.sendFile(path.join(__dirname, 'api-page/index.html')));
-app.get('/login',     (req, res) => res.sendFile(path.join(__dirname, 'api-page/auth.html')));
-app.get('/register',  (req, res) => res.sendFile(path.join(__dirname, 'api-page/auth.html')));
-app.get('/pricing',   (req, res) => res.sendFile(path.join(__dirname, 'api-page/index.html')));
-app.get('/docs',      (req, res) => res.sendFile(path.join(__dirname, 'api-page/docs.html')));
+// ── Page routes ───────────────────────────────────────────────────────────────
+const sendPage = (file) => (req, res) => res.sendFile(path.join(__dirname, 'api-page', file));
 
-app.get('/dashboard', (req, res, next) => {
-  resolveUser(req).then(u => {
-    if (!u) return res.redirect('/login');
-    res.sendFile(path.join(__dirname, 'api-page/dashboard.html'));
-  }).catch(() => res.redirect('/login'));
+app.get('/',         sendPage('index.html'));
+app.get('/login',    sendPage('auth.html'));
+app.get('/register', sendPage('auth.html'));
+app.get('/pricing',  sendPage('index.html'));
+app.get('/docs',     sendPage('docs.html'));
+
+app.get('/dashboard', (req, res) => {
+  resolveUser(req)
+    .then(u => u ? res.sendFile(path.join(__dirname, 'api-page/dashboard.html')) : res.redirect('/login'))
+    .catch(() => res.redirect('/login'));
 });
-
 app.get('/profile', (req, res) => {
-  resolveUser(req).then(u => {
-    if (!u) return res.redirect('/login');
-    res.sendFile(path.join(__dirname, 'api-page/profile.html'));
-  }).catch(() => res.redirect('/login'));
+  resolveUser(req)
+    .then(u => u ? res.sendFile(path.join(__dirname, 'api-page/profile.html')) : res.redirect('/login'))
+    .catch(() => res.redirect('/login'));
 });
-
 app.get('/admin', (req, res) => {
-  resolveUser(req).then(u => {
-    if (!u || u.role !== 'admin') return res.redirect('/login');
-    res.sendFile(path.join(__dirname, 'api-page/admin.html'));
-  }).catch(() => res.redirect('/login'));
+  resolveUser(req)
+    .then(u => (u && u.role === 'admin') ? res.sendFile(path.join(__dirname, 'api-page/admin.html')) : res.redirect('/login'))
+    .catch(() => res.redirect('/login'));
 });
 
 // ── API routes ────────────────────────────────────────────────────────────────
@@ -66,72 +62,107 @@ require('./src/routes/payment')(app);
 require('./src/routes/dashboard')(app);
 require('./src/routes/admin')(app);
 
-// ── Auto-load API endpoint files ──────────────────────────────────────────────
-// fs.readdirSync is NOT reliable on Vercel serverless at runtime.
-// All API files must be explicitly required so Vercel bundles them.
+// ── API endpoint files ────────────────────────────────────────────────────────
 const apiFiles = [
   './src/api/ai/ai-luminai',
   './src/api/random/random-bluearchive',
   './src/api/search/search-youtube',
 ];
-
-let totalRoutes = 0;
+let loaded = 0;
 for (const f of apiFiles) {
   try {
     require(f)(app);
-    totalRoutes++;
-    console.log(chalk.bgHex('#FFFF99').hex('#333').bold(` Loaded: ${path.basename(f)}.js `));
+    loaded++;
+    console.log(`[API] Loaded: ${path.basename(f)}.js`);
   } catch (e) {
-    console.error(chalk.red(`[ERR] Failed to load ${f}:`), e.message);
+    console.error(`[API] Failed to load ${f}: ${e.message}`);
   }
 }
-console.log(chalk.bgHex('#90EE90').hex('#333').bold(` ✓ ${totalRoutes} API routes loaded `));
+console.log(`[API] ${loaded} routes loaded`);
 
-// GET /api — info
-app.get('/api', (req, res) => {
-  res.status(200).json({
-    status:true, statusCode:200,
-    message:'Selamat datang di Andri API!',
-    version:'1.0.0', docs:'/docs',
-    auth:'Sertakan ?apikey=? atau header x-api-key',
-    plans:['free','premium','vip','vvip']
-  });
-});
+// ── /api info ─────────────────────────────────────────────────────────────────
+app.get('/api', (req, res) => res.json({
+  status: true, statusCode: 200,
+  message: 'Selamat datang di Andri API!',
+  version: '1.0.0', docs: '/docs',
+  auth: 'Sertakan ?apikey= atau header x-api-key',
+  plans: ['free', 'premium', 'vip', 'vvip']
+}));
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
 app.use((req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({
-      status:false, statusCode:404,
-      message:`Endpoint '${req.method} ${req.path}' tidak ditemukan.`,
-      error:'ENDPOINT_NOT_FOUND', docs:'/docs'
+      status: false, statusCode: 404,
+      message: `Endpoint '${req.method} ${req.path}' tidak ditemukan.`,
+      error: 'ENDPOINT_NOT_FOUND', docs: '/docs'
     });
   }
-  res.status(404).sendFile(path.join(__dirname, 'api-page/404.html'));
+  const f404 = path.join(__dirname, 'api-page/404.html');
+  const fs = require('fs');
+  if (fs.existsSync(f404)) return res.status(404).sendFile(f404);
+  res.status(404).json({ status: false, statusCode: 404, message: 'Not found.' });
 });
 
 // ── 500 ───────────────────────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
-  console.error(chalk.red('[ERROR]'), err.stack);
+  console.error('[ERROR]', err.stack || err.message);
   if (req.path.startsWith('/api/')) {
     return res.status(500).json({
-      status:false, statusCode:500,
-      message:'Internal server error.',
-      error:'SERVER_ERROR',
-      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+      status: false, statusCode: 500,
+      message: 'Internal server error.',
+      error: 'SERVER_ERROR'
     });
   }
-  res.status(500).sendFile(path.join(__dirname, 'api-page/500.html'));
+  const f500 = path.join(__dirname, 'api-page/500.html');
+  const fs = require('fs');
+  if (fs.existsSync(f500)) return res.status(500).sendFile(f500);
+  res.status(500).json({ status: false, statusCode: 500, message: 'Server error.' });
 });
 
-// ── Start ─────────────────────────────────────────────────────────────────────
-initDb().then(() => {
-  app.listen(PORT, () => {
-    console.log(chalk.bgHex('#90EE90').hex('#333').bold(` 🚀 Andri API running → http://localhost:${PORT} `));
-  });
-}).catch(err => {
-  console.error(chalk.red('[ERR] DB init:'), err.message);
-  process.exit(1);
-});
+// ── DB init + start ───────────────────────────────────────────────────────────
+// initDb is called once and cached — safe for both serverless and traditional hosting
+let dbReady = false;
+let dbInitPromise = null;
 
-module.exports = app;
+function ensureDb() {
+  if (dbReady) return Promise.resolve();
+  if (!dbInitPromise) {
+    dbInitPromise = initDb()
+      .then(() => { dbReady = true; console.log('[DB] Ready'); })
+      .catch(err => {
+        dbInitPromise = null; // allow retry on next request
+        console.error('[DB] Init failed:', err.message);
+        throw err;
+      });
+  }
+  return dbInitPromise;
+}
+
+// ── Vercel: export app directly (no app.listen) ───────────────────────────────
+// For Vercel serverless, DB is initialized on first request
+if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+  // Wrap every request to ensure DB is ready first
+  const originalHandler = app;
+  const wrappedApp = async (req, res) => {
+    try {
+      await ensureDb();
+    } catch (err) {
+      console.error('[STARTUP] DB init error:', err.message);
+      // Continue anyway — individual routes will fail gracefully
+    }
+    return originalHandler(req, res);
+  };
+  module.exports = wrappedApp;
+} else {
+  // Local dev: start normally
+  ensureDb()
+    .then(() => {
+      app.listen(PORT, () => console.log(`🚀 Andri API running → http://localhost:${PORT}`));
+    })
+    .catch(err => {
+      console.error('[FATAL] Cannot start without DB:', err.message);
+      process.exit(1);
+    });
+  module.exports = app;
+}
