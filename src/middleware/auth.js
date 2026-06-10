@@ -1,4 +1,4 @@
-// src/middleware/auth.js  — session auth via Turso, zero JWT
+// src/middleware/auth.js  
 const { getDb } = require('../db/turso');
 const { generateSessionId } = require('../utils/apikey');
 const crypto = require('crypto');
