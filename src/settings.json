@@ -50,7 +50,7 @@
           "name": "Blue Archive",
           "desc": "Random Blue Archive Image",
           "method": "GET",
-          "path": "/random/ba",
+          "path": "/api/random/ba",
           "innerDesc": "Klik Execute untuk mendapatkan gambar random Blue Archive.",
           "params": []
         }
