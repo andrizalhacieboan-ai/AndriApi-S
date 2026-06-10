@@ -1,15 +1,15 @@
 require('dotenv').config();
 
-const express      = require('express');
-const chalk        = require('chalk');
-const path         = require('path');
-const cors         = require('cors');
+const express = require('express');
+const chalk = require('chalk');
+const path = require('path');
+const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
-const { initDb }     = require('./src/db/turso');
+const { initDb, getDb } = require('./src/db/turso');
 const { resolveUser } = require('./src/middleware/auth');
 
-const app  = express();
+const app = express();
 const PORT = process.env.PORT || 4000;
 
 app.enable('trust proxy');
@@ -20,7 +20,7 @@ app.use(cors({ credentials: true, origin: true }));
 app.use(cookieParser());
 app.use('/assets', express.static(path.join(__dirname, 'api-page/assets')));
 
-// ── Global creator tag ────────────────────────────────────────────────────────
+// Global creator tag
 app.use((req, res, next) => {
   const orig = res.json.bind(res);
   res.json = function(d) {
@@ -30,14 +30,13 @@ app.use((req, res, next) => {
   next();
 });
 
-// ── Page routes ───────────────────────────────────────────────────────────────
+// Page routes
 const sendPage = (file) => (req, res) => res.sendFile(path.join(__dirname, 'api-page', file));
-
-app.get('/',         sendPage('index.html'));
-app.get('/login',    sendPage('auth.html'));
+app.get('/', sendPage('index.html'));
+app.get('/login', sendPage('auth.html'));
 app.get('/register', sendPage('auth.html'));
-app.get('/pricing',  sendPage('index.html'));
-app.get('/docs',     sendPage('docs.html'));
+app.get('/pricing', sendPage('index.html'));
+app.get('/docs', sendPage('docs.html'));
 
 app.get('/dashboard', (req, res) => {
   resolveUser(req)
@@ -55,14 +54,14 @@ app.get('/admin', (req, res) => {
     .catch(() => res.redirect('/login'));
 });
 
-// ── API routes ────────────────────────────────────────────────────────────────
+// API routes
 require('./src/routes/auth')(app);
 require('./src/routes/profile')(app);
 require('./src/routes/payment')(app);
 require('./src/routes/dashboard')(app);
 require('./src/routes/admin')(app);
 
-// ── API endpoint files ────────────────────────────────────────────────────────
+// API endpoint files
 const apiFiles = [
   './src/api/ai/ai-luminai',
   './src/api/random/random-bluearchive',
@@ -80,7 +79,6 @@ for (const f of apiFiles) {
 }
 console.log(`[API] ${loaded} routes loaded`);
 
-// ── /api info ─────────────────────────────────────────────────────────────────
 app.get('/api', (req, res) => res.json({
   status: true, statusCode: 200,
   message: 'Selamat datang di Andri API!',
@@ -89,7 +87,7 @@ app.get('/api', (req, res) => res.json({
   plans: ['free', 'premium', 'vip', 'vvip']
 }));
 
-// ── 404 ───────────────────────────────────────────────────────────────────────
+// 404
 app.use((req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({
@@ -104,7 +102,7 @@ app.use((req, res) => {
   res.status(404).json({ status: false, statusCode: 404, message: 'Not found.' });
 });
 
-// ── 500 ───────────────────────────────────────────────────────────────────────
+// 500
 app.use((err, req, res, next) => {
   console.error('[ERROR]', err.stack || err.message);
   if (req.path.startsWith('/api/')) {
@@ -120,45 +118,53 @@ app.use((err, req, res, next) => {
   res.status(500).json({ status: false, statusCode: 500, message: 'Server error.' });
 });
 
-// ── DB init + start ───────────────────────────────────────────────────────────
-// initDb is called once and cached — safe for both serverless and traditional hosting
-let dbReady = false;
+// ========== DB INITIALIZATION WITH PROPER LOCKING ==========
+let dbInitialized = false;
 let dbInitPromise = null;
 
-function ensureDb() {
-  if (dbReady) return Promise.resolve();
+async function ensureDb() {
+  if (dbInitialized) return true;
   if (!dbInitPromise) {
     dbInitPromise = initDb()
-      .then(() => { dbReady = true; console.log('[DB] Ready'); })
+      .then(() => {
+        dbInitialized = true;
+        console.log('[DB] Ready');
+        return true;
+      })
       .catch(err => {
-        dbInitPromise = null; // allow retry on next request
         console.error('[DB] Init failed:', err.message);
+        dbInitPromise = null; // allow retry
         throw err;
       });
   }
   return dbInitPromise;
 }
 
-// ── Vercel: export app directly (no app.listen) ───────────────────────────────
-// For Vercel serverless, DB is initialized on first request
+// For Vercel serverless: wrap app to ensure DB is ready before each request
 if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
-  // Wrap every request to ensure DB is ready first
   const originalHandler = app;
   const wrappedApp = async (req, res) => {
     try {
       await ensureDb();
     } catch (err) {
-      console.error('[STARTUP] DB init error:', err.message);
-      // Continue anyway — individual routes will fail gracefully
+      // DB not available - send error response immediately
+      return res.status(503).json({
+        status: false,
+        statusCode: 503,
+        message: 'Database is not ready. Please try again later.',
+        error: 'DB_UNAVAILABLE'
+      });
     }
     return originalHandler(req, res);
   };
   module.exports = wrappedApp;
 } else {
-  // Local dev: start normally
+  // Local development: ensure DB before starting server
   ensureDb()
     .then(() => {
-      app.listen(PORT, () => console.log(`🚀 Andri API running → http://localhost:${PORT}`));
+      app.listen(PORT, () => {
+        console.log(`🚀 Andri API running → http://localhost:${PORT}`);
+      });
     })
     .catch(err => {
       console.error('[FATAL] Cannot start without DB:', err.message);
