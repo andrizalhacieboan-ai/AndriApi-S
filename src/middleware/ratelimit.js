@@ -49,7 +49,9 @@ async function apiKeyMiddleware(req, res, next) {
   const db = getDb();
   try {
     const r = await db.execute({
-      sql: `SELECT ak.*, u.name as uname, u.email as uemail, u.is_active as uactive, u.plan as uplan
+      sql: `SELECT ak.id, ak.user_id, ak.key, ak.name, ak.plan, ak.is_active,
+                   ak.requests_today, ak.requests_total, ak.last_reset_date, ak.expires_at,
+                   u.name as uname, u.email as uemail, u.is_active as uactive, u.plan as uplan
             FROM api_keys ak JOIN users u ON ak.user_id=u.id
             WHERE ak.key=? AND ak.is_active=1`,
       args: [raw]
