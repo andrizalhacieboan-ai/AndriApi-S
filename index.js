@@ -19,6 +19,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors({ credentials: true, origin: true }));
 app.use(cookieParser());
 app.use('/assets', express.static(path.join(__dirname, 'api-page/assets')));
+app.get('/script.js', (req, res) => res.sendFile(path.join(__dirname, 'script.js')));
+app.get('/src/settings.json', (req, res) => res.sendFile(path.join(__dirname, 'src/settings.json')));
 
 // Global creator tag
 app.use((req, res, next) => {
