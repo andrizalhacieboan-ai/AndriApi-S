@@ -191,6 +191,19 @@ async function initDb() {
     await db.execute(sql);
   }
 
+  // ── Auto-Migration: Inject missing columns for existing production tables ──
+  try {
+    await db.execute(`ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1`);
+  } catch (e) {
+    // Silently ignore if column already exists
+  }
+  try {
+    await db.execute(`ALTER TABLE api_keys ADD COLUMN is_active INTEGER DEFAULT 1`);
+  } catch (e) {
+    // Silently ignore if column already exists
+  }
+  // ───────────────────────────────────────────────────────────────────────────
+
   // Seed plans
   const planCount = await db.execute('SELECT COUNT(*) as c FROM plans');
   if ((planCount.rows[0]?.c || 0) === 0) {
