@@ -56,7 +56,7 @@ module.exports = function(app) {
       }
 
       const db = getDb();
-      const r  = await db.execute({ sql:'SELECT * FROM users WHERE email=? AND is_active=1', args:[email.toLowerCase()] });
+      const r  = await db.execute({ sql:'SELECT id,name,email,password,role,plan,plan_expires_at,avatar,bio,is_active,created_at FROM users WHERE email=? AND is_active=1', args:[email.toLowerCase()] });
       if (r.rows.length === 0) {
         return res.status(401).json({ status:false, statusCode:401, message:'Email atau password salah.', error:'INVALID_CREDENTIALS' });
       }
