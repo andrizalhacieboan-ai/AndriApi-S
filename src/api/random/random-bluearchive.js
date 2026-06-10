@@ -1,32 +1,38 @@
-// src/api/random/random-bluearchive.js
 const axios = require('axios');
-const { apiKeyMiddleware } = require('../../middleware/ratelimit');
+const { requireAuthJson } = require('../../middleware/auth'); // ✅ pakai session, bukan API key
 
 module.exports = function(app) {
-  async function bluearchive() {
+  async function getBlueArchiveImage() {
     try {
       const { data } = await axios.get(
         'https://raw.githubusercontent.com/rynxzyy/blue-archive-r-img/refs/heads/main/links.json',
         { timeout: 10000 }
       );
-      const url = data[Math.floor(data.length * Math.random())];
+      const url = data[Math.floor(Math.random() * data.length)];
       const response = await axios.get(url, { responseType: 'arraybuffer', timeout: 15000 });
       return Buffer.from(response.data);
     } catch (error) {
-      throw error;
+      throw new Error(`Gagal mengambil gambar: ${error.message}`);
     }
   }
 
-  app.get('/api/random/ba', apiKeyMiddleware, async (req, res) => {
+  // Endpoint: GET /random/ba
+  app.get('/random/ba', requireAuthJson, async (req, res) => {
     try {
-      const img = await bluearchive();
+      const imgBuffer = await getBlueArchiveImage();
       res.writeHead(200, {
         'Content-Type': 'image/png',
-        'Content-Length': img.length,
+        'Content-Length': imgBuffer.length,
       });
-      res.end(img);
+      res.end(imgBuffer);
     } catch (error) {
-      res.status(500).json({ status: false, statusCode: 500, message: `Error: ${error.message}`, error: 'UPSTREAM_ERROR' });
+      console.error('[BlueArchive]', error.message);
+      res.status(500).json({
+        status: false,
+        statusCode: 500,
+        message: error.message,
+        error: 'UPSTREAM_ERROR'
+      });
     }
   });
 };
