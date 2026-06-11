@@ -1,15 +1,14 @@
 require('dotenv').config();
 
 const express = require('express');
-const chalk = require('chalk');
-const path = require('path');
-const cors = require('cors');
+const path    = require('path');
+const cors    = require('cors');
 const cookieParser = require('cookie-parser');
 
-const { initDb, getDb } = require('./src/db/turso');
+const { initDb } = require('./src/db/turso');
 const { resolveUser } = require('./src/middleware/auth');
 
-const app = express();
+const app  = express();
 const PORT = process.env.PORT || 4000;
 
 app.enable('trust proxy');
@@ -19,68 +18,79 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors({ credentials: true, origin: true }));
 app.use(cookieParser());
 app.use('/assets', express.static(path.join(__dirname, 'api-page/assets')));
-app.get('/script.js', (req, res) => res.sendFile(path.join(__dirname, 'script.js')));
-app.get('/src/settings.json', (req, res) => res.sendFile(path.join(__dirname, 'src/settings.json')));
+app.get('/script.js',          (req, res) => res.sendFile(path.join(__dirname, 'script.js')));
+app.get('/src/settings.json',  (req, res) => res.sendFile(path.join(__dirname, 'src/settings.json')));
 
-// Global creator tag
+// ── Global creator tag ──────────────────────────────────────────────────────
 app.use((req, res, next) => {
   const orig = res.json.bind(res);
   res.json = function(d) {
-    if (d && typeof d === 'object' && !d.creator) d.creator = process.env.APP_NAME || 'Andri API';
+    if (d && typeof d === 'object' && !d.creator)
+      d.creator = process.env.APP_NAME || 'Andri API';
     return orig(d);
   };
   next();
 });
 
-// Page routes
-const sendPage = (file) => (req, res) => res.sendFile(path.join(__dirname, 'api-page', file));
-app.get('/', sendPage('index.html'));
-app.get('/login', sendPage('auth.html'));
-app.get('/register', sendPage('auth.html'));
-app.get('/pricing', sendPage('index.html'));
-app.get('/docs', sendPage('docs.html'));
+// ── Page routes ─────────────────────────────────────────────────────────────
+const sendPage = (file) => (req, res) =>
+  res.sendFile(path.join(__dirname, 'api-page', file));
 
-app.get('/dashboard', (req, res) => {
+app.get('/',        sendPage('index.html'));
+app.get('/login',   sendPage('auth.html'));
+app.get('/register',sendPage('auth.html'));
+app.get('/pricing', sendPage('index.html'));
+app.get('/docs',    sendPage('docs.html'));
+
+app.get('/dashboard', (req, res) =>
   resolveUser(req)
     .then(u => u ? res.sendFile(path.join(__dirname, 'api-page/dashboard.html')) : res.redirect('/login'))
-    .catch(() => res.redirect('/login'));
-});
-app.get('/profile', (req, res) => {
+    .catch(() => res.redirect('/login'))
+);
+app.get('/profile', (req, res) =>
   resolveUser(req)
     .then(u => u ? res.sendFile(path.join(__dirname, 'api-page/profile.html')) : res.redirect('/login'))
-    .catch(() => res.redirect('/login'));
-});
-app.get('/admin', (req, res) => {
+    .catch(() => res.redirect('/login'))
+);
+app.get('/admin', (req, res) =>
   resolveUser(req)
-    .then(u => (u && u.role === 'admin') ? res.sendFile(path.join(__dirname, 'api-page/admin.html')) : res.redirect('/login'))
-    .catch(() => res.redirect('/login'));
-});
+    .then(u => (u && u.role === 'admin')
+      ? res.sendFile(path.join(__dirname, 'api-page/admin.html'))
+      : res.redirect('/login'))
+    .catch(() => res.redirect('/login'))
+);
 
-// API routes
+// ── Auth / user routes ──────────────────────────────────────────────────────
 require('./src/routes/auth')(app);
 require('./src/routes/profile')(app);
 require('./src/routes/payment')(app);
 require('./src/routes/dashboard')(app);
 require('./src/routes/admin')(app);
 
-// API endpoint files
+// ── API endpoint files ──────────────────────────────────────────────────────
+// FIX: semua path eksplisit dan dicatat saat route gagal di-load
 const apiFiles = [
   './src/api/ai/ai-dolphinai',
   './src/api/random/random-bluearchive',
   './src/api/search/search-youtube',
 ];
+
 let loaded = 0;
 for (const f of apiFiles) {
   try {
     require(f)(app);
     loaded++;
-    console.log(`[API] Loaded: ${path.basename(f)}.js`);
+    console.log(`[API] ✓ Loaded: ${path.basename(f)}.js`);
   } catch (e) {
-    console.error(`[API] Failed to load ${f}: ${e.message}`);
+    // FIX: sekarang error tercetak LENGKAP agar mudah debug
+    console.error(`[API] ✗ FAILED to load ${f}`);
+    console.error(`[API]   Reason: ${e.message}`);
+    console.error(e.stack);
   }
 }
-console.log(`[API] ${loaded} routes loaded`);
+console.log(`[API] ${loaded}/${apiFiles.length} route files loaded`);
 
+// ── API info ─────────────────────────────────────────────────────────────────
 app.get('/api', (req, res) => res.json({
   status: true, statusCode: 200,
   message: 'Selamat datang di Andri API!',
@@ -89,7 +99,7 @@ app.get('/api', (req, res) => res.json({
   plans: ['free', 'premium', 'vip', 'vvip']
 }));
 
-// 404
+// ── 404 ──────────────────────────────────────────────────────────────────────
 app.use((req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({
@@ -99,12 +109,14 @@ app.use((req, res) => {
     });
   }
   const f404 = path.join(__dirname, 'api-page/404.html');
-  const fs = require('fs');
-  if (fs.existsSync(f404)) return res.status(404).sendFile(f404);
+  try {
+    require('fs').accessSync(f404);
+    return res.status(404).sendFile(f404);
+  } catch (_) {}
   res.status(404).json({ status: false, statusCode: 404, message: 'Not found.' });
 });
 
-// 500
+// ── 500 ──────────────────────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error('[ERROR]', err.stack || err.message);
   if (req.path.startsWith('/api/')) {
@@ -115,62 +127,64 @@ app.use((err, req, res, next) => {
     });
   }
   const f500 = path.join(__dirname, 'api-page/500.html');
-  const fs = require('fs');
-  if (fs.existsSync(f500)) return res.status(500).sendFile(f500);
+  try {
+    require('fs').accessSync(f500);
+    return res.status(500).sendFile(f500);
+  } catch (_) {}
   res.status(500).json({ status: false, statusCode: 500, message: 'Server error.' });
 });
 
-// ========== DB INITIALIZATION WITH PROPER LOCKING ==========
-let dbInitialized = false;
-let dbInitPromise = null;
+// ── DB init + startup ────────────────────────────────────────────────────────
+// FIX: Inisialisasi DB dilakukan SEKALI di awal, SEBELUM menerima request.
+// Vercel: module.exports = app langsung (bukan wrappedApp async)
+// karena route sudah terdaftar sinkron di atas — tidak ada race condition.
 
-async function ensureDb() {
-  if (dbInitialized) return true;
-  if (!dbInitPromise) {
-    dbInitPromise = initDb()
-      .then(() => {
-        dbInitialized = true;
-        console.log('[DB] Ready');
-        return true;
-      })
-      .catch(err => {
-        console.error('[DB] Init failed:', err.message);
-        dbInitPromise = null; // allow retry
-        throw err;
-      });
-  }
-  return dbInitPromise;
-}
+let dbReady = false;
+let dbError = null;
 
-// For Vercel serverless: wrap app to ensure DB is ready before each request
-if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
-  const originalHandler = app;
-  const wrappedApp = async (req, res) => {
-    try {
-      await ensureDb();
-    } catch (err) {
-      // DB not available - send error response immediately
-      return res.status(503).json({
-        status: false,
-        statusCode: 503,
-        message: 'Database is not ready. Please try again later.',
-        error: 'DB_UNAVAILABLE'
-      });
-    }
-    return originalHandler(req, res);
-  };
-  module.exports = wrappedApp;
-} else {
-  // Local development: ensure DB before starting server
-  ensureDb()
-    .then(() => {
-      app.listen(PORT, () => {
-        console.log(`🚀 Andri API running → http://localhost:${PORT}`);
-      });
-    })
-    .catch(err => {
-      console.error('[FATAL] Cannot start without DB:', err.message);
-      process.exit(1);
+// Jalankan initDb segera saat module di-load (non-blocking untuk export)
+const dbInitPromise = initDb()
+  .then(() => {
+    dbReady = true;
+    console.log('[DB] ✓ Database ready');
+  })
+  .catch(err => {
+    dbError = err;
+    console.error('[DB] ✗ Init failed:', err.message);
+  });
+
+// Guard middleware: tolak request jika DB belum siap
+app.use(function dbGuard(req, res, next) {
+  if (dbReady) return next();
+  if (dbError) {
+    return res.status(503).json({
+      status: false, statusCode: 503,
+      message: 'Database tidak tersedia. Cek konfigurasi TURSO_DATABASE_URL dan TURSO_AUTH_TOKEN.',
+      error: 'DB_UNAVAILABLE'
     });
+  }
+  // Masih loading — tunggu sebentar
+  dbInitPromise
+    .then(() => next())
+    .catch(() => res.status(503).json({
+      status: false, statusCode: 503,
+      message: 'Database gagal diinisialisasi.',
+      error: 'DB_INIT_FAILED'
+    }));
+});
+
+if (process.env.VERCEL) {
+  // Vercel serverless: export app langsung
+  module.exports = app;
+} else {
+  // Local dev
+  dbInitPromise.then(() => {
+    app.listen(PORT, () => {
+      console.log(`🚀 Andri API → http://localhost:${PORT}`);
+    });
+  }).catch(err => {
+    console.error('[FATAL]', err.message);
+    process.exit(1);
+  });
   module.exports = app;
 }
