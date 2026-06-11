@@ -18,7 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors({ credentials: true, origin: true }));
 app.use(cookieParser());
 
-// ── DB init + startup (PINDAH KE ATAS) ────────────────────────────────────────
+// ── DB init + startup ────────────────────────────────────────────────────────
 let dbReady = false;
 let dbError = null;
 
@@ -104,26 +104,40 @@ require('./src/routes/payment')(app);
 require('./src/routes/dashboard')(app);
 require('./src/routes/admin')(app);
 
-// ── API endpoint files ──────────────────────────────────────────────────────
-const apiFiles = [
-  './src/api/ai/ai-dolphinai.js',
-  './src/api/random/random-bluearchive.js',
-  './src/api/search/search-youtube.js',
-];
-
+// ── API endpoint files (DIUBAH JADI STATIS UNTUK COMPATIBILITY CLOUD/VERCEL) ──
 let loaded = 0;
-for (const f of apiFiles) {
-  try {
-    require(f)(app);
-    loaded++;
-    console.log(`[API] ✓ Loaded: ${path.basename(f)}.js`);
-  } catch (e) {
-    console.error(`[API] ✗ FAILED to load ${f}`);
-    console.error(`[API]   Reason: ${e.message}`);
-    console.error(e.stack);
-  }
+
+// 1. Dolphin AI
+try {
+  require('./src/api/ai/ai-dolphinai.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: ai-dolphinai.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/ai/ai-dolphinai.js`);
+  console.error(`[API]   Reason: ${e.message}`);
 }
-console.log(`[API] ${loaded}/${apiFiles.length} route files loaded`);
+
+// 2. Blue Archive
+try {
+  require('./src/api/random/random-bluearchive.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: random-bluearchive.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/random/random-bluearchive.js`);
+  console.error(`[API]   Reason: ${e.message}`);
+}
+
+// 3. YouTube Search
+try {
+  require('./src/api/search/search-youtube.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: search-youtube.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/search/search-youtube.js`);
+  console.error(`[API]   Reason: ${e.message}`);
+}
+
+console.log(`[API] ${loaded}/3 route files loaded`);
 
 // ── API info ─────────────────────────────────────────────────────────────────
 app.get('/api', (req, res) => res.json({
