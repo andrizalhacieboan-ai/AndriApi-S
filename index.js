@@ -106,9 +106,9 @@ require('./src/routes/admin')(app);
 
 // ── API endpoint files ──────────────────────────────────────────────────────
 const apiFiles = [
-  './src/api/ai/ai-dolphinai',
-  './src/api/random/random-bluearchive',
-  './src/api/search/search-youtube',
+  './src/api/ai/ai-dolphinai.js',
+  './src/api/random/random-bluearchive.js',
+  './src/api/search/search-youtube.js',
 ];
 
 let loaded = 0;
@@ -129,7 +129,7 @@ console.log(`[API] ${loaded}/${apiFiles.length} route files loaded`);
 app.get('/api', (req, res) => res.json({
   status: true, statusCode: 200,
   message: 'Selamat datang di Andri API!',
-  version: '1.0.0', docs: '/docs',
+  version: '1.0.0', 
   auth: 'Sertakan ?apikey= atau header x-api-key',
   plans: ['free', 'premium', 'vip', 'vvip']
 }));
@@ -140,7 +140,7 @@ app.use((req, res) => {
     return res.status(404).json({
       status: false, statusCode: 404,
       message: `Endpoint '${req.method} ${req.path}' tidak ditemukan.`,
-      error: 'ENDPOINT_NOT_FOUND', docs: '/docs'
+      error: 'ENDPOINT_NOT_FOUND'
     });
   }
   const f404 = path.join(__dirname, 'api-page/404.html');
