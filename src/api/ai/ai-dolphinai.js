@@ -1,3 +1,11 @@
+/**
+ * Lokasi File: ./src/api/ai/ai-dolphinai.js
+ * Deskripsi: Handler Dolphin AI 24B terintegrasi dengan Turso API Key Rate Limit
+ */
+
+// PASTIKAN PATH IMPOR INI BENAR! 
+// Karena file ini berada di ./src/api/ai/ai-dolphinai.js,
+// maka untuk menuju ke ./src/middleware/ratelimit.js harus naik 2 tingkat (../../middleware/ratelimit)
 const { apiKeyMiddleware } = require('../../middleware/ratelimit'); 
 const axios = require('axios');
 
@@ -56,26 +64,29 @@ async function dolphinai({ messages, template = 'logical' } = {}) {
 
 module.exports = function(app) {
   
-  // Handler universal untuk menangani request GET dan POST
-  const handleDolphinRequest = async (req, res) => { 
+  // Daftarkan endpoint POST agar cocok dengan method di settings.json
+  app.post('/api/ai/dolphin', apiKeyMiddleware, async (req, res) => { 
     try {
-      // Mengambil input parameter secara fleksibel (bisa prompt, query, ataupun text)
-      const prompt = req.query.prompt || req.body.prompt || req.query.query || req.body.query || req.query.text || req.body.text;
-      const template = req.query.template || req.body.template || 'logical';
+      // Konsisten membaca payload dari req.body karena dikirim via POST oleh API Console
+      const prompt = req.body.prompt || req.query.prompt || req.body.query;
+      const template = req.body.template || req.query.template || 'logical';
 
       if (!prompt) {
         return res.status(400).json({
           status: false,
           statusCode: 400,
-          message: 'Parameter "prompt" atau "text" wajib diisi.',
+          message: 'Parameter "prompt" wajib diisi di dalam body request.',
           error: 'MISSING_PROMPT'
         });
       }
 
+      // Bungkus ke format array messages sesuai kebutuhan fungsi hulu dolphinai
       const messages = [{ role: 'user', content: prompt }];
+      
+      // Eksekusi scraping AI
       const response = await dolphinai({ messages, template });
 
-      // Struktur JSON disesuaikan agar cocok dengan visual terminal di landing page
+      // Return response JSON yang bersih dan rapi
       return res.status(200).json({
         status: true,
         statusCode: 200,
@@ -89,13 +100,9 @@ module.exports = function(app) {
       return res.status(500).json({ 
         status: false, 
         statusCode: 500,
-        message: err.message,
+        message: err.message || 'Terjadi kesalahan pada server internal.',
         error: 'SERVER_ERROR'
       });
     }
-  };
-
-  // Daftarkan middleware rate limit dan handler ke method GET & POST
-  app.get('/api/ai/dolphin', apiKeyMiddleware, handleDolphinRequest);
-  app.post('/api/ai/dolphin', apiKeyMiddleware, handleDolphinRequest);
+  });
 };
