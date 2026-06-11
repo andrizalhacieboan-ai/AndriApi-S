@@ -55,27 +55,47 @@ async function dolphinai({ messages, template = 'logical' } = {}) {
 }
 
 module.exports = function(app) {
-  app.post('/api/ai/dolphin', apiKeyMiddleware, async (req, res) => { 
+  
+  // Handler universal untuk menangani request GET dan POST
+  const handleDolphinRequest = async (req, res) => { 
     try {
-      const { prompt, template = 'logical' } = req.body;
+      // Mengambil input parameter secara fleksibel (bisa prompt, query, ataupun text)
+      const prompt = req.query.prompt || req.body.prompt || req.query.query || req.body.query || req.query.text || req.body.text;
+      const template = req.query.template || req.body.template || 'logical';
+
       if (!prompt) {
         return res.status(400).json({
           status: false,
           statusCode: 400,
-          message: 'Parameter "prompt" wajib diisi.',
+          message: 'Parameter "prompt" atau "text" wajib diisi.',
           error: 'MISSING_PROMPT'
         });
       }
+
       const messages = [{ role: 'user', content: prompt }];
       const response = await dolphinai({ messages, template });
+
+      // Struktur JSON disesuaikan agar cocok dengan visual terminal di landing page
       return res.status(200).json({
         status: true,
         statusCode: 200,
-        data: response,
-        creator: process.env.APP_NAME || 'Andri API'
+        message: "Success generating response",
+        data: {
+          result: response
+        }
       });
+
     } catch (err) {
-      return res.status(500).json({ status: false, message: err.message });
+      return res.status(500).json({ 
+        status: false, 
+        statusCode: 500,
+        message: err.message,
+        error: 'SERVER_ERROR'
+      });
     }
-  });
+  };
+
+  // Daftarkan middleware rate limit dan handler ke method GET & POST
+  app.get('/api/ai/dolphin', apiKeyMiddleware, handleDolphinRequest);
+  app.post('/api/ai/dolphin', apiKeyMiddleware, handleDolphinRequest);
 };
