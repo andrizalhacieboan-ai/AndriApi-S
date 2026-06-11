@@ -68,6 +68,16 @@
           "params": [
             { "name": "q", "required": true, "type": "text" }
           ]
+        },
+        {
+          "name": "Google Lens",
+          "desc": "Search information and visual matches from an image URL",
+          "method": "GET",
+          "path": "/api/tools/glen",
+          "innerDesc": "Masukkan URL gambar publik yang ingin dilacak menggunakan Google Lens.",
+          "params": [
+            { "name": "url", "required": true, "type": "text" }
+          ]
         }
       ]
     },
