@@ -137,6 +137,16 @@ try {
   console.error(`[API]   Reason: ${e.message}`);
 }
 
+// 4. TikTok Downloader (TAMBAHKAN INI)
+try {
+  require('./src/api/downloader/tiktok.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: tiktok.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/downloader/tiktok.js`);
+  console.error(`[API]   Reason: ${e.message}`);
+}
+
 console.log(`[API] ${loaded}/3 route files loaded`);
 
 // ── API info ─────────────────────────────────────────────────────────────────
