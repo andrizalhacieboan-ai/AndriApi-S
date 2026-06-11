@@ -1,14 +1,12 @@
 /**
  * Lokasi File: ./src/api/ai/ai-dolphinai.js
- * Deskripsi: Handler Dolphin AI 24B terintegrasi dengan Turso API Key Rate Limit
+ * Ditulis khusus untuk backend Andri API
  */
 
-// PASTIKAN PATH IMPOR INI BENAR! 
-// Karena file ini berada di ./src/api/ai/ai-dolphinai.js,
-// maka untuk menuju ke ./src/middleware/ratelimit.js harus naik 2 tingkat (../../middleware/ratelimit)
 const { apiKeyMiddleware } = require('../../middleware/ratelimit'); 
 const axios = require('axios');
 
+// Fungsi inti scraping data dari Dolphin AI upstream
 async function dolphinai({ messages, template = 'logical' } = {}) {
     const templates = ['logical', 'creative', 'summarize', 'code-beginner', 'code-advanced'];
     if (!Array.isArray(messages)) throw new Error('Messages must be an array.');
@@ -53,56 +51,74 @@ async function dolphinai({ messages, template = 'logical' } = {}) {
                 ?? null;
             if (content) parts.push(content);
         } catch {
-            // skip unparseable lines
+            // lewati baris jika gagal di-parse
         }
     }
 
     const result = parts.join('');
-    if (!result) throw new Error('No result found from upstream AI service.');
+    if (!result) throw new Error('Tidak ada respon yang diterima dari layanan Dolphin AI.');
     return result;
 }
 
 module.exports = function(app) {
-  
-  // Daftarkan endpoint POST agar cocok dengan method di settings.json
-  app.post('/api/ai/dolphin', apiKeyMiddleware, async (req, res) => { 
-    try {
-      // Konsisten membaca payload dari req.body karena dikirim via POST oleh API Console
-      const prompt = req.body.prompt || req.query.prompt || req.body.query;
-      const template = req.body.template || req.query.template || 'logical';
 
-      if (!prompt) {
-        return res.status(400).json({
-          status: false,
-          statusCode: 400,
-          message: 'Parameter "prompt" wajib diisi di dalam body request.',
-          error: 'MISSING_PROMPT'
-        });
-      }
+    // Handler universal untuk melayani request
+    const handleDolphin = async (req, res) => {
+        try {
+            // Fleksibel mengambil data dari body (POST dari Console) atau query (GET)
+            const prompt = req.body.prompt || req.query.prompt || req.body.query || req.query.query;
+            const template = req.body.template || req.query.template || 'logical';
 
-      // Bungkus ke format array messages sesuai kebutuhan fungsi hulu dolphinai
-      const messages = [{ role: 'user', content: prompt }];
-      
-      // Eksekusi scraping AI
-      const response = await dolphinai({ messages, template });
+            if (!prompt) {
+                return res.status(400).json({
+                    status: false,
+                    statusCode: 400,
+                    message: 'Parameter "prompt" wajib diisi.',
+                    error: 'MISSING_PROMPT'
+                });
+            }
 
-      // Return response JSON yang bersih dan rapi
-      return res.status(200).json({
-        status: true,
-        statusCode: 200,
-        message: "Success generating response",
-        data: {
-          result: response
+            const messages = [{ role: 'user', content: prompt }];
+            const response = await dolphinai({ messages, template });
+
+            // Format data disesuaikan agar dibaca sempurna oleh script.js frontend kamu
+            return res.status(200).json({
+                status: true,
+                statusCode: 200,
+                message: "Success generating response",
+                data: {
+                    result: response
+                }
+            });
+
+        } catch (err) {
+            return res.status(500).json({
+                status: false,
+                statusCode: 500,
+                message: err.message,
+                error: 'SERVER_ERROR'
+            });
         }
-      });
+    };
 
-    } catch (err) {
-      return res.status(500).json({ 
-        status: false, 
-        statusCode: 500,
-        message: err.message || 'Terjadi kesalahan pada server internal.',
-        error: 'SERVER_ERROR'
-      });
-    }
-  });
+    /**
+     * Gerbang Deteksi Bypass Khusus: 
+     * Jika request datang dari website utama kamu (Try Console) dan membawa cookie,
+     * request akan langsung diteruskan ke handler tanpa dicegat oleh apiKeyMiddleware.
+     */
+    const bypassOrCheckApiKey = (req, res, next) => {
+        const hasApiKey = req.query.apikey || req.headers['x-api-key'];
+        
+        // Jika user mengakses lewat Try Console dashboard (cookie ada) dan tidak bawa apikey
+        if (!hasApiKey && (req.cookies?.session || req.cookies?.token)) {
+            return next(); // Lolos langsung tanpa memicu error 401/404 dari ratelimit.js
+        }
+        
+        // Jika diakses dari bot atau luar, jalankan validasi API Key Turso DB bawaan kamu
+        return apiKeyMiddleware(req, res, next);
+    };
+
+    // Daftarkan ke Express untuk menangani method GET dan POST dari terminal page kamu
+    app.get('/api/ai/dolphin', bypassOrCheckApiKey, handleDolphin);
+    app.post('/api/ai/dolphin', bypassOrCheckApiKey, handleDolphin);
 };
