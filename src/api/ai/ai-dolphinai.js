@@ -1,4 +1,4 @@
-const { apiKeyMiddleware } = require('../../middleware/ratelimit'); // ← ganti
+const { apiKeyMiddleware } = require('../../middleware/ratelimit'); 
 const axios = require('axios');
 
 async function dolphinai({ messages, template = 'logical' } = {}) {
@@ -20,7 +20,6 @@ async function dolphinai({ messages, template = 'logical' } = {}) {
         timeout: 60000
     });
 
-    // Parse SSE / NDJSON streaming response
     const lines = String(data).split('\n');
     const parts = [];
 
@@ -28,12 +27,10 @@ async function dolphinai({ messages, template = 'logical' } = {}) {
         const trimmed = line.trim();
         if (!trimmed) continue;
 
-        // Format: "data: {...}"
         let jsonStr = null;
         if (trimmed.startsWith('data: ')) {
             jsonStr = trimmed.slice(6);
         } else if (trimmed.startsWith('{')) {
-            // raw NDJSON (no "data: " prefix)
             jsonStr = trimmed;
         }
 
@@ -41,13 +38,9 @@ async function dolphinai({ messages, template = 'logical' } = {}) {
 
         try {
             const parsed = JSON.parse(jsonStr);
-            // OpenAI-compatible streaming: choices[0].delta.content
             const content = parsed?.choices?.[0]?.delta?.content
-                // Ollama-style streaming: message.content
                 ?? parsed?.message?.content
-                // Non-streaming: choices[0].message.content
                 ?? parsed?.choices?.[0]?.message?.content
-                // Direct content field
                 ?? parsed?.content
                 ?? null;
             if (content) parts.push(content);
@@ -61,10 +54,8 @@ async function dolphinai({ messages, template = 'logical' } = {}) {
     return result;
 }
 
-
-
 module.exports = function(app) {
-  app.post('/api/ai/dolphin', apiKeyMiddleware, async (req, res) => { // ← ganti
+  app.post('/api/ai/dolphin', apiKeyMiddleware, async (req, res) => { 
     try {
       const { prompt, template = 'logical' } = req.body;
       if (!prompt) {
