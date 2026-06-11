@@ -70,6 +70,21 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Downloader",
+      "items": [
+        {
+          "name": "TikTok Downloader",
+          "desc": "Download TikTok videos without watermark",
+          "method": "GET",
+          "path": "/api/download/tiktok",
+          "innerDesc": "Masukkan URL video TikTok yang valid.",
+          "params": [
+            { "name": "url", "required": true, "type": "text" }
+          ]
+        }
+      ]
     }
   ]
 }
