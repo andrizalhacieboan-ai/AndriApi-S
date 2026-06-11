@@ -556,7 +556,6 @@ function renderConsoleCards(apis) {
   if (!apis.length) { container.innerHTML = '<div class="text-muted">Belum ada endpoint.</div>'; return; }
   let html = '';
   apis.forEach(api => {
-    // Escape single quotes to prevent breaking data attribute layout string parsing
     const apiStr = JSON.stringify(api).replace(/'/g, "&apos;");
     html += `<div class="api-card" data-api='${apiStr}'><span class="api-method">${api.method}</span><h4>${escapeHtml(api.name)}</h4><p>${escapeHtml(api.desc || '')}</p><button class="btn btn-sm btn-dark try-console-btn">Try</button></div>`;
   });
@@ -610,12 +609,23 @@ async function executeApiRequest() {
     let val = inp.value.trim();
     if (val) params[inp.dataset.param] = val;
   });
+  
   let url = api.path.startsWith('http') ? api.path : window.location.origin + api.path;
   let options = {
     method: api.method,
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' }
   };
+
+  // ── UPDATE LOGIKA: SINKRONISASI API KEY PADA CONSOLE CALL ─────────────────
+  if (userApiKey) {
+    if (api.method.toUpperCase() === 'GET') {
+      params['apikey'] = userApiKey; // Masukkan ke parameter query GET
+    } else {
+      options.headers['x-api-key'] = userApiKey; // Masukkan ke header POST
+    }
+  }
+
   if (api.method.toUpperCase() === 'GET') {
     let qs = new URLSearchParams(params).toString();
     if (qs) url += '?' + qs;
@@ -623,12 +633,12 @@ async function executeApiRequest() {
     options.body = JSON.stringify(params);
   }
 
-  let curlUrl = url;
+  let curlUrl = url.split('?')[0]; // Bersihkan url dasar untuk log cURL
   let curlCmd = `curl -X ${api.method} '${curlUrl}'`;
   if (userApiKey) {
     if (api.method.toUpperCase() === 'GET') {
-      let separator = curlUrl.includes('?') ? '&' : '?';
-      curlCmd = `curl -X ${api.method} '${curlUrl}${separator}apikey=${userApiKey}'`;
+      let separator = url.includes('?') ? '&' : '?';
+      curlCmd = `curl -X ${api.method} '${url}'`;
     } else {
       curlCmd = `curl -X ${api.method} '${curlUrl}' \\\n  -H 'Content-Type: application/json' \\\n  -H 'x-api-key: ${userApiKey}' \\\n  -d '${JSON.stringify(params)}'`;
     }
