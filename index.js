@@ -17,6 +17,43 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({ credentials: true, origin: true }));
 app.use(cookieParser());
+
+// ── DB init + startup (PINDAH KE ATAS) ────────────────────────────────────────
+let dbReady = false;
+let dbError = null;
+
+// Jalankan initDb segera saat module di-load
+const dbInitPromise = initDb()
+  .then(() => {
+    dbReady = true;
+    console.log('[DB] ✓ Database ready');
+  })
+  .catch(err => {
+    dbError = err;
+    console.error('[DB] ✗ Init failed:', err.message);
+  });
+
+// Guard middleware: Melindungi semua rute di bawahnya dari crash akibat DB belum siap
+app.use(function dbGuard(req, res, next) {
+  if (dbReady) return next();
+  if (dbError) {
+    return res.status(503).json({
+      status: false, statusCode: 503,
+      message: 'Database tidak tersedia. Cek konfigurasi TURSO_DATABASE_URL dan TURSO_AUTH_TOKEN.',
+      error: 'DB_UNAVAILABLE'
+    });
+  }
+  // Masih loading — tunggu sampai selesai
+  dbInitPromise
+    .then(() => next())
+    .catch(() => res.status(503).json({
+      status: false, statusCode: 503,
+      message: 'Database gagal diinisialisasi.',
+      error: 'DB_INIT_FAILED'
+    }));
+});
+
+// ── Static Files ─────────────────────────────────────────────────────────────
 app.use('/assets', express.static(path.join(__dirname, 'api-page/assets')));
 app.get('/script.js',          (req, res) => res.sendFile(path.join(__dirname, 'script.js')));
 app.get('/src/settings.json',  (req, res) => res.sendFile(path.join(__dirname, 'src/settings.json')));
@@ -68,7 +105,6 @@ require('./src/routes/dashboard')(app);
 require('./src/routes/admin')(app);
 
 // ── API endpoint files ──────────────────────────────────────────────────────
-// FIX: semua path eksplisit dan dicatat saat route gagal di-load
 const apiFiles = [
   './src/api/ai/ai-dolphinai',
   './src/api/random/random-bluearchive',
@@ -82,7 +118,6 @@ for (const f of apiFiles) {
     loaded++;
     console.log(`[API] ✓ Loaded: ${path.basename(f)}.js`);
   } catch (e) {
-    // FIX: sekarang error tercetak LENGKAP agar mudah debug
     console.error(`[API] ✗ FAILED to load ${f}`);
     console.error(`[API]   Reason: ${e.message}`);
     console.error(e.stack);
@@ -99,7 +134,7 @@ app.get('/api', (req, res) => res.json({
   plans: ['free', 'premium', 'vip', 'vvip']
 }));
 
-// ── 404 ──────────────────────────────────────────────────────────────────────
+// ── 404 Handler ──────────────────────────────────────────────────────────────
 app.use((req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({
@@ -116,7 +151,7 @@ app.use((req, res) => {
   res.status(404).json({ status: false, statusCode: 404, message: 'Not found.' });
 });
 
-// ── 500 ──────────────────────────────────────────────────────────────────────
+// ── 500 Handler ──────────────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error('[ERROR]', err.stack || err.message);
   if (req.path.startsWith('/api/')) {
@@ -134,50 +169,9 @@ app.use((err, req, res, next) => {
   res.status(500).json({ status: false, statusCode: 500, message: 'Server error.' });
 });
 
-// ── DB init + startup ────────────────────────────────────────────────────────
-// FIX: Inisialisasi DB dilakukan SEKALI di awal, SEBELUM menerima request.
-// Vercel: module.exports = app langsung (bukan wrappedApp async)
-// karena route sudah terdaftar sinkron di atas — tidak ada race condition.
-
-let dbReady = false;
-let dbError = null;
-
-// Jalankan initDb segera saat module di-load (non-blocking untuk export)
-const dbInitPromise = initDb()
-  .then(() => {
-    dbReady = true;
-    console.log('[DB] ✓ Database ready');
-  })
-  .catch(err => {
-    dbError = err;
-    console.error('[DB] ✗ Init failed:', err.message);
-  });
-
-// Guard middleware: tolak request jika DB belum siap
-app.use(function dbGuard(req, res, next) {
-  if (dbReady) return next();
-  if (dbError) {
-    return res.status(503).json({
-      status: false, statusCode: 503,
-      message: 'Database tidak tersedia. Cek konfigurasi TURSO_DATABASE_URL dan TURSO_AUTH_TOKEN.',
-      error: 'DB_UNAVAILABLE'
-    });
-  }
-  // Masih loading — tunggu sebentar
-  dbInitPromise
-    .then(() => next())
-    .catch(() => res.status(503).json({
-      status: false, statusCode: 503,
-      message: 'Database gagal diinisialisasi.',
-      error: 'DB_INIT_FAILED'
-    }));
-});
-
 if (process.env.VERCEL) {
-  // Vercel serverless: export app langsung
   module.exports = app;
 } else {
-  // Local dev
   dbInitPromise.then(() => {
     app.listen(PORT, () => {
       console.log(`🚀 Andri API → http://localhost:${PORT}`);
