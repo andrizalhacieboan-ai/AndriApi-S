@@ -188,6 +188,14 @@ try {
   console.error(`[API]   Reason: ${e.message}`);
 }
 
+try {
+  require('./src/api/downloader/spotify.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: spotify.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/downloader/spotify.js`);
+  console.error(`[API]   Reason: ${e.message}`);
+}
 
 console.log(`[API] ${loaded}/3 route files loaded`);
 
