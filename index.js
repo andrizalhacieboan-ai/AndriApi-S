@@ -107,7 +107,6 @@ require('./src/routes/admin')(app);
 // ── API endpoint files (DIUBAH JADI STATIS UNTUK COMPATIBILITY CLOUD/VERCEL) ──
 let loaded = 0;
 
-// 1. Dolphin AI
 try {
   require('./src/api/ai/ai-dolphinai.js')(app);
   loaded++;
@@ -117,7 +116,6 @@ try {
   console.error(`[API]   Reason: ${e.message}`);
 }
 
-// 2. Blue Archive
 try {
   require('./src/api/random/random-bluearchive.js')(app);
   loaded++;
@@ -127,7 +125,6 @@ try {
   console.error(`[API]   Reason: ${e.message}`);
 }
 
-// 3. YouTube Search
 try {
   require('./src/api/search/search-youtube.js')(app);
   loaded++;
@@ -179,6 +176,15 @@ try {
   console.log(`[API] ✓ Loaded: depai.js`);
 } catch (e) {
   console.error(`[API] ✗ FAILED to load ./src/api/tools/depai.js`);
+  console.error(`[API]   Reason: ${e.message}`);
+}
+
+try {
+  require('./src/api/tools/tohitam.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: tohitam.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/tools/tohitam.js`);
   console.error(`[API]   Reason: ${e.message}`);
 }
 
