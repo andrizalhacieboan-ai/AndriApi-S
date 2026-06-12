@@ -96,5 +96,22 @@
         }
       ]
     }
+    {
+      "name": "Sticker",
+      "items": [
+        {
+          "name": "Brat Generator",
+          "desc": "Generate text styled like the Brat album cover sticker",
+          "method": "POST",
+          "path": "/api/sticker/brat",
+          "innerDesc": "Masukkan teks untuk diubah menjadi gaya text Brat sticker.",
+          "params": [
+            { "name": "text", "required": true, "type": "text" },
+            { "name": "background", "required": false, "type": "text", "default": "#FFFF" },
+            { "name": "color", "required": false, "type": "text", "default": "#000000" }
+          ]
+        }
+      ]
+    }
   ]
 }
