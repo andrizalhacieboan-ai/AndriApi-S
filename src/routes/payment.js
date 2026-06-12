@@ -93,7 +93,7 @@ const response = await axios.post('https://app.pakasir.com/api/transactioncreate
     project: "andri-market",
     order_id: orderId,
     amount: amount,
-    api_key: process.env.PAKASIR_API_KEY
+    apikey: process.env.PAKASIR_API_KEY
 });
 
       const payment = responsePakasir.data?.payment;
