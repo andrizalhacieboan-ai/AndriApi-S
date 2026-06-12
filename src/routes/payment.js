@@ -8,10 +8,10 @@ const { generateUUID } = require('../utils/apikey');
 const PLAN_PRICES = { premium: 29000, vip: 59000, vvip: 89000 };
 
 // Konfigurasi API Pakasir
-const config = { 
-  slug: process.env.PAKASIR_SLUG, 
-  apiKey: process.env.PAKASIR_API_KEY
-};
+
+ const slug: process.env.PAKASIR_SLUG;
+ const apiKey: process.env.PAKASIR_API_KEY;
+
 
 // Helper internal untuk memproses aktivasi plan di database jika sukses
 async function activateUserPlan(db, orderId) {
@@ -92,7 +92,7 @@ module.exports = function(app) {
           project: config.slug || "andri-market",
           order_id: orderId,
           amount: amount,
-          ApiKey: config.apiKey // FIX: Menggunakan PascalCase 'ApiKey' agar lolos validasi Pakasir
+          ApiKey: apiKey // FIX: Menggunakan PascalCase 'ApiKey' agar lolos validasi Pakasir
       });
 
       // FIX: Menggunakan variabel 'response' yang benar (bukan responsePakasir)
@@ -173,7 +173,7 @@ module.exports = function(app) {
           project: config.slug,
           order_id: order_id,
           amount: Number(amount),
-          ApiKey: config.apiKey // Menggunakan properti config.apiKey yang benar
+          ApiKey: apiKey // Menggunakan properti config.apiKey yang benar
         }
       });
 
