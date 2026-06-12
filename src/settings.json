@@ -107,20 +107,30 @@
           ]
         }, 
         {
-  "name": "Twitter Downloader",
-  "desc": "Mengambil info twitter beserta media (Foto/Video) kualitas terbaik.",
-  "method": "GET",
-  "path": "/api/download/twitter",
-  "innerDesc": "Masukkan URL tweet X/Twitter yang valid.",
-    "params": [
-    {
-      "name": "url",
-      "type": "text",
-      "required": true
-       }
-     ]
-     } 
-        
+          "name": "Twitter Downloader",
+          "desc": "Mengambil info twitter beserta media (Foto/Video) kualitas terbaik.",
+          "method": "GET",
+          "path": "/api/download/twitter",
+          "innerDesc": "Masukkan URL tweet X/Twitter yang valid.",
+          "params": [
+            {
+              "name": "url",
+              "type": "text",
+              "required": true
+            }
+          ]
+        },
+        {
+          "name": "ytmp3 downloader",
+          "desc": "Download and convert YouTube videos to MP3 audio or MP4 video format.",
+          "method": "GET",
+          "path": "/api/download/ytmp3",
+          "innerDesc": "Masukkan URL video YouTube atau Video ID yang valid. Parameter format bersifat opsional (mp3 / mp4).",
+          "params": [
+            { "name": "url", "required": true, "type": "text" },
+            { "name": "format", "required": false, "type": "text", "default": "mp3" }
+          ]
+        }
       ]
     },
     {
@@ -155,7 +165,6 @@
             { "name": "action", "required": false, "type": "text", "default": "json" }
           ]
         }
-
       ]
     }
   ]
