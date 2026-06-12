@@ -7,7 +7,24 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-:root{\n  --bg: #eef2f7;\n  --surface: #eef2f7;\n  --border: rgba(255, 255, 255, 0.8);\n  --accent: #1e293b;\n  --accent2: #475569;\n  --green: #0d9488;\n  --warn: #d97706;\n  --red: #e11d48;\n  --text: #0f172a;\n  --muted: #64748b;\n  --mono: 'Space Mono', monospace;\n  --head: 'Plus Jakarta Sans', sans-serif;\n  --nm-outset: 8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff;\n  --nm-inset: inset 6px 6px 12px #d1d9e6, inset -6px -6px 12px #ffffff;\n  --nm-outset-sm: 4px 4px 8px #d1d9e6, -4px -4px 8px #ffffff;\n  --nm-inset-sm: inset 3px 3px 6px #d1d9e6, inset -3px -3px 6px #ffffff;\n}
+:root{
+  --bg: #eef2f7;
+  --surface: #eef2f7;
+  --border: rgba(255, 255, 255, 0.8);
+  --accent: #1e293b;
+  --accent2: #475569;
+  --green: #0d9488;
+  --warn: #d97706;
+  --red: #e11d48;
+  --text: #0f172a;
+  --muted: #64748b;
+  --mono: 'Space Mono', monospace;
+  --head: 'Plus Jakarta Sans', sans-serif;
+  --nm-outset: 8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff;
+  --nm-inset: inset 6px 6px 12px #d1d9e6, inset -6px -6px 12px #ffffff;
+  --nm-outset-sm: 4px 4px 8px #d1d9e6, -4px -4px 8px #ffffff;
+  --nm-inset-sm: inset 3px 3px 6px #d1d9e6, inset -3px -3px 6px #ffffff;
+}
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:var(--head);overflow-x:hidden}
@@ -207,31 +224,19 @@ section{position:relative;z-index:1;padding:8rem 2rem}
 }
 .pm-badge:hover{color:var(--text);transform:translateY(-3px) scale(1.02);box-shadow: var(--nm-outset)}
 
-/* DETAIL KONSOLE API: RAMPING & UKURAN MINIMALIS */
-.console-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-}
 .api-console-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 3rem;
 }
 .api-card {
   background: var(--surface);
-  border-radius: 16px;
-  padding: 1rem;
+  border-radius: 20px;
+  padding: 1.25rem;
   box-shadow: var(--nm-outset-sm);
   transition: all 0.2s;
   border: 1px solid rgba(255,255,255,0.6);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
 }
 .api-card:hover {
   transform: translateY(-3px);
@@ -240,38 +245,28 @@ section{position:relative;z-index:1;padding:8rem 2rem}
 .api-method {
   display: inline-block;
   font-family: var(--mono);
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 800;
-  padding: 0.15rem 0.5rem;
+  padding: 0.2rem 0.6rem;
   border-radius: 20px;
   background: var(--accent);
   color: white;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 .api-card h4 {
-  font-size: 0.95rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  margin-bottom: 0.3rem;
-  color: var(--accent);
+  margin-bottom: 0.5rem;
 }
 .api-card p {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--muted);
-  margin-bottom: 0.85rem;
-  line-height: 1.4;
+  margin-bottom: 1rem;
 }
-.try-console-btn {
-  font-size: 0.7rem;
-  font-family: var(--mono);
-  font-weight: 700;
-  padding: 0.35rem 0.85rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  align-self: flex-start;
-  border-radius: 10px;
+.try-btn {
+  font-size: 0.75rem;
+  padding: 0.4rem 1rem;
 }
-
 .modal-body pre {
   white-space: pre-wrap;
   word-wrap: break-word;
@@ -378,7 +373,7 @@ footer{
         <div>&nbsp;&nbsp;<span class="tk">"status"</span>: <span class="tv">true</span>,</div>
         <div>&nbsp;&nbsp;<span class="tk">"message"</span>: <span class="ts">"Success generating response"</span>,</div>
         <div>&nbsp;&nbsp;<span class="tk">"data"</span>: {</div>
-        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tn">"result"</span>: <span class="tv">"Karma adalah konsep bahwa setiap tindakan memiliki konsekuensi... (Andri Store ID)"</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tn">"result"</span>: <span class="tv">"Karma adalah konsep bahwa setiap tindakan memiliki konsekuensi yang setara..."</span></div>
         <div>&nbsp;&nbsp;}</div>
         <div>}</div>
       </div>
@@ -405,19 +400,8 @@ footer{
   <div class="container">
     <div class="s-tag reveal">Try API Console</div>
     <h2 class="s-h reveal stagger-1">Uji Endpoint<br>Tanpa API Key</h2>
-    <p class="s-p reveal stagger-2">Cukup klik tombol eksekusi terminal di bawah untuk menguji respons.</p>
-    
-    <div class="console-toolbar reveal stagger-3">
-      <div class="d-flex align-items-center gap-2">
-        <label for="categoryFilter" class="small fw-bold text-muted" style="font-family: var(--mono); font-size: 0.75rem;">FILTER:</label>
-        <select id="categoryFilter" class="form-select w-auto" style="background: var(--surface); box-shadow: var(--nm-outset-sm); border: 1px solid rgba(255,255,255,0.8); border-radius: 12px; font-size: 0.8rem; font-weight: 600; color: var(--text); padding: 0.4rem 2rem 0.4rem 0.8rem; cursor: pointer;">
-          <option value="all">Select All Kategori</option>
-        </select>
-      </div>
-      <span id="endpointCountBadge" class="badge text-dark" style="background: var(--surface); box-shadow: var(--nm-inset-sm); font-family: var(--mono); font-size: 0.75rem; padding: 0.55rem 1rem; border-radius: 12px; font-weight: 700;">Total: 0 Endpoints</span>
-    </div>
-
-    <div id="consoleApis" class="api-console-grid reveal stagger-4">Memuat daftar API...</div>
+    <p class="s-p reveal stagger-2">Cukup login, lalu klik tombol <strong>Try</strong> di bawah. Session Anda akan otomatis digunakan.</p>
+    <div id="consoleApis" class="api-console-grid">Memuat daftar API...</div>
   </div>
 </section>
 
@@ -516,6 +500,8 @@ async function loadUserAndApiKey() {
       userPlan = data.data.plan;
       if (data.data.api_keys && data.data.api_keys.length > 0) {
         userApiKey = data.data.api_keys[0].key;
+      } else {
+        console.warn('Tidak ada API key ditemukan, user mungkin belum generate');
       }
     } else {
       document.getElementById('navCta').innerHTML = `<a href="/login" class="btn btn-ghost">Login</a><a href="/register" class="btn btn-primary">Get API Key →</a>`;
@@ -526,22 +512,14 @@ async function loadUserAndApiKey() {
 loadUserAndApiKey();
 
 let endpointsList = [];
-
-// JALUR FETCH /src/settings.json DIPASTIKAN COCOK DENGAN CONFIG GET ROUTE EXPRESS
 async function loadEndpointsForConsole() {
   try {
-    const res = await fetch(window.location.origin + '/src/settings.json');
-    if (!res.ok) throw new Error('HTTP status ' + res.status);
+    const res = await fetch(safeUrl('/src/settings.json'));
+    if (!res.ok) throw new Error('HTTP '+res.status);
     const settings = await res.json();
     const endpoints = [];
-    const categoryCounts = {};
-    let totalCount = 0;
-
     if (settings.categories) {
       settings.categories.forEach(cat => {
-        const catName = cat.name;
-        categoryCounts[catName] = 0;
-        
         if (cat.items) {
           cat.items.forEach(item => {
             endpoints.push({
@@ -549,79 +527,30 @@ async function loadEndpointsForConsole() {
               desc: item.desc,
               method: item.method || 'GET',
               path: item.path,
-              params: item.params || [],
-              category: catName
+              params: item.params || []
             });
-            categoryCounts[catName]++;
-            totalCount++;
           });
         }
       });
     }
     endpointsList = endpoints;
-
-    const filterSelect = document.getElementById('categoryFilter');
-    if (filterSelect) {
-      filterSelect.innerHTML = `<option value="all">Select All Kategori (${totalCount})</option>`;
-      Object.entries(categoryCounts).forEach(([name, count]) => {
-        filterSelect.innerHTML += `<option value="${name}">${name} (${count})</option>`;
-      });
-
-      filterSelect.addEventListener('change', (e) => {
-        const selected = e.target.value;
-        if (selected === 'all') {
-          renderConsoleCards(endpointsList);
-          document.getElementById('endpointCountBadge').innerText = `Total: ${totalCount} Endpoints`;
-        } else {
-          const filtered = endpointsList.filter(api => api.category === selected);
-          renderConsoleCards(filtered);
-          document.getElementById('endpointCountBadge').innerText = `Total: ${filtered.length} Endpoints`;
-        }
-      });
-    }
-
-    document.getElementById('endpointCountBadge').innerText = `Total: ${totalCount} Endpoints`;
     renderConsoleCards(endpoints);
   } catch (err) {
-    console.error('Gagal mengambil file settings.json:', err);
-    document.getElementById('consoleApis').innerHTML = '<div class="text-danger">Gagal memuat daftar API. Pastikan file settings.json tersedia di direktori backend.</div>';
+    console.error('Load settings.json gagal', err);
+    document.getElementById('consoleApis').innerHTML = '<div class="text-danger">Gagal memuat daftar API. Pastikan file settings.json tersedia.</div>';
   }
 }
 
 function renderConsoleCards(apis) {
   const container = document.getElementById('consoleApis');
   if (!container) return;
-  if (!apis.length) { container.innerHTML = '<div class="text-muted p-3">Belum ada endpoint di kategori ini.</div>'; return; }
+  if (!apis.length) { container.innerHTML = '<div class="text-muted">Belum ada endpoint.</div>'; return; }
   let html = '';
   apis.forEach(api => {
     const apiStr = JSON.stringify(api).replace(/'/g, "&apos;");
-    html += `
-      <div class="api-card" data-api='${apiStr}'>
-        <div>
-          <span class="api-method">${api.method}</span>
-          <h4>${escapeHtml(api.name)}</h4>
-          <p>${escapeHtml(api.desc || '')}</p>
-        </div>
-        <button class="btn btn-sm btn-dark try-console-btn">
-          <span style="color:#0d9488; font-weight:800; font-family:var(--mono);">&gt;_</span> Run
-        </button>
-      </div>`;
+    html += `<div class="api-card" data-api='${apiStr}'><span class="api-method">${api.method}</span><h4>${escapeHtml(api.name)}</h4><p>${escapeHtml(api.desc || '')}</p><button class="btn btn-sm btn-dark try-console-btn">Try</button></div>`;
   });
   container.innerHTML = html;
-
-  document.querySelectorAll('.api-card').forEach(card => {
-    card.addEventListener('mousemove', function(e) {
-      let r = this.getBoundingClientRect();
-      let x = (e.clientX - r.left) / r.width - 0.5;
-      let y = (e.clientY - r.top) / r.height - 0.5;
-      this.style.transform = `perspective(800px) rotateY(${x * 10}deg) rotateX(${-y * 10}deg) translateZ(6px)`;
-    });
-    card.addEventListener('mouseleave', function() { 
-      this.style.transform = ''; 
-      this.style.transition = 'transform .3s ease'; 
-    });
-  });
-
   document.querySelectorAll('.try-console-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const card = btn.closest('.api-card');
@@ -661,7 +590,9 @@ function openApiModal(api) {
   lastResponseHeaders = null;
   lastResponseData = null;
   document.getElementById('apiModalExecuteBtn').onclick = executeApiRequest;
-  new bootstrap.Modal(document.getElementById('apiModal')).show();
+  
+  // Menggunakan getOrCreateInstance untuk menghindari duplikasi modal instance di Bootstrap 5
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('apiModal')).show();
 }
 
 async function executeApiRequest() {
@@ -694,16 +625,20 @@ async function executeApiRequest() {
     options.body = JSON.stringify(params);
   }
 
-  let curlUrl = url.split('?')[0];
-  let curlCmd = `curl -X ${api.method} '${curlUrl}'`;
-  if (userApiKey) {
-    if (api.method.toUpperCase() === 'GET') {
+  // Pembuatan Teks Perintah CURL yang valid & rapi secara multi-line
+  let curlCmd = '';
+  if (api.method.toUpperCase() === 'GET') {
+    if (userApiKey) {
       curlCmd = `curl -X ${api.method} '${url}'`;
     } else {
-      curlCmd = `curl -X ${api.method} '${curlUrl}' \\\n  -H 'Content-Type: application/json' \\\n  -H 'x-api-key: ${userApiKey}' \\\n  -d '${JSON.stringify(params)}'`;
+      curlCmd = `API key tidak ditemukan, silakan login dan generate API key di profile\ncurl -X ${api.method} '${url}'`;
     }
   } else {
-    curlCmd = `curl -X ${api.method} '${curlUrl}'`;
+    if (userApiKey) {
+      curlCmd = `curl -X ${api.method} '${window.location.origin + api.path}' \\\n  -H 'Content-Type: application/json' \\\n  -H 'x-api-key: ${userApiKey}' \\\n  -d '${JSON.stringify(params)}'`;
+    } else {
+      curlCmd = `API key tidak ditemukan, silakan login dan generate API key di profile\ncurl -X ${api.method} '${window.location.origin + api.path}' \\\n  -H 'Content-Type: application/json' \\\n  -d '${JSON.stringify(params)}'`;
+    }
   }
   lastCurlCommand = curlCmd;
 
@@ -768,8 +703,9 @@ async function executeApiRequest() {
   } finally {
     loader.classList.add('d-none');
     document.getElementById('apiModalExecuteBtn').disabled = false;
-    const firstTab = new bootstrap.Tab(document.getElementById('preview-tab'));
-    firstTab.show();
+    
+    // Menggunakan getOrCreateInstance untuk menghindari kebocoran memori tab instance
+    bootstrap.Tab.getOrCreateInstance(document.getElementById('preview-tab')).show();
   }
 }
 
