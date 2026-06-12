@@ -1,17 +1,53 @@
 require('dotenv').config();
+const axios = require('axios');
+const QRCode = require('qrcode');
 const { getDb } = require('../db/turso');
 const { requireAuthJson } = require('../middleware/auth');
-const { generateTxId, generateUUID } = require('../utils/apikey');
-// Import SDK Pakasir dari pakasir.ts
-const { Pakasir } = require('../utils/pakasir'); 
+const { generateUUID } = require('../utils/apikey');
 
 const PLAN_PRICES = { premium: 29000, vip: 59000, vvip: 89000 };
 
-// Inisialisasi Pakasir dengan environment variables Anda
-const pakasirClient = new Pakasir({
-  slug: process.env.PAKASIR_SLUG,
-  apikey: process.env.PAKASIR_APIKEY
-});
+// Konfigurasi API Pakasir langsung sesuai kode baru kamu
+const config = { 
+  slug: process.env.PAKASIR_SLUG, 
+  apiKey: process.env.PAKASIR_API_KEY
+};
+
+// Helper internal untuk memproses aktivasi plan di database jika sukses
+async function activateUserPlan(db, orderId) {
+  const tx = await db.execute({ 
+    sql: 'SELECT id, user_id, plan, status FROM transactions WHERE midtrans_order_id=?', 
+    args: [orderId] 
+  });
+  
+  if (tx.rows.length > 0 && tx.rows[0].status !== 'paid') {
+    const t = tx.rows[0];
+    
+    // 1. Update status transaksi lokal
+    await db.execute({ 
+      sql: `UPDATE transactions SET status='paid', paid_at=datetime('now'), updated_at=datetime('now') WHERE id=?`, 
+      args: [t.id] 
+    });
+    
+    // 2. Set masa aktif user +30 hari
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30);
+    
+    await db.execute({ 
+      sql: `UPDATE users SET plan=?, plan_expires_at=?, updated_at=datetime('now') WHERE id=?`, 
+      args: [t.plan, expiresAt.toISOString(), t.user_id] 
+    });
+    
+    // 3. Update API Key & reset limit harian
+    await db.execute({ 
+      sql: `UPDATE api_keys SET plan=?, expires_at=?, requests_today=0 WHERE user_id=? AND is_active=1`, 
+      args: [t.plan, expiresAt.toISOString(), t.user_id] 
+    });
+    
+    return true;
+  }
+  return false;
+}
 
 module.exports = function(app) {
 
@@ -29,7 +65,7 @@ module.exports = function(app) {
     }
   });
 
-  // POST /api/payment/create -> SEKARANG LANGSUNG QRIS
+  // POST /api/payment/create -> MENGGUNAKAN LOGIKA CREATE PAYMENT BARU
   app.post('/api/payment/create', requireAuthJson, async (req, res) => {
     try {
       const { plan } = req.body;
@@ -41,8 +77,6 @@ module.exports = function(app) {
 
       const db = getDb();
       const amount = PLAN_PRICES[plan];
-      const txId = generateUUID();
-      const txCode = generateTxId();
 
       // Cek transaksi pending duplikat
       const dup = await db.execute({ sql: `SELECT id FROM transactions WHERE user_id=? AND status='pending' AND plan=?`, args: [userId, plan] });
@@ -50,22 +84,42 @@ module.exports = function(app) {
         return res.status(409).json({ status: false, statusCode: 409, message: 'Kamu sudah punya transaksi pending untuk plan ini.', error: 'DUPLICATE_TRANSACTION' });
       }
 
-      const orderId = `ANDRI-${txCode}`;
+      // Format Order ID acak sesuai kode baru yang kamu minta
+      const orderId = `ORD-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
 
-      // Menggunakan 'qris' untuk langsung menembak QRIS Payment + hitung fee otomatis dari SDK
-      const resultPakasir = await pakasirClient.createPayment('qris', orderId, amount);
+      // Request QRIS langsung via Axios ke API Pakasir
+      const responsePakasir = await axios.post("https://app.pakasir.com/api/transactioncreate/qris", {
+        project: config.slug,
+        order_id: orderId,
+        amount: amount,
+        api_key: config.apiKey
+      }, { 
+        headers: { "Content-Type": "application/json" } 
+      });
 
-      // Simpan ke database transaksi awal
+      const payment = responsePakasir.data?.payment;
+      if (!payment?.payment_number) {
+        return res.status(502).json({ status: false, message: "QR Pakasir tidak ditemukan dari server luar." });
+      }
+
+      // Generate QR Code menjadi dataURL Base64 string
+      const qrBase64 = await QRCode.toDataURL(payment.payment_number, { width: 300 });
+
+      // Hitung batas waktu kadaluarsa (jika dari API kosong, buat default 30 menit ke depan)
+      const txId = generateUUID();
+      const expiredAt = payment.expired_at || new Date(Date.now() + 30 * 60 * 1000).toISOString();
+
+      // Simpan rincian data transaksi ke Turso SQL DB
       await db.execute({ 
         sql: `INSERT INTO transactions (id, user_id, plan, amount, payment_method, payment_type, midtrans_order_id, account_number, expires_at, status) VALUES (?, ?, ?, ?, 'pakasir', 'qris', ?, ?, ?, 'pending')`, 
         args: [
           txId, 
           userId, 
           plan, 
-          resultPakasir.total_payment, 
+          payment.total_payment || amount, 
           orderId, 
-          resultPakasir.payment_number || 'QRIS_DIRECT', 
-          resultPakasir.expired_at
+          payment.payment_number, 
+          expiredAt
         ] 
       });
 
@@ -74,13 +128,12 @@ module.exports = function(app) {
         statusCode: 201, 
         message: 'QRIS Berhasil dibuat.', 
         data: {
-          transaction_id: txCode,
           order_id: orderId,
-          amount: resultPakasir.amount,
-          fee: resultPakasir.fee,
-          total_payment: resultPakasir.total_payment,
-          payment_url: resultPakasir.payment_url, // URL berisi QRIS code / page QRIS
-          expired_at: resultPakasir.expired_at
+          amount: amount,
+          fee: payment.fee || 0,
+          total_payment: payment.total_payment || amount,
+          payment_url: qrBase64, // Sekarang otomatis mengirimkan gambar Base64 QR Code siap render
+          expired_at: expiredAt
         } 
       });
     } catch (err) {
@@ -89,63 +142,53 @@ module.exports = function(app) {
     }
   });
 
-  // POST /api/payment/cancel -> ENDPOINT UNTUK TOMBOL CANCEL
+  // POST /api/payment/cancel -> DIRECT REJECT DI DB LOKAL
   app.post('/api/payment/cancel', requireAuthJson, async (req, res) => {
     try {
-      const { order_id, amount } = req.body;
+      const { order_id } = req.body;
+      if (!order_id) return res.status(400).json({ status: false, message: 'order_id diperlukan untuk pembatalan.' });
 
-      if (!order_id || !amount) {
-        return res.status(400).json({ status: false, message: 'order_id dan amount diperlukan untuk pembatalan.' });
-      }
-
-      // Panggil metode pembatalan dari SDK Pakasir
-      await pakasirClient.cancelPayment(order_id, Number(amount));
-
-      // Sinkronisasi status di database lokal Anda
       const db = getDb();
       await db.execute({
-        sql: `UPDATE transactions SET status='rejected', updated_at=datetime('now') WHERE midtrans_order_id=? AND user_id=?`,
+        sql: `UPDATE transactions SET status='rejected', updated_at=datetime('now') WHERE midtrans_order_id=? AND user_id=? AND status='pending'`,
         args: [order_id, req.user.id]
       });
 
       return res.status(200).json({ status: true, message: 'Pembayaran berhasil dibatalkan.' });
     } catch (err) {
-      console.error('[Payment Cancel Error]', err);
-      return res.status(500).json({ status: false, message: 'Gagal membatalkan transaksi ke server.' });
+      return res.status(500).json({ status: false, message: 'Gagal memproses pembatalan.' });
     }
   });
 
-  // GET /api/payment/status -> ENDPOINT UNTUK POLLING LOADING ANIMATION
+  // GET /api/payment/status -> MENGGUNAKAN LOGIKA CEK PAID BARU
   app.get('/api/payment/status', requireAuthJson, async (req, res) => {
     try {
       const { order_id, amount } = req.query;
-
       if (!order_id || !amount) {
         return res.status(400).json({ status: false, message: 'Parameter order_id dan amount wajib ada.' });
       }
 
-      // Ambil detail langsung dari server Pakasir secara real-time
-      const check = await pakasirClient.detailPayment(order_id, Number(amount));
-
-      // Jika di server Pakasir terdeteksi sukses/completed, amankan database lokal
-      if ((check.status === 'completed' || check.status === 'success' || check.status === 'paid')) {
-        const db = getDb();
-        const tx = await db.execute({ sql: 'SELECT id, status, plan, user_id FROM transactions WHERE midtrans_order_id=?', args: [order_id] });
-        
-        if (tx.rows.length > 0 && tx.rows[0].status !== 'paid') {
-          const t = tx.rows[0];
-          await db.execute({ sql: `UPDATE transactions SET status='paid', paid_at=datetime('now'), updated_at=datetime('now') WHERE id=?`, args: [t.id] });
-          
-          const expiresAt = new Date();
-          expiresAt.setDate(expiresAt.getDate() + 30);
-          await db.execute({ sql: `UPDATE users SET plan=?, plan_expires_at=?, updated_at=datetime('now') WHERE id=?`, args: [t.plan, expiresAt.toISOString(), t.user_id] });
-          await db.execute({ sql: `UPDATE api_keys SET plan=?, expires_at=?, requests_today=0 WHERE user_id=? AND is_active=1`, args: [t.plan, expiresAt.toISOString(), t.user_id] });
+      // Hitung real-time status pembayaran ke endpoint Pakasir detail via Axios GET
+      const responseCheck = await axios.get("https://app.pakasir.com/api/transactiondetail", {
+        params: {
+          project: config.slug,
+          order_id: order_id,
+          amount: Number(amount),
+          api_key: config.apiKey
         }
+      });
+
+      const rawStatus = responseCheck.data?.transaction?.status || responseCheck.data?.payment?.status || responseCheck.data?.status || "";
+      const isPaid = ["paid", "success", "completed"].includes(String(rawStatus).toLowerCase());
+
+      if (isPaid) {
+        const db = getDb();
+        await activateUserPlan(db, order_id);
       }
 
-      return res.status(200).json({ status: true, payment_status: check.status });
+      return res.status(200).json({ status: true, payment_status: isPaid ? 'completed' : 'pending' });
     } catch (err) {
-      return res.status(500).json({ status: false, message: 'Gagal memuat status.' });
+      return res.status(500).json({ status: false, message: 'Gagal memuat status verifikasi pembayaran.' });
     }
   });
 
@@ -160,33 +203,27 @@ module.exports = function(app) {
     }
   });
 
-  // POST /api/payment/webhook — Callback Otomatis Pakasir
+  // POST /api/payment/webhook — CALLBACK OTOMATIS
   app.post('/api/payment/webhook', async (req, res) => {
     try {
       const { order_id, status } = req.body;
       if (!order_id) return res.status(400).json({ status: false, message: 'Invalid payload' });
 
       const db = getDb();
-      const tx = await db.execute({ sql: 'SELECT id,user_id,plan,status FROM transactions WHERE midtrans_order_id=?', args: [order_id] });
-      if (tx.rows.length === 0) return res.status(404).json({ status: false, message: 'Transaction not found' });
+      const isSuccess = ['completed', 'settlement', 'paid', 'success'].includes(String(status).toLowerCase());
 
-      const t = tx.rows[0];
-      const isSuccess = (status === 'completed' || status === 'settlement' || status === 'paid');
-
-      if (isSuccess && t.status !== 'paid') {
-        await db.execute({ sql: `UPDATE transactions SET status='paid', paid_at=datetime('now'), updated_at=datetime('now') WHERE id=?`, args: [t.id] });
-        
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 30);
-        await db.execute({ sql: `UPDATE users SET plan=?, plan_expires_at=?, updated_at=datetime('now') WHERE id=?`, args: [t.plan, expiresAt.toISOString(), t.user_id] });
-        await db.execute({ sql: `UPDATE api_keys SET plan=?, expires_at=?, requests_today=0 WHERE user_id=? AND is_active=1`, args: [t.plan, expiresAt.toISOString(), t.user_id] });
-      } else if (status === 'expire' || status === 'cancel' || status === 'canceled') {
-        await db.execute({ sql: `UPDATE transactions SET status='rejected', updated_at=datetime('now') WHERE id=? AND status='pending'`, args: [t.id] });
+      if (isSuccess) {
+        await activateUserPlan(db, order_id);
+      } else if (['expire', 'cancel', 'canceled', 'rejected'].includes(String(status).toLowerCase())) {
+        await db.execute({ 
+          sql: `UPDATE transactions SET status='rejected', updated_at=datetime('now') WHERE midtrans_order_id=? AND status='pending'`, 
+          args: [order_id] 
+        });
       }
 
       return res.status(200).json({ status: true, message: 'OK' });
     } catch (err) {
-      console.error('[Webhook]', err);
+      console.error('[Webhook Error]', err);
       return res.status(500).json({ status: false, message: 'Server error' });
     }
   });
