@@ -197,7 +197,7 @@ try {
   console.error(`[API]   Reason: ${e.message}`);
 }
 
-console.log(`[API] ${loaded}/3 route files loaded`);
+console.log(`[API] ${loaded} route files successfully loaded`);
 
 // ── API info ─────────────────────────────────────────────────────────────────
 app.get('/api', (req, res) => res.json({
