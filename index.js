@@ -179,6 +179,15 @@ try {
   console.error(`[API]   Reason: ${e.message}`);
 }
 
+try {
+  require('./src/api/downloader/twitter.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: twitter.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/downloader/twitter.js`);
+  console.error(`[API]   Reason: ${e.message}`);
+}
+
 
 console.log(`[API] ${loaded}/3 route files loaded`);
 
