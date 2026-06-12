@@ -107,18 +107,19 @@
           ]
         }, 
         {
-          "name": "Twitter Downloader",
-          "desc": "Mengambil info tweet beserta media (Foto/Video) kualitas terbaik.",
-          "method": "GET",
-          "path": "/api/downloader/twitter",
-          "params": [
-            {
-              "name": "url",
-              "type": "text",
-              "required": true
-            }
-          ]
-        }
+  "name": "Twitter Downloader",
+  "desc": "Mengambil info twitter beserta media (Foto/Video) kualitas terbaik.",
+  "method": "GET",
+  "path": "/api/download/twitter", // Sesuai dengan route di twitter.js backend
+  "innerDesc": "Masukkan URL tweet X/Twitter yang valid.", // Ditambahkan agar seragam dengan TikTok/Facebook
+  "params": [
+    {
+      "name": "url",
+      "type": "text",
+      "required": true
+    }
+  ]
+}
       ]
     },
     {
