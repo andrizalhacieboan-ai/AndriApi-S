@@ -105,6 +105,19 @@
             { "name": "cookie", "required": false, "type": "text", "default": "" },
             { "name": "useragent", "required": false, "type": "text", "default": "" }
           ]
+        }, 
+        {
+          "name": "Twitter Downloader",
+          "desc": "Mengambil info tweet beserta media (Foto/Video) kualitas terbaik.",
+          "method": "GET",
+          "path": "/api/downloader/twitter",
+          "params": [
+            {
+              "name": "url",
+              "type": "text",
+              "required": true
+            }
+          ]
         }
       ]
     },
