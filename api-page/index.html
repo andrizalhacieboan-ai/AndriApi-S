@@ -113,7 +113,6 @@ nav {
   font-size:.72rem;font-family:var(--mono);font-weight:700;letter-spacing:1px;margin-bottom:2.25rem;
 }
 .badge-dot{width:8px;height:8px;background:var(--green);border-radius:50%;box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
-@pragma pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
 h1.hero-h{font-size:clamp(2.4rem,6vw,4.5rem);font-weight:800;letter-spacing:-2px;line-height:1.1;margin-bottom:1.75rem;color:var(--accent)}
 h1.hero-h .gr{background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);
@@ -456,6 +455,51 @@ footer{
   </div>
 </div>
 
+<div class="modal fade" id="pakasirPaymentModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background: var(--surface); border-radius: 24px; box-shadow: var(--nm-outset); border: 1px solid rgba(255,255,255,0.8);">
+      <div class="modal-header" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+        <h5 class="modal-title fw-bold" id="pakasirModalTitle" style="color: var(--accent);">Invoice Upgrade Plan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" id="pakasirCloseBtn"></button>
+      </div>
+      <div class="modal-body text-center p-4">
+        
+        <div id="pakasirLoader" class="py-4">
+          <div class="spinner-border text-dark mb-3" role="status" style="width: 2.5rem; height: 2.5rem;"></div>
+          <p class="font-monospace small text-muted" id="pakasirLoaderText">Membuat transaksi....</p>
+        </div>
+        
+        <div id="pakasirOrderDetails" class="d-none">
+          <div class="badge mb-3"><div class="badge-dot"></div>Checkout System</div>
+          <h2 class="fw-bold mb-1" id="pakasirDisplayAmount" style="color: var(--accent);">Rp 0</h2>
+          <p class="font-monospace small text-muted mb-4">Order ID: <span id="pakasirDisplayOrderId">-</span></p>
+          
+          <div class="p-3 mb-4 rounded-4 text-start" style="background: rgba(0,0,0,0.02); border: 1px solid rgba(255,255,255,0.6); box-shadow: var(--nm-inset-sm);">
+            <div class="d-flex justify-content-between small font-monospace mb-2">
+              <span class="text-muted">Target Upgrade:</span>
+              <span class="fw-bold text-uppercase text-dark" id="pakasirDisplayPlan">-</span>
+            </div>
+            <div class="d-flex justify-content-between small font-monospace">
+              <span class="text-muted">Status Transaksi:</span>
+              <span class="fw-bold text-warning" id="pakasirDisplayStatus">WAITING PAYMENT</span>
+            </div>
+          </div>
+          
+          <a href="#" target="_blank" id="pakasirPayBtn" class="btn btn-primary w-100 py-3 rounded-4 justify-content-center mb-2">
+            🚀 Buka Halaman Pembayaran
+          </a>
+          <p class="font-monospace text-muted mt-2 mb-0" style="font-size: 0.68rem;">Sistem otomatis mendeteksi status settlement setelah pembayaran berhasil.</p>
+        </div>
+      </div>
+      <div class="modal-footer" style="border-top: 1px solid rgba(0,0,0,0.05); justify-content: center;">
+        <button type="button" id="pakasirCancelBtn" class="btn btn-ghost font-monospace text-danger small" style="border-radius: 12px; font-size: 0.8rem; font-weight: 700;">
+          ❌ Batalkan Pembayaran
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <footer><div class="foot-logo">ANDRI API</div><div class="foot-links"><a href="/">Home</a><a href="/docs">Docs</a><a href="#plans">Pricing</a><a href="/login">Login</a><a href="/register">Register</a><a href="/admin">Admin</a></div><p class="foot-copy">© 2026 Andri API · Hak cipta</p></footer>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -666,9 +710,10 @@ async function executeApiRequest() {
   let curlCmd = `curl -X ${api.method} '${curlUrl}'`;
   if (userApiKey) {
     if (api.method.toUpperCase() === 'GET') {
+      let separator = url.includes('?') ? '&' : '?';
       curlCmd = `curl -X ${api.method} '${url}'`;
     } else {
-      curlCmd = `curl -X ${api.method} '${curlUrl}' \\\n  -H 'Content-Type: application/json' \\\n  -H 'x-api-key: ${userApiKey}' \\\n  -d '${JSON.stringify(params)}'`;
+      curlCmd = `curl -X ${api.method} '${curlUrl}' \\\n  -H 'Content-Type: application/json' \\n  -H 'x-api-key: ${userApiKey}' \\n  -d '${JSON.stringify(params)}'`;
     }
   } else {
     curlCmd = `API key tidak ditemukan, silakan login dan generate API key di profile\ncurl -X ${api.method} '${curlUrl}'`;
@@ -770,6 +815,127 @@ document.querySelectorAll('.nav-links li a').forEach(a => {
     this.style.transform = `perspective(300px) rotateY(${x * 18}deg) rotateX(${-y * 18}deg) translateZ(4px)`;
   });
   a.addEventListener('mouseleave', function() { this.style.transform = ''; this.style.transition = 'transform .35s ease'; setTimeout(() => this.style.transition = '', 350); });
+});
+
+// --- INTEGRASI CHECKOUT PAYMENT PAKASIR ---
+let activeOrder = null;
+let pollStatusInterval = null;
+
+document.querySelectorAll('.c-premium .btn-plan, .c-vip .btn-plan, .c-vvip .btn-plan').forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    // Jalankan sistem payment jika user terdeteksi sudah login (userPlan tidak null)
+    if (userPlan !== null) {
+      e.preventDefault();
+      
+      let tier = 'premium';
+      let price = 29000;
+      let label = 'Premium';
+      
+      const parentCard = this.closest('.plan-card');
+      if (parentCard.classList.contains('c-vip')) {
+        tier = 'vip';
+        price = 79000;
+        label = 'VIP';
+      } else if (parentCard.classList.contains('c-vvip')) {
+        tier = 'vvip';
+        price = 199000;
+        label = 'VVIP';
+      }
+
+      const pModal = new bootstrap.Modal(document.getElementById('pakasirPaymentModal'));
+      pModal.show();
+
+      // Set Loading Spinner Mode aktif
+      document.getElementById('pakasirLoader').classList.remove('d-none');
+      document.getElementById('pakasirLoaderText').innerText = 'Menghubungkan ke secure gate Pakasir...';
+      document.getElementById('pakasirOrderDetails').classList.add('d-none');
+      document.getElementById('pakasirCancelBtn').disabled = false;
+
+      // Request order via route backend API Anda
+      fetch('/api/payment/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: tier, amount: price }),
+        credentials: 'include'
+      })
+      .then(res => res.json())
+      .then(resData => {
+        if (resData.status && resData.data) {
+          activeOrder = resData.data;
+
+          document.getElementById('pakasirLoader').classList.add('d-none');
+          document.getElementById('pakasirOrderDetails').classList.remove('d-none');
+
+          document.getElementById('pakasirDisplayAmount').innerText = 'Rp ' + Number(activeOrder.total_payment || price).toLocaleString('id-ID');
+          document.getElementById('pakasirDisplayOrderId').innerText = activeOrder.order_id;
+          document.getElementById('pakasirDisplayPlan').innerText = label;
+          document.getElementById('pakasirPayBtn').href = activeOrder.payment_url;
+
+          // Jalankan real-time validator status
+          initiatePaymentStatusPolling(activeOrder.order_id, activeOrder.total_payment || price);
+        } else {
+          alert(resData.message || 'Sesi pembuatan payment gagal.');
+          bootstrap.Modal.getInstance(document.getElementById('pakasirPaymentModal')).hide();
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Terjadi kendala jaringan pada interaksi server.');
+        bootstrap.Modal.getInstance(document.getElementById('pakasirPaymentModal')).hide();
+      });
+    }
+  });
+});
+
+function initiatePaymentStatusPolling(orderId, amount) {
+  if (pollStatusInterval) clearInterval(pollStatusInterval);
+  pollStatusInterval = setInterval(() => {
+    fetch(`/api/payment/status?order_id=${orderId}&amount=${amount}`, { credentials: 'include' })
+      .then(res => res.json())
+      .then(statusData => {
+        if (statusData.status === 'paid' || statusData.status === 'completed' || statusData.status === 'success') {
+          clearInterval(pollStatusInterval);
+          document.getElementById('pakasirDisplayStatus').innerText = 'PAID / SUCCESS';
+          document.getElementById('pakasirDisplayStatus').className = 'fw-bold text-success';
+          alert('Terima kasih! Pembayaran Anda sukses dideteksi, Plan langsung aktif.');
+          window.location.reload();
+        }
+      })
+      .catch(err => console.error('Status check matching error:', err));
+  }, 3000);
+}
+
+document.getElementById('pakasirCancelBtn').addEventListener('click', function() {
+  if (!activeOrder) {
+    bootstrap.Modal.getInstance(document.getElementById('pakasirPaymentModal')).hide();
+    return;
+  }
+  
+  this.disabled = true;
+  document.getElementById('pakasirLoader').classList.remove('d-none');
+  document.getElementById('pakasirLoaderText').innerText = 'Membatalkan pesanan transaksi...';
+  document.getElementById('pakasirOrderDetails').classList.add('d-none');
+  
+  if (pollStatusInterval) clearInterval(pollStatusInterval);
+
+  fetch('/api/payment/cancel', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ order_id: activeOrder.order_id, amount: activeOrder.amount }),
+    credentials: 'include'
+  })
+  .then(() => {
+    alert('Pembayaran dibatalkan.');
+  })
+  .catch(err => console.error(err))
+  .finally(() => {
+    activeOrder = null;
+    bootstrap.Modal.getInstance(document.getElementById('pakasirPaymentModal')).hide();
+  });
+});
+
+document.getElementById('pakasirPaymentModal').addEventListener('hidden.bs.modal', function () {
+  if (pollStatusInterval) clearInterval(pollStatusInterval);
 });
 </script>
 </body>
