@@ -155,6 +155,15 @@ try {
   console.error(`[API]   Reason: ${e.message}`);
 }
 
+try {
+  require('./src/api/sticker/brat.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: brat.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/sticker/brat.js`);
+  console.error(`[API]   Reason: ${e.message}`);
+}
+
 console.log(`[API] ${loaded}/3 route files loaded`);
 
 // ── API info ─────────────────────────────────────────────────────────────────
