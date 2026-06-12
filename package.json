@@ -6,7 +6,8 @@
   "type": "commonjs",
   "scripts": {
     "start": "node --no-deprecation index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js", 
+    "postinstall": "npx playwright install chromium"
   },
   "author": "Andri",
   "license": "MIT",
