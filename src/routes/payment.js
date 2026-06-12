@@ -87,15 +87,14 @@ module.exports = function(app) {
       // Format Order ID acak sesuai kode baru yang kamu minta
       const orderId = `ORD-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
 
-      // Request QRIS langsung via Axios ke API Pakasir
-      const responsePakasir = await axios.post("https://app.pakasir.com/api/transactioncreate/qris", {
-        project: config.slug,
-        order_id: orderId,
-        amount: amount,
-        api_key: config.apiKey
-      }, { 
-        headers: { "Content-Type": "application/json" } 
-      });
+      
+      // KODE BARU (Sudah diperbaiki)
+const response = await axios.post('https://app.pakasir.com/api/transactioncreate/qris', {
+    project: "andri-market",
+    order_id: orderId,
+    amount: amount,
+    api_key: process.env.PAKASIR_API_KEY
+});
 
       const payment = responsePakasir.data?.payment;
       if (!payment?.payment_number) {
