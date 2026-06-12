@@ -173,7 +173,7 @@ module.exports = function(app) {
           project: config.slug,
           order_id: order_id,
           amount: Number(amount),
-          api_key: config.apiKey // Menggunakan properti config.apiKey yang benar
+          ApiKey: config.apiKey // Menggunakan properti config.apiKey yang benar
         }
       });
 
