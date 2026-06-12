@@ -139,6 +139,18 @@
             { "name": "prompt", "required": true, "type": "text" },
             { "name": "action", "required": false, "type": "text", "default": "json" }
           ]
+        }, 
+        {
+          "name": "To Hitam",
+          "desc": "Convert images into dark cinematic portrait or low light aesthetic style using AI",
+          "method": "POST",
+          "path": "/api/tools/tohitam",
+          "innerDesc": "Masukkan URL gambar yang ingin diubah warnanya menjadi gelap estetik. Parameter prompt bersifat opsional.",
+          "params": [
+            { "name": "url", "required": true, "type": "text" },
+            { "name": "prompt", "required": false, "type": "text", "default": "dark cinematic portrait, low light aesthetic" },
+            { "name": "action", "required": false, "type": "text", "default": "render" }
+          ]
         }
       ]
     }
