@@ -7,7 +7,7 @@ const { generateUUID } = require('../utils/apikey');
 
 const PLAN_PRICES = { premium: 29000, vip: 59000, vvip: 89000 };
 
-// Konfigurasi API Pakasir langsung sesuai kode baru kamu
+// Konfigurasi API Pakasir
 const config = { 
   slug: process.env.PAKASIR_SLUG, 
   apiKey: process.env.PAKASIR_API_KEY
@@ -65,7 +65,7 @@ module.exports = function(app) {
     }
   });
 
-  // POST /api/payment/create -> MENGGUNAKAN LOGIKA CREATE PAYMENT BARU
+  // POST /api/payment/create -> FIX ERROR KEY VALIDATION & VARIABLE DEFINED
   app.post('/api/payment/create', requireAuthJson, async (req, res) => {
     try {
       const { plan } = req.body;
@@ -84,19 +84,19 @@ module.exports = function(app) {
         return res.status(409).json({ status: false, statusCode: 409, message: 'Kamu sudah punya transaksi pending untuk plan ini.', error: 'DUPLICATE_TRANSACTION' });
       }
 
-      // Format Order ID acak sesuai kode baru yang kamu minta
+      // Format Order ID acak
       const orderId = `ORD-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
 
-      
-      // KODE BARU (Sudah diperbaiki)
-const response = await axios.post('https://app.pakasir.com/api/transactioncreate/qris', {
-    project: "andri-market",
-    order_id: orderId,
-    amount: amount,
-    apikey: process.env.PAKASIR_API_KEY
-});
+      // Hitung ke API Pakasir QRIS dengan ApiKey PascalCase yang benar
+      const response = await axios.post('https://app.pakasir.com/api/transactioncreate/qris', {
+          project: config.slug || "andri-market",
+          order_id: orderId,
+          amount: amount,
+          ApiKey: config.apiKey // FIX: Menggunakan PascalCase 'ApiKey' agar lolos validasi Pakasir
+      });
 
-      const payment = responsePakasir.data?.payment;
+      // FIX: Menggunakan variabel 'response' yang benar (bukan responsePakasir)
+      const payment = response.data?.payment; 
       if (!payment?.payment_number) {
         return res.status(502).json({ status: false, message: "QR Pakasir tidak ditemukan dari server luar." });
       }
@@ -104,7 +104,7 @@ const response = await axios.post('https://app.pakasir.com/api/transactioncreate
       // Generate QR Code menjadi dataURL Base64 string
       const qrBase64 = await QRCode.toDataURL(payment.payment_number, { width: 300 });
 
-      // Hitung batas waktu kadaluarsa (jika dari API kosong, buat default 30 menit ke depan)
+      // Hitung batas waktu kadaluarsa
       const txId = generateUUID();
       const expiredAt = payment.expired_at || new Date(Date.now() + 30 * 60 * 1000).toISOString();
 
@@ -131,13 +131,13 @@ const response = await axios.post('https://app.pakasir.com/api/transactioncreate
           amount: amount,
           fee: payment.fee || 0,
           total_payment: payment.total_payment || amount,
-          payment_url: qrBase64, // Sekarang otomatis mengirimkan gambar Base64 QR Code siap render
+          payment_url: qrBase64, 
           expired_at: expiredAt
         } 
       });
     } catch (err) {
-      console.error('[Payment Create Error]', err);
-      return res.status(500).json({ status: false, statusCode: 500, message: err.message || 'Gagal buat pesanan.', error: 'SERVER_ERROR' });
+      console.error('[Payment Create Error]', err.response?.data || err);
+      return res.status(500).json({ status: false, statusCode: 500, message: err.response?.data?.message || err.message || 'Gagal buat pesanan.', error: 'SERVER_ERROR' });
     }
   });
 
@@ -173,7 +173,7 @@ const response = await axios.post('https://app.pakasir.com/api/transactioncreate
           project: config.slug,
           order_id: order_id,
           amount: Number(amount),
-          api_key: config.apiKey
+          api_key: config.apiKey // Menggunakan properti config.apiKey yang benar
         }
       });
 
