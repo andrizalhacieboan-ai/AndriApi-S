@@ -149,7 +149,7 @@
           "params": [
             { "name": "url", "required": true, "type": "text" },
             { "name": "prompt", "required": false, "type": "text", "default": "dark cinematic portrait, low light aesthetic" },
-            { "name": "action", "required": false, "type": "text", "default": "render" }
+            { "name": "action", "required": false, "type": "text", "default": "Json" }
           ]
         }
       ]
