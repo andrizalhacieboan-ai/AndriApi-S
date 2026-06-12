@@ -23,21 +23,15 @@ function genKEY() {
 }
 
 async function editImageFromUrl(imageUrl, prompt) {
-    // 1. Download gambar dari URL ke Buffer terlebih dahulu
     const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
     const buffer = Buffer.from(imageResponse.data, 'binary');
     const contentType = imageResponse.headers['content-type'] || 'image/jpeg';
-    
-    // Ambil nama file dari URL atau pasang default
     const filename = imageUrl.split('/').pop().split('?')[0] || 'image.jpg';
 
     let last = "request failed";
     
-    // Loop 6 kali sesuai logic bawaan untuk bypass key expired
     for (let i = 0; i < 6; i++) {
         const form = new FormData();
-        
-        // Memasukkan buffer ke Blob agar FormData bisa membacanya di lingkungan Node.js / Vercel
         const blob = new Blob([buffer], { type: contentType });
         form.append("image", blob, filename);
         form.append("text", prompt);
@@ -60,7 +54,6 @@ async function editImageFromUrl(imageUrl, prompt) {
             const json = await res.json().catch(() => null);
             
             if (json?.output_url) {
-                // Ambil hasil gambar yang sudah diedit dalam bentuk arrayBuffer
                 const resultRes = await fetch(json.output_url);
                 const resultBuffer = Buffer.from(await resultRes.arrayBuffer());
                 
@@ -85,9 +78,8 @@ module.exports = function (app) {
   const handleDeepAI = async (req, res) => {
     const imageUrl = req.body.url || req.query.url;
     const prompt = req.body.prompt || req.query.prompt;
-    
-    // Parameter opsional untuk menentukan jenis output (stream gambar langsung atau json data)
     const renderType = req.body.action || req.query.action || "json"; 
+    const apiKey = req.query.apikey || req.headers['x-api-key'] || "";
 
     if (!imageUrl || !prompt) {
       return res.status(400).json({
@@ -101,14 +93,21 @@ module.exports = function (app) {
     try {
       const result = await editImageFromUrl(imageUrl, prompt);
 
-      // JIKA USER MEMINTA RENDER GAMBAR LANGSUNG (Cocok untuk Bot WA / langsung pasang di <img src="">)
+      // 1. MODE RENDER FILE GAMBAR LANGSUNG
       if (renderType === "render") {
           res.setHeader('Content-Type', 'image/jpeg');
           res.setHeader('Cache-Control', 'public, max-age=86400');
           return res.send(result.buffer);
       }
 
-      // RESPONS STANDAR API (Berupa objek JSON + Base64)
+      // 2. MODE JSON DENGAN LINK RE-RENDER OTOMATIS
+      const protocol = req.protocol;
+      const host = req.get('host');
+      
+      let dynamicRenderUrl = `${protocol}://${host}/api/tools/deepai?url=${encodeURIComponent(imageUrl)}&prompt=${encodeURIComponent(prompt)}&action=render`;
+      if (apiKey) dynamicRenderUrl += `&apikey=${apiKey}`;
+
+      // RESPONS DATA SEMPURNA
       return res.status(200).json({
         status: true,
         statusCode: 200,
@@ -116,6 +115,7 @@ module.exports = function (app) {
         data: {
           id: result.id,
           mimeType: "image/jpeg",
+          renderUrl: dynamicRenderUrl, // <--- LINK DIRECT IMAGE UTK BOT KAMU
           source: result.sourceUrl,
           base64: result.buffer.toString("base64"),
           url: `data:image/jpeg;base64,${result.buffer.toString("base64")}`
