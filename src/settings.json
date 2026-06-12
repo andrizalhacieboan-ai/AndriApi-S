@@ -124,6 +124,23 @@
           ]
         }
       ]
+    }, 
+    {
+      "name": "Tools",
+      "items": [
+        {
+          "name": "Img Prompt to Img",
+          "desc": "Edit images using AI prompt instructions (DeepAI Engine)",
+          "method": "POST",
+          "path": "/api/tools/deepai",
+          "innerDesc": "Masukkan URL gambar publik dan instruksi prompt perubahannya.",
+          "params": [
+            { "name": "url", "required": true, "type": "text" },
+            { "name": "prompt", "required": true, "type": "text" },
+            { "name": "action", "required": false, "type": "text", "default": "json" }
+          ]
+        }
+      ]
     }
   ]
 }
