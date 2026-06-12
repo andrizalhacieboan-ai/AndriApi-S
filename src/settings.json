@@ -97,6 +97,20 @@
       ]
     }, 
     {
+          "name": "Facebook Downloader",
+          "desc": "Download Facebook videos (SD/HD) and extract images/comments",
+          "method": "POST",
+          "path": "/api/download/facebook",
+          "innerDesc": "Masukkan URL postingan/video Facebook yang valid. Cookie dan UserAgent opsional.",
+          "params": [
+            { "name": "url", "required": true, "type": "text" },
+            { "name": "cookie", "required": false, "type": "text", "default": "" },
+            { "name": "useragent", "required": false, "type": "text", "default": "" }
+          ]
+        }
+      ]
+    }, 
+    {
       "name": "Sticker",
       "items": [
         {
