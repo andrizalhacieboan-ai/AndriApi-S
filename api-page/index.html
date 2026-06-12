@@ -226,14 +226,14 @@ section{position:relative;z-index:1;padding:8rem 2rem}
 
 .api-console-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
-  margin-top: 3rem;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
 }
 .api-card {
   background: var(--surface);
-  border-radius: 20px;
-  padding: 1.25rem;
+  border-radius: 14px;
+  padding: 1rem;
   box-shadow: var(--nm-outset-sm);
   transition: all 0.2s;
   border: 1px solid rgba(255,255,255,0.6);
@@ -245,27 +245,32 @@ section{position:relative;z-index:1;padding:8rem 2rem}
 .api-method {
   display: inline-block;
   font-family: var(--mono);
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 800;
-  padding: 0.2rem 0.6rem;
+  padding: 0.15rem 0.5rem;
   border-radius: 20px;
   background: var(--accent);
   color: white;
-  margin-bottom: 0.75rem;
-}
-.api-card h4 {
-  font-size: 1.1rem;
-  font-weight: 700;
   margin-bottom: 0.5rem;
 }
+.api-card h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
 .api-card p {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--muted);
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 .try-btn {
   font-size: 0.75rem;
   padding: 0.4rem 1rem;
+}
+.try-console-btn {
+  font-size: 0.7rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 8px;
 }
 .modal-body pre {
   white-space: pre-wrap;
@@ -401,6 +406,13 @@ footer{
     <div class="s-tag reveal">Try API Console</div>
     <h2 class="s-h reveal stagger-1">Uji Endpoint<br>Tanpa API Key</h2>
     <p class="s-p reveal stagger-2">Cukup login, lalu klik tombol <strong>Try</strong> di bawah. Session Anda akan otomatis digunakan.</p>
+    
+    <div class="mb-3 reveal stagger-3" style="max-width: 280px;">
+      <select id="categorySelect" class="form-select" style="background: var(--surface); border-radius: 12px; box-shadow: var(--nm-outset-sm); border: 1px solid rgba(255,255,255,0.6); color: var(--text); font-size: 0.8rem; font-weight: 600; padding: 0.5rem 1rem; font-family: var(--mono);">
+        <option value="all">🔄 Memuat Kategori...</option>
+      </select>
+    </div>
+
     <div id="consoleApis" class="api-console-grid">Memuat daftar API...</div>
   </div>
 </section>
@@ -436,7 +448,7 @@ footer{
         </div>
       </div>
       <div class="modal-footer">
-        <button id="apiModalExecuteBtn" class="btn btn-primary">Execute Request</button>
+        <button id="apiModalExecuteBtn" class="btn btn-primary font-monospace" style="letter-spacing: 0.5px;">▶ Run</button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
       </div>
     </div>
@@ -514,12 +526,16 @@ loadUserAndApiKey();
 let endpointsList = [];
 async function loadEndpointsForConsole() {
   try {
-    const res = await fetch(safeUrl('/src/settings.json'));
+    const res = await fetch('/src/settings.json');
     if (!res.ok) throw new Error('HTTP '+res.status);
     const settings = await res.json();
     const endpoints = [];
+    const selectCat = document.getElementById('categorySelect');
+    const categoriesSet = new Set();
+
     if (settings.categories) {
       settings.categories.forEach(cat => {
+        if (cat.name) categoriesSet.add(cat.name);
         if (cat.items) {
           cat.items.forEach(item => {
             endpoints.push({
@@ -527,12 +543,34 @@ async function loadEndpointsForConsole() {
               desc: item.desc,
               method: item.method || 'GET',
               path: item.path,
-              params: item.params || []
+              params: item.params || [],
+              category: cat.name || 'Lainnya'
             });
           });
         }
       });
     }
+    
+    if (selectCat) {
+      selectCat.innerHTML = '<option value="all">📁 Semua Kategori</option>';
+      categoriesSet.forEach(catName => {
+        const opt = document.createElement('option');
+        opt.value = catName;
+        opt.textContent = '📂 ' + catName;
+        selectCat.appendChild(opt);
+      });
+      
+      selectCat.addEventListener('change', (e) => {
+        const selected = e.target.value;
+        if (selected === 'all') {
+          renderConsoleCards(endpointsList);
+        } else {
+          const filtered = endpointsList.filter(api => api.category === selected);
+          renderConsoleCards(filtered);
+        }
+      });
+    }
+
     endpointsList = endpoints;
     renderConsoleCards(endpoints);
   } catch (err) {
@@ -590,9 +628,7 @@ function openApiModal(api) {
   lastResponseHeaders = null;
   lastResponseData = null;
   document.getElementById('apiModalExecuteBtn').onclick = executeApiRequest;
-  
-  // Menggunakan getOrCreateInstance untuk menghindari duplikasi modal instance di Bootstrap 5
-  bootstrap.Modal.getOrCreateInstance(document.getElementById('apiModal')).show();
+  new bootstrap.Modal(document.getElementById('apiModal')).show();
 }
 
 async function executeApiRequest() {
@@ -625,20 +661,17 @@ async function executeApiRequest() {
     options.body = JSON.stringify(params);
   }
 
-  // Pembuatan Teks Perintah CURL yang valid & rapi secara multi-line
-  let curlCmd = '';
-  if (api.method.toUpperCase() === 'GET') {
-    if (userApiKey) {
+  let curlUrl = url.split('?')[0];
+  let curlCmd = `curl -X ${api.method} '${curlUrl}'`;
+  if (userApiKey) {
+    if (api.method.toUpperCase() === 'GET') {
+      let separator = url.includes('?') ? '&' : '?';
       curlCmd = `curl -X ${api.method} '${url}'`;
     } else {
-      curlCmd = `API key tidak ditemukan, silakan login dan generate API key di profile\ncurl -X ${api.method} '${url}'`;
+      curlCmd = `curl -X ${api.method} '${curlUrl}' \\\n  -H 'Content-Type: application/json' \\n  -H 'x-api-key: ${userApiKey}' \\n  -d '${JSON.stringify(params)}'`;
     }
   } else {
-    if (userApiKey) {
-      curlCmd = `curl -X ${api.method} '${window.location.origin + api.path}' \\\n  -H 'Content-Type: application/json' \\\n  -H 'x-api-key: ${userApiKey}' \\\n  -d '${JSON.stringify(params)}'`;
-    } else {
-      curlCmd = `API key tidak ditemukan, silakan login dan generate API key di profile\ncurl -X ${api.method} '${window.location.origin + api.path}' \\\n  -H 'Content-Type: application/json' \\\n  -d '${JSON.stringify(params)}'`;
-    }
+    curlCmd = `API key tidak ditemukan, silakan login dan generate API key di profile\ncurl -X ${api.method} '${curlUrl}'`;
   }
   lastCurlCommand = curlCmd;
 
@@ -703,9 +736,8 @@ async function executeApiRequest() {
   } finally {
     loader.classList.add('d-none');
     document.getElementById('apiModalExecuteBtn').disabled = false;
-    
-    // Menggunakan getOrCreateInstance untuk menghindari kebocoran memori tab instance
-    bootstrap.Tab.getOrCreateInstance(document.getElementById('preview-tab')).show();
+    const firstTab = new bootstrap.Tab(document.getElementById('preview-tab'));
+    firstTab.show();
   }
 }
 
