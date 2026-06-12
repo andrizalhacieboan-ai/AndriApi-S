@@ -117,9 +117,23 @@
       "name": "url",
       "type": "text",
       "required": true
-    }
-  ]
-}
+       }
+     ]
+   }, 
+        {
+          "name": "Spotify Downloader",
+          "desc": "Download Spotify tracks, albums, or playlists into high quality MP3 format.",
+          "method": "GET",
+          "path": "/api/download/spotify",
+          "innerDesc": "Masukkan URL track, album, atau playlist Spotify yang valid.",
+          "params": [
+            {
+              "name": "url",
+              "type": "text",
+              "required": true
+            }
+          ]
+        }
       ]
     },
     {
