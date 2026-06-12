@@ -1,95 +1,88 @@
 /**
  * Lokasi File: ./src/api/sticker/brat.js
- * Ditulis khusus untuk backend Andri API (Sticker Category)
+ * Ditulis khusus untuk backend Andri API (Sticker Category - Canvas Version)
  */
 
 const { apiKeyMiddleware } = require('../../middleware/ratelimit');
-const { chromium } = require('playwright');
+const { createCanvas } = require('canvas');
 
 class BratGenerator {
     constructor(options = {}) {
        this.config = {
-          text: options.text || null,
-          background: options.background || "#FFFF",
+          text: options.text || "",
+          // Default Brat menggunakan warna hijau lime khas (#8ace00)
+          background: options.background || "#8ace00", 
           color: options.color || "#000000"
        };
     }
 
     async generate() {
-      // Ditambahkan args sandbox agar lancar saat di-deploy di cloud Linux seperti Railway
-      const browser = await chromium.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-      });
+        const width = 800;
+        const height = 800;
+        const canvas = createCanvas(width, height);
+        const ctx = canvas.getContext('2d');
 
-      try {
-        const { background, color, text } = this.config;
-        const context = await browser.newContext({
-          viewport: { width: 1000, height: 1000 }
-        });
-        
-        const page = await context.newPage();
-        await page.goto(`https://bratgenerator.com/`);
-        
-        await page.click('#toggleButtonWhite');
-        await page.click('#textOverlay');
-        await page.click('#textInput');
-        await page.fill('#textInput', text);
-        
-        await page.evaluate((data) => {
-          if (data.background) {
-            $('.node__content.clearfix').css('background-color', data.background);
-          }
-          if (data.color) {
-            $('.textFitted').css('color', data.color);
-          }
-          $('.textFitted').css('max-width', '796px');
-          $('.textFitted').css('max-height', '796px');
-          $('.textFitted').css('font-size', '140px');
-          $('#textOverlay').css({
-            'border': `3px solid ${data.background}`,
-            'width': '800px !important',
-            'height': '800px !important',
-            'min-width': '800px',
-            'min-height': '800px',
-            'max-width': '800px',
-            'max-height': '800px',
-            'display': 'flex',
-            'align-items': 'center',
-            'justify-content': 'center'
-          });
-        }, { background, color });
+        // 1. Gambar Background
+        ctx.fillStyle = this.config.background;
+        ctx.fillRect(0, 0, width, height);
 
-        // Tunggu transisi/render font selesai
-        await page.waitForTimeout(1500);
+        // 2. Konfigurasi Teks Gaya Brat (Menggunakan Arial/Sans-serif polos)
+        ctx.fillStyle = this.config.color;
         
-        const select = await page.locator('#textOverlay');
-        const element = await page.$('#textOverlay');
-        const box = await element.boundingBox();
-        
-        const result = await select.screenshot({
-          clip: {
-            x: box.x,
-            y: box.y,
-            width: 800,
-            height: 800
-          }
-        });
+        let fontSize = 110; // Ukuran font awal yang ideal
+        ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
 
-        await context.close();
-        return result;
-      } finally {
-        // Pastikan browser selalu tertutup meski proses gagal agar tidak membengkak di RAM
-        await browser.close();
-      }
+        const words = this.config.text.split(' ');
+        const maxWidth = 720; // Padding kiri-kanan 40px
+        const maxHeight = 720; // Padding atas-bawah 40px
+        
+        let lines = [];
+        let currentLine = '';
+
+        // Algoritma Text Wrapping (Memecah kata ke baris baru jika kepanjangan)
+        for (let i = 0; i < words.length; i++) {
+            let testLine = currentLine + words[i] + ' ';
+            let metrics = ctx.measureText(testLine.trim());
+            
+            if (metrics.width > maxWidth && i > 0) {
+                lines.push(currentLine.trim());
+                currentLine = words[i] + ' ';
+            } else {
+                currentLine = testLine;
+            }
+        }
+        lines.push(currentLine.trim());
+
+        // Algoritma Text Fitting (Mengecilkan font jika tinggi total teks melebihi batas)
+        let lineHeight = fontSize * 1.15;
+        while ((lines.length * lineHeight) > maxHeight && fontSize > 30) {
+            fontSize -= 5;
+            lineHeight = fontSize * 1.15;
+            ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+        }
+
+        // 3. Render Teks ke Tengah Canvas
+        const totalHeight = lines.length * lineHeight;
+        let startY = (height - totalHeight) / 2 + (lineHeight / 2);
+
+        for (let i = 0; i < lines.length; i++) {
+            ctx.fillText(lines[i], width / 2, startY);
+            startY += lineHeight;
+        }
+
+        // Mengembalikan Buffer PNG
+        return canvas.toBuffer('image/png');
     }
 }
 
 module.exports = function (app) {
 
-  // Handler universal rute brat sticker
   const handleBrat = async (req, res) => {
     const text = req.body.text || req.query.text;
-    const background = req.body.background || req.query.background || "#FFFF";
+    // Kita buat default-nya langsung warna hijau Brat (#8ace00) jika user tidak mengirimkan warna background
+    const background = req.body.background || req.query.background || "#8ace00";
     const color = req.body.color || req.query.color || "#000000";
 
     if (!text) {
@@ -105,11 +98,11 @@ module.exports = function (app) {
       const generator = new BratGenerator({ text, background, color });
       const imageBuffer = await generator.generate();
 
-      // Struktur respons standar kode 200 sukses
+      // Respons standar sukses
       return res.status(200).json({
         status: true,
         statusCode: 200,
-        message: "Success generating brat sticker",
+        message: "Success generating brat sticker via Canvas",
         data: {
           mimeType: "image/png",
           base64: imageBuffer.toString("base64"),
@@ -126,20 +119,14 @@ module.exports = function (app) {
     }
   };
 
-  /**
-   * Gerbang Deteksi Bypass Dashboard Console
-   */
   const bypassOrCheckApiKey = (req, res, next) => {
     const hasApiKey = req.query.apikey || req.headers['x-api-key'];
-    
     if (!hasApiKey && (req.cookies?.session || req.cookies?.token)) {
       return next();
     }
-    
     return apiKeyMiddleware(req, res, next);
   };
 
-  // Daftarkan rute GET & POST
   app.get("/api/sticker/brat", bypassOrCheckApiKey, handleBrat);
   app.post("/api/sticker/brat", bypassOrCheckApiKey, handleBrat);
 };
