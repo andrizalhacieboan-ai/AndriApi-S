@@ -7,7 +7,7 @@ const { generateUUID } = require('../utils/apikey');
 
 const PLAN_PRICES = { premium: 29000, vip: 59000, vvip: 89000 };
 
-// FIX SYNTAX: Menggunakan tanda '=' untuk assignment variabel global
+// Inisialisasi variabel global kamu
 const slug = process.env.PAKASIR_SLUG;
 const apiKey = process.env.PAKASIR_API_KEY;
 
@@ -63,11 +63,22 @@ module.exports = function(app) {
     }
   });
 
-  // POST /api/payment/create -> MENGGUNAKAN LOGIKA CREATE PAYMENT BARU
+  // POST /api/payment/create
   app.post('/api/payment/create', requireAuthJson, async (req, res) => {
     try {
       const { plan } = req.body;
       const userId = req.user.id;
+
+      // DEFENSE: Cek apakah API Key dari .env benar-benar terbaca atau tidak sebelum menembak Pakasir
+      if (!apiKey || !slug) {
+        console.error("[CRITICAL ERROR] File .env untuk Pakasir belum terbaca di server!");
+        return res.status(500).json({ 
+          status: false, 
+          statusCode: 500, 
+          message: 'Konfigurasi pembayaran server bermasalah (API Key kosong). Coba restart server kamu.', 
+          error: 'ENV_NOT_LOADED' 
+        });
+      }
 
       if (!plan || !PLAN_PRICES[plan]) {
         return res.status(400).json({ status: false, statusCode: 400, message: 'Plan tidak valid.', error: 'INVALID_PLAN' });
@@ -82,18 +93,18 @@ module.exports = function(app) {
         return res.status(409).json({ status: false, statusCode: 409, message: 'Kamu sudah punya transaksi pending untuk plan ini.', error: 'DUPLICATE_TRANSACTION' });
       }
 
-      // Format Order ID acak sesuai kode baru yang kamu minta
+      // Format Order ID acak
       const orderId = `ORD-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
 
-      // KODE BARU (Sudah diperbaiki total)
+      // Hitung ke API Pakasir QRIS
       const response = await axios.post('https://app.pakasir.com/api/transactioncreate/qris', {
-          project: slug || "andri-market", // FIX: pakai variabel 'slug' langsung
+          project: slug, 
           order_id: orderId,
           amount: amount,
-          ApiKey: apiKey // FIX: Pakai PascalCase 'ApiKey' & variabel 'apiKey' langsung
+          ApiKey: apiKey 
       });
 
-      const payment = response.data?.payment; // FIX: Menyesuaikan penamaan dari 'response' di atas
+      const payment = response.data?.payment; 
       if (!payment?.payment_number) {
         return res.status(502).json({ status: false, message: "QR Pakasir tidak ditemukan dari server luar." });
       }
@@ -101,7 +112,7 @@ module.exports = function(app) {
       // Generate QR Code menjadi dataURL Base64 string
       const qrBase64 = await QRCode.toDataURL(payment.payment_number, { width: 300 });
 
-      // Hitung batas waktu kadaluarsa (jika dari API kosong, buat default 30 menit ke depan)
+      // Hitung batas waktu kadaluarsa
       const txId = generateUUID();
       const expiredAt = payment.expired_at || new Date(Date.now() + 30 * 60 * 1000).toISOString();
 
@@ -128,7 +139,7 @@ module.exports = function(app) {
           amount: amount,
           fee: payment.fee || 0,
           total_payment: payment.total_payment || amount,
-          payment_url: qrBase64, // Sekarang otomatis mengirimkan gambar Base64 QR Code siap render
+          payment_url: qrBase64, 
           expired_at: expiredAt
         } 
       });
@@ -138,7 +149,7 @@ module.exports = function(app) {
     }
   });
 
-  // POST /api/payment/cancel -> DIRECT REJECT DI DB LOKAL
+  // POST /api/payment/cancel
   app.post('/api/payment/cancel', requireAuthJson, async (req, res) => {
     try {
       const { order_id } = req.body;
@@ -156,7 +167,7 @@ module.exports = function(app) {
     }
   });
 
-  // GET /api/payment/status -> MENGGUNAKAN LOGIKA CEK PAID BARU
+  // GET /api/payment/status
   app.get('/api/payment/status', requireAuthJson, async (req, res) => {
     try {
       const { order_id, amount } = req.query;
@@ -164,13 +175,12 @@ module.exports = function(app) {
         return res.status(400).json({ status: false, message: 'Parameter order_id dan amount wajib ada.' });
       }
 
-      // Hitung real-time status pembayaran ke endpoint Pakasir detail via Axios GET
       const responseCheck = await axios.get("https://app.pakasir.com/api/transactiondetail", {
         params: {
-          project: slug, // FIX: pakai variabel 'slug' langsung
+          project: slug,
           order_id: order_id,
           amount: Number(amount),
-          ApiKey: apiKey // FIX: pakai variabel 'apiKey' langsung & PascalCase 'ApiKey' jika dibutuhkan sistemnya
+          ApiKey: apiKey
         }
       });
 
@@ -199,7 +209,7 @@ module.exports = function(app) {
     }
   });
 
-  // POST /api/payment/webhook — CALLBACK OTOMATIS
+  // POST /api/payment/webhook
   app.post('/api/payment/webhook', async (req, res) => {
     try {
       const { order_id, status } = req.body;
