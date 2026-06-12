@@ -93,10 +93,8 @@
           "params": [
             { "name": "url", "required": true, "type": "text" }
           ]
-        }
-      ]
-    }, 
-    {
+        },
+        {
           "name": "Facebook Downloader",
           "desc": "Download Facebook videos (SD/HD) and extract images/comments",
           "method": "POST",
