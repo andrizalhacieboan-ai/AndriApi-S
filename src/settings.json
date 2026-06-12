@@ -107,7 +107,7 @@
           ]
         }
       ]
-    }, 
+    },
     {
       "name": "Sticker",
       "items": [
@@ -119,12 +119,12 @@
           "innerDesc": "Masukkan teks untuk diubah menjadi gaya text Brat sticker.",
           "params": [
             { "name": "text", "required": true, "type": "text" },
-            { "name": "background", "required": false, "type": "text", "default": "#FFFF" },
+            { "name": "background", "required": false, "type": "text", "default": "#8ace00" },
             { "name": "color", "required": false, "type": "text", "default": "#000000" }
           ]
         }
       ]
-    }, 
+    },
     {
       "name": "Tools",
       "items": [
@@ -133,19 +133,19 @@
           "desc": "Edit images using AI prompt instructions (DeepAI Engine)",
           "method": "POST",
           "path": "/api/tools/deepai",
-          "innerDesc": "Masukkan URL gambar publik dan instruksi prompt perubahannya.",
+          "innerDesc": "Masukkan URL gambar publik dan instruksi prompt perubahannya. Gunakan action=render untuk output gambar langsung.",
           "params": [
             { "name": "url", "required": true, "type": "text" },
             { "name": "prompt", "required": true, "type": "text" },
             { "name": "action", "required": false, "type": "text", "default": "json" }
           ]
-        }, 
+        },
         {
           "name": "To Hitam",
           "desc": "Convert images into dark cinematic portrait or low light aesthetic style using AI",
           "method": "POST",
           "path": "/api/tools/tohitam",
-          "innerDesc": "Masukkan URL gambar yang ingin diubah warnanya menjadi gelap estetik. Parameter prompt bersifat opsional.",
+          "innerDesc": "Masukkan URL gambar yang ingin diubah warnanya menjadi gelap estetik. Parameter prompt bersifat opsional. Gunakan action=render untuk output gambar langsung.",
           "params": [
             { "name": "url", "required": true, "type": "text" },
             { "name": "prompt", "required": false, "type": "text", "default": "dark cinematic portrait, low light aesthetic" },
