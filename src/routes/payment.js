@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { getDb } = require('../db/turso');
 const { requireAuthJson } = require('../middleware/auth');
 const { generateTxId, generateUUID } = require('../utils/apikey');
