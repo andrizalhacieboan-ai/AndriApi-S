@@ -1,20 +1,15 @@
-import { BASE_API_URL } from '../consts';
-import { PakasirConfig, PaymentMethod, PaymentPayload } from '../types';
-import { sanitizeUrlSafe } from '../utils/helpers';
+const BASE_API_URL = 'https://app.pakasir.com';
 
-export interface WatchOptions {
-  interval?: number;
-  timeout?: number;
-  onStatusChange?: (payment: PaymentPayload) => void;
-  onError?: (error: Error) => void;
-}
+// Fungsi helper disatukan langsung di sini
+const sanitizeUrlSafe = (s) => String(s).replace(/[^\w\-_.~0-9]/g, '');
 
-export class Pakasir {
-  private watchers: Map<string, NodeJS.Timeout> = new Map();
-  private watchTimeouts: Map<string, NodeJS.Timeout> = new Map();
-  private lastStatuses: Map<string, string> = new Map();
+class Pakasir {
+  constructor(config) {
+    this.config = config;
+    this.watchers = new Map();
+    this.watchTimeouts = new Map();
+    this.lastStatuses = new Map();
 
-  constructor(public config: PakasirConfig) {
     this.initialize();
   }
 
@@ -26,7 +21,7 @@ export class Pakasir {
     }
   }
 
-  getPaymentUrl(method: PaymentMethod, order_id: string, amount: number, redirect_url?: string): PaymentPayload {
+  getPaymentUrl(method, order_id, amount, redirect_url) {
     order_id = sanitizeUrlSafe(order_id);
 
     const { slug } = this.config;
@@ -56,39 +51,15 @@ export class Pakasir {
         payment_url = `${BASE_API_URL}/paypal/${slug}/${amount}?order_id=${order_id}&redirect=${redirect_url}`;
         break;
       case 'cimb_niaga_va':
-        fee = 3_500;
-        payment_url = `${BASE_API_URL}/pay/${slug}/${amount}?order_id=${order_id}&redirect=${redirect_url}&payment_method=${method}`;
-        break;
       case 'bni_va':
-        fee = 3_500;
-        payment_url = `${BASE_API_URL}/pay/${slug}/${amount}?order_id=${order_id}&redirect=${redirect_url}&payment_method=${method}`;
-        break;
       case 'sampoerna_va':
-        fee = 2_000;
-        payment_url = `${BASE_API_URL}/pay/${slug}/${amount}?order_id=${order_id}&redirect=${redirect_url}&payment_method=${method}`;
-        break;
       case 'bnc_va':
-        fee = 3_500;
-        payment_url = `${BASE_API_URL}/pay/${slug}/${amount}?order_id=${order_id}&redirect=${redirect_url}&payment_method=${method}`;
-        break;
       case 'maybank_va':
-        fee = 3_500;
-        payment_url = `${BASE_API_URL}/pay/${slug}/${amount}?order_id=${order_id}&redirect=${redirect_url}&payment_method=${method}`;
-        break;
       case 'permata_va':
-        fee = 3_500;
-        payment_url = `${BASE_API_URL}/pay/${slug}/${amount}?order_id=${order_id}&redirect=${redirect_url}&payment_method=${method}`;
-        break;
       case 'atm_bersama_va':
-        fee = 3_500;
-        payment_url = `${BASE_API_URL}/pay/${slug}/${amount}?order_id=${order_id}&redirect=${redirect_url}&payment_method=${method}`;
-        break;
       case 'artha_graha_va':
-        fee = 2_000;
-        payment_url = `${BASE_API_URL}/pay/${slug}/${amount}?order_id=${order_id}&redirect=${redirect_url}&payment_method=${method}`;
-        break;
       case 'bri_va':
-        fee = 3_500;
+        fee = (method === 'sampoerna_va' || method === 'artha_graha_va') ? 2000 : 3500;
         payment_url = `${BASE_API_URL}/pay/${slug}/${amount}?order_id=${order_id}&redirect=${redirect_url}&payment_method=${method}`;
         break;
       default:
@@ -111,7 +82,7 @@ export class Pakasir {
     };
   }
 
-  async createPayment(method: PaymentMethod, order_id: string, amount: number, redirect_url?: string): Promise<PaymentPayload> {
+  async createPayment(method, order_id, amount, redirect_url) {
     order_id = sanitizeUrlSafe(order_id);
 
     const payload = this.getPaymentUrl(method, order_id, amount, redirect_url);
@@ -150,7 +121,7 @@ export class Pakasir {
     };
   }
 
-  async detailPayment(order_id: string, amount: number): Promise<PaymentPayload> {
+  async detailPayment(order_id, amount) {
     order_id = sanitizeUrlSafe(order_id);
 
     const response = await fetch(
@@ -181,7 +152,7 @@ export class Pakasir {
     };
   }
 
-  async cancelPayment(order_id: string, amount: number): Promise<PaymentPayload> {
+  async cancelPayment(order_id, amount) {
     order_id = sanitizeUrlSafe(order_id);
 
     const response = await fetch(`${BASE_API_URL}/api/transactioncancel`, {
@@ -208,7 +179,7 @@ export class Pakasir {
     return payload;
   }
 
-  async simulationPayment(order_id: string, amount: number): Promise<PaymentPayload> {
+  async simulationPayment(order_id, amount) {
     order_id = sanitizeUrlSafe(order_id);
 
     const response = await fetch(`${BASE_API_URL}/api/paymentsimulation`, {
@@ -235,7 +206,7 @@ export class Pakasir {
     return payload;
   }
 
-  watchPayment(order_id: string, amount: number, options: WatchOptions = {}): void {
+  watchPayment(order_id, amount, options = {}) {
     order_id = sanitizeUrlSafe(order_id);
 
     const interval = options.interval || 3000;
@@ -264,7 +235,7 @@ export class Pakasir {
         this.lastStatuses.set(watchKey, payment.status);
       } catch (error) {
         if (options.onError) {
-          options.onError(error as Error);
+          options.onError(error);
         }
       }
     };
@@ -275,7 +246,7 @@ export class Pakasir {
     this.watchers.set(watchKey, intervalId);
   }
 
-  stopWatch(order_id: string, amount: number): void {
+  stopWatch(order_id, amount) {
     order_id = sanitizeUrlSafe(order_id);
 
     const watchKey = `${order_id}_${amount}`;
@@ -295,3 +266,5 @@ export class Pakasir {
     this.lastStatuses.delete(watchKey);
   }
 }
+
+module.exports = { Pakasir };
