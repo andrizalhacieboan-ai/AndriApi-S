@@ -7,7 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-/* ========== SAME STYLES AS BEFORE (keep all) ========== */
 :root{
   --bg: #eef2f7;
   --surface: #eef2f7;
@@ -225,19 +224,31 @@ section{position:relative;z-index:1;padding:8rem 2rem}
 }
 .pm-badge:hover{color:var(--text);transform:translateY(-3px) scale(1.02);box-shadow: var(--nm-outset)}
 
+/* UPDATE LAYOUT CONSOLE API: UKURAN LEBIH KECIL & MINIMALIS */
+.console-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
 .api-console-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
-  margin-top: 3rem;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* Ukuran kartu diperkecil */
+  gap: 1rem; /* Jarak antar kartu dikurangi */
 }
 .api-card {
   background: var(--surface);
-  border-radius: 20px;
-  padding: 1.25rem;
+  border-radius: 16px; /* Sudut lebih presisi */
+  padding: 1rem; /* Padding dikurangi agar ramping */
   box-shadow: var(--nm-outset-sm);
   transition: all 0.2s;
   border: 1px solid rgba(255,255,255,0.6);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 .api-card:hover {
   transform: translateY(-3px);
@@ -246,28 +257,38 @@ section{position:relative;z-index:1;padding:8rem 2rem}
 .api-method {
   display: inline-block;
   font-family: var(--mono);
-  font-size: 0.7rem;
+  font-size: 0.65rem; /* Ukuran teks method diperkecil */
   font-weight: 800;
-  padding: 0.2rem 0.6rem;
+  padding: 0.15rem 0.5rem;
   border-radius: 20px;
   background: var(--accent);
   color: white;
-  margin-bottom: 0.75rem;
-}
-.api-card h4 {
-  font-size: 1.1rem;
-  font-weight: 700;
   margin-bottom: 0.5rem;
 }
+.api-card h4 {
+  font-size: 0.95rem; /* Ukuran teks judul diperkecil */
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  color: var(--accent);
+}
 .api-card p {
-  font-size: 0.75rem;
+  font-size: 0.7rem; /* Ukuran deskripsi diperkecil */
   color: var(--muted);
-  margin-bottom: 1rem;
+  margin-bottom: 0.85rem;
+  line-height: 1.4;
 }
-.try-btn {
-  font-size: 0.75rem;
-  padding: 0.4rem 1rem;
+.try-console-btn {
+  font-size: 0.7rem;
+  font-family: var(--mono);
+  font-weight: 700;
+  padding: 0.35rem 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  align-self: flex-start;
+  border-radius: 10px;
 }
+
 .modal-body pre {
   white-space: pre-wrap;
   word-wrap: break-word;
@@ -374,7 +395,7 @@ footer{
         <div>&nbsp;&nbsp;<span class="tk">"status"</span>: <span class="tv">true</span>,</div>
         <div>&nbsp;&nbsp;<span class="tk">"message"</span>: <span class="ts">"Success generating response"</span>,</div>
         <div>&nbsp;&nbsp;<span class="tk">"data"</span>: {</div>
-        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tn">"result"</span>: <span class="tv">"Karma adalah konsep bahwa setiap tindakan memiliki konsekuensi yang setara..."</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tn">"result"</span>: <span class="tv">"Karma adalah konsep bahwa setiap tindakan memiliki konsekuensi... (Andri Store ID)"</span></div>
         <div>&nbsp;&nbsp;}</div>
         <div>}</div>
       </div>
@@ -399,10 +420,23 @@ footer{
 
 <section id="api-console" style="background:rgba(0,0,0,0.02);border-top:1px solid rgba(0,0,0,0.03);border-bottom:1px solid rgba(0,0,0,0.03)">
   <div class="container">
-    <div class="s-tag reveal">Try API Console</div>
-    <h2 class="s-h reveal stagger-1">Uji Endpoint<br>Tanpa API Key</h2>
-    <p class="s-p reveal stagger-2">Cukup login, lalu klik tombol <strong>Try</strong> di bawah. Session Anda akan otomatis digunakan.</p>
-    <div id="consoleApis" class="api-console-grid">Memuat daftar API...</div>
+    <div class="s-tag reveal">Eksekusi API</div>
+    <h2 class="s-h reveal stagger-1">Endpoint API yang tersedia<br>By Andri API's</h2>
+    <p class="s-p reveal stagger-2">Cukup klik tombol eksekusi terminal di bawah untuk menguji respons.</p>
+    
+    <!-- BARU: DROPDOWN SELECT KATEGORI DAN BADGE TOTAL ENDPOINT -->
+    <div class="console-toolbar reveal stagger-3">
+      <div class="d-flex align-items-center gap-2">
+        <label for="categoryFilter" class="small fw-bold text-muted" style="font-family: var(--mono); font-size: 0.75rem;">FILTER:</label>
+        <select id="categoryFilter" class="form-select w-auto" style="background: var(--surface); box-shadow: var(--nm-outset-sm); border: 1px solid rgba(255,255,255,0.8); border-radius: 12px; font-size: 0.8rem; font-weight: 600; color: var(--text); padding: 0.4rem 2rem 0.4rem 0.8rem; cursor: pointer;">
+          <option value="all">Select All Kategori</option>
+        </select>
+      </div>
+      <span id="endpointCountBadge" class="badge text-dark" style="background: var(--surface); box-shadow: var(--nm-inset-sm); font-family: var(--mono); font-size: 0.75rem; padding: 0.55rem 1rem; border-radius: 12px; font-weight: 700;">Total: 0 Endpoints</span>
+    </div>
+
+    <!-- LIST KARTU SEKARANG LEBIH RAMPING -->
+    <div id="consoleApis" class="api-console-grid reveal stagger-4">Memuat daftar API...</div>
   </div>
 </section>
 
@@ -437,7 +471,7 @@ footer{
         </div>
       </div>
       <div class="modal-footer">
-        <button id="apiModalExecuteBtn" class="btn btn-primary">Execute Request</button>
+        <button id="apiModalExecuteBtn" class="btn btn-primary">Execute</button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
       </div>
     </div>
@@ -449,19 +483,14 @@ footer{
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-/* ========== UTILITY ========== */
 function safeUrl(endpoint) {
   if (window.location.protocol === 'blob:') return window.location.origin + endpoint;
   return endpoint;
 }
-
-/* ========== SCROLL REVEAL ========== */
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
 }, { threshold: 0.12 });
 document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.reveal-scale').forEach(el => observer.observe(el));
-
-/* ========== COUNTER ANIMATION ========== */
 function animateCounter(el, target) {
   let cur = 0, step = target / 60;
   let t = setInterval(() => {
@@ -480,7 +509,6 @@ const counterObs = new IntersectionObserver((entries) => {
 }, { threshold: .5 });
 document.querySelectorAll('[data-target]').forEach(el => counterObs.observe(el));
 
-/* ========== LOAD STATS ========== */
 fetch(safeUrl('/api/stats'), { credentials: 'include' })
   .then(r => r.json()).then(d => {
     if (d.status && d.data) {
@@ -493,7 +521,6 @@ fetch(safeUrl('/api/stats'), { credentials: 'include' })
     }
   }).catch(() => {});
 
-/* ========== AUTH & API KEY ========== */
 let userApiKey = null;
 let userPlan = null;
 
@@ -519,16 +546,23 @@ async function loadUserAndApiKey() {
 
 loadUserAndApiKey();
 
-/* ========== LOAD ENDPOINTS FROM settings.json ========== */
 let endpointsList = [];
+
+// BARU: MEMBACA KATEGORI SECARA DINAMIS & MEMBUAT COUNTER JUMLAHNYA
 async function loadEndpointsForConsole() {
   try {
     const res = await fetch('/src/settings.json');
     if (!res.ok) throw new Error('HTTP '+res.status);
     const settings = await res.json();
     const endpoints = [];
+    const categoryCounts = {};
+    let totalCount = 0;
+
     if (settings.categories) {
       settings.categories.forEach(cat => {
+        const catName = cat.name;
+        categoryCounts[catName] = 0;
+        
         if (cat.items) {
           cat.items.forEach(item => {
             endpoints.push({
@@ -536,13 +570,40 @@ async function loadEndpointsForConsole() {
               desc: item.desc,
               method: item.method || 'GET',
               path: item.path,
-              params: item.params || []
+              params: item.params || [],
+              category: catName
             });
+            categoryCounts[catName]++;
+            totalCount++;
           });
         }
       });
     }
     endpointsList = endpoints;
+
+    // RENDER PILIHAN DROPDOWN KATEGORI BESERTA COUNTER MASING-MASING
+    const filterSelect = document.getElementById('categoryFilter');
+    if (filterSelect) {
+      filterSelect.innerHTML = `<option value="all">Select All Kategori (${totalCount})</option>`;
+      Object.entries(categoryCounts).forEach(([name, count]) => {
+        filterSelect.innerHTML += `<option value="${name}">${name} (${count})</option>`;
+      });
+
+      // EVENT LISTENER PENYARING AKSYON FILTERING
+      filterSelect.addEventListener('change', (e) => {
+        const selected = e.target.value;
+        if (selected === 'all') {
+          renderConsoleCards(endpointsList);
+          document.getElementById('endpointCountBadge').innerText = `Total: ${totalCount} Endpoints`;
+        } else {
+          const filtered = endpointsList.filter(api => api.category === selected);
+          renderConsoleCards(filtered);
+          document.getElementById('endpointCountBadge').innerText = `Total: ${filtered.length} Endpoints`;
+        }
+      });
+    }
+
+    document.getElementById('endpointCountBadge').innerText = `Total: ${totalCount} Endpoints`;
     renderConsoleCards(endpoints);
   } catch (err) {
     console.error('Load settings.json gagal', err);
@@ -550,16 +611,42 @@ async function loadEndpointsForConsole() {
   }
 }
 
+// UPDATE: SEKARANG TULISAN "TRY" BERUBAH JADI IKON RUN TERMINAL '>_ Run'
 function renderConsoleCards(apis) {
   const container = document.getElementById('consoleApis');
   if (!container) return;
-  if (!apis.length) { container.innerHTML = '<div class="text-muted">Belum ada endpoint.</div>'; return; }
+  if (!apis.length) { container.innerHTML = '<div class="text-muted p-3">Belum ada endpoint di kategori ini.</div>'; return; }
   let html = '';
   apis.forEach(api => {
     const apiStr = JSON.stringify(api).replace(/'/g, "&apos;");
-    html += `<div class="api-card" data-api='${apiStr}'><span class="api-method">${api.method}</span><h4>${escapeHtml(api.name)}</h4><p>${escapeHtml(api.desc || '')}</p><button class="btn btn-sm btn-dark try-console-btn">Try</button></div>`;
+    html += `
+      <div class="api-card" data-api='${apiStr}'>
+        <div>
+          <span class="api-method">${api.method}</span>
+          <h4>${escapeHtml(api.name)}</h4>
+          <p>${escapeHtml(api.desc || '')}</p>
+        </div>
+        <button class="btn btn-sm btn-dark try-console-btn">
+          <span style="color:#0d9488; font-weight:800; font-family:var(--mono);">&gt;_</span> Run
+        </button>
+      </div>`;
   });
   container.innerHTML = html;
+
+  // AKTIFKAN EFEK HOVER TILT PADA KARTU YANG BARU DI-RENDER
+  document.querySelectorAll('.api-card').forEach(card => {
+    card.addEventListener('mousemove', function(e) {
+      let r = this.getBoundingClientRect();
+      let x = (e.clientX - r.left) / r.width - 0.5;
+      let y = (e.clientY - r.top) / r.height - 0.5;
+      this.style.transform = `perspective(800px) rotateY(${x * 10}deg) rotateX(${-y * 10}deg) translateZ(6px)`;
+    });
+    card.addEventListener('mouseleave', function() { 
+      this.style.transform = ''; 
+      this.style.transition = 'transform .3s ease'; 
+    });
+  });
+
   document.querySelectorAll('.try-console-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const card = btn.closest('.api-card');
@@ -617,12 +704,11 @@ async function executeApiRequest() {
     headers: { 'Content-Type': 'application/json' }
   };
 
-  // ── UPDATE LOGIKA: SINKRONISASI API KEY PADA CONSOLE CALL ─────────────────
   if (userApiKey) {
     if (api.method.toUpperCase() === 'GET') {
-      params['apikey'] = userApiKey; // Masukkan ke parameter query GET
+      params['apikey'] = userApiKey;
     } else {
-      options.headers['x-api-key'] = userApiKey; // Masukkan ke header POST
+      options.headers['x-api-key'] = userApiKey;
     }
   }
 
@@ -633,17 +719,16 @@ async function executeApiRequest() {
     options.body = JSON.stringify(params);
   }
 
-  let curlUrl = url.split('?')[0]; // Bersihkan url dasar untuk log cURL
+  let curlUrl = url.split('?')[0];
   let curlCmd = `curl -X ${api.method} '${curlUrl}'`;
   if (userApiKey) {
     if (api.method.toUpperCase() === 'GET') {
-      let separator = url.includes('?') ? '&' : '?';
       curlCmd = `curl -X ${api.method} '${url}'`;
     } else {
       curlCmd = `curl -X ${api.method} '${curlUrl}' \\\n  -H 'Content-Type: application/json' \\\n  -H 'x-api-key: ${userApiKey}' \\\n  -d '${JSON.stringify(params)}'`;
     }
   } else {
-    curlCmd = `# API key tidak ditemukan, silakan login dan generate API key di profile\ncurl -X ${api.method} '${curlUrl}'`;
+    curlCmd = `API key tidak ditemukan, silakan login dan generate API key di profile\ncurl -X ${api.method} '${curlUrl}'`;
   }
   lastCurlCommand = curlCmd;
 
@@ -724,7 +809,6 @@ document.getElementById('clearResponseBtn')?.addEventListener('click', () => {
 
 loadEndpointsForConsole();
 
-/* ========== 3D EFFECTS ========== */
 document.querySelectorAll('.feat-card,.plan-card,.pm-badge').forEach(card => {
   card.addEventListener('mousemove', function(e) {
     let r = this.getBoundingClientRect();
