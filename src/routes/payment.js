@@ -101,7 +101,7 @@ module.exports = function(app) {
           project: slug, 
           order_id: orderId,
           amount: amount,
-          ApiKey: apiKey 
+          api_Key: apiKey 
       });
 
       const payment = response.data?.payment; 
@@ -180,7 +180,7 @@ module.exports = function(app) {
           project: slug,
           order_id: order_id,
           amount: Number(amount),
-          ApiKey: apiKey
+          api_Key: apiKey
         }
       });
 
