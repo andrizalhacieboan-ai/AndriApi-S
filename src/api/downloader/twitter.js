@@ -1,11 +1,16 @@
-const express = require('express');
-const router = express.Router();
-const axios = require('axios'); // Diubah ke Axios agar sesuai dengan kode api Anda lainnya
+/**
+ * Lokasi File: ./src/api/downloader/twitter.js
+ * Ditulis khusus untuk backend Andri API (Downloader Category)
+ */
+
+const { apiKeyMiddleware } = require('../../middleware/ratelimit'); 
+const axios = require("axios");
 
 const TWEET_QUERY_HASH = "tmhPpO5sDermwYmq3h034A";
 const BEARER = "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA";
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36";
 
+// Helper untuk mengekstrak ID dari URL Twitter/X
 function tweetIdFromUrl(input) {
     const s = String(input || "").trim();
     if (/^\d{5,25}$/.test(s)) return s;
@@ -13,6 +18,7 @@ function tweetIdFromUrl(input) {
     return m ? m[1] : null;
 }
 
+// Helper untuk membangun URL endpoint GraphQL Twitter/X
 function buildEndpoint(tweetId) {
     const variables = {
         tweetId,
@@ -191,79 +197,112 @@ function shapeTweet(result, requestedUrl) {
     };
 }
 
-// Router Endpoint Handler
-router.get('/', async (req, res) => {
-    const { url, apikey } = req.query; // Menangkap apikey jika perlu validasi limit manual di sini
+module.exports = function (app) {
 
-    if (!url) {
-        return res.status(400).json({
-            status: false,
-            message: "Parameter 'url' wajib disertakan."
-        });
-    }
+    // Handler universal untuk melayani request download Twitter/X
+    const handleTwitter = async (req, res) => {
+        // Fleksibel membaca dari body (POST) atau query string (GET)
+        const url = req.body.url || req.query.url;
 
-    const id = tweetIdFromUrl(url);
-    if (!id) {
-        return res.status(400).json({
-            status: false,
-            message: "URL X/Twitter tidak valid — harus mengandung /status/<id>"
-        });
-    }
-
-    try {
-        // Eksekusi menggunakan Axios
-        const response = await axios.get(buildEndpoint(id), {
-            headers: {
-                "Authorization": `Bearer ${BEARER}`,
-                "Content-Type": "application/json",
-                "Accept": "*/*",
-                "Accept-Language": "en-US,en;q=0.9",
-                "Origin": "https://x.com",
-                "Referer": "https://x.com/",
-                "User-Agent": UA
-            },
-            timeout: 10000 // Batasan waktu respon 10 detik agar server tidak menggantung
-        });
-
-        const result = response.data?.data?.tweetResult?.result;
-
-        if (!result || Object.keys(result).length === 0) {
-            return res.status(404).json({
-                status: false,
-                message: "Tweet tidak ditemukan atau bersifat privat."
-            });
-        }
-        if (result.__typename === "TweetUnavailable") {
-            return res.status(403).json({
-                status: false,
-                message: `Tweet tidak tersedia: ${result.reason || "unknown"}`
-            });
-        }
-        if (result.__typename === "TweetTombstone") {
-            return res.status(410).json({
-                status: false,
-                message: "Tweet telah dihapus."
+        if (!url) {
+            return res.status(400).json({ 
+                status: false, 
+                statusCode: 400,
+                message: 'Parameter "url" wajib diisi.',
+                error: "URL_REQUIRED" 
             });
         }
 
-        const formattedData = shapeTweet(result, url);
+        const id = tweetIdFromUrl(url);
+        if (!id) {
+            return res.status(400).json({
+                status: false,
+                statusCode: 400,
+                message: "URL X/Twitter tidak valid — harus mengandung /status/<id>",
+                error: "INVALID_URL"
+            });
+        }
+
+        try {
+            const response = await axios.get(buildEndpoint(id), {
+                headers: {
+                    "Authorization": `Bearer ${BEARER}`,
+                    "Content-Type": "application/json",
+                    "Accept": "*/*",
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Origin": "https://x.com",
+                    "Referer": "https://x.com/",
+                    "User-Agent": UA
+                },
+                timeout: 10000
+            });
+
+            const result = response.data?.data?.tweetResult?.result;
+
+            if (!result || Object.keys(result).length === 0) {
+                return res.status(404).json({
+                    status: false,
+                    statusCode: 404,
+                    message: "Tweet tidak ditemukan atau bersifat privat.",
+                    error: "NOT_FOUND"
+                });
+            }
+            if (result.__typename === "TweetUnavailable") {
+                return res.status(403).json({
+                    status: false,
+                    statusCode: 403,
+                    message: `Tweet tidak tersedia: ${result.reason || "unknown"}`,
+                    error: "UNAVAILABLE"
+                });
+            }
+            if (result.__typename === "TweetTombstone") {
+                return res.status(410).json({
+                    status: false,
+                    statusCode: 410,
+                    message: "Tweet telah dihapus.",
+                    error: "DELETED"
+                });
+            }
+
+            const formattedData = shapeTweet(result, url);
+            
+            // Struktur respons standar sukses (status 200) sesuai sistem Andri API
+            return res.status(200).json({
+                status: true,
+                statusCode: 200,
+                message: "Success downloading Twitter/X data",
+                data: formattedData
+            });
+
+        } catch (error) {
+            const statusCode = error.response ? error.response.status : 500;
+            return res.status(statusCode).json({
+                status: false,
+                statusCode: statusCode,
+                message: error.response 
+                    ? `X API returned error status ${statusCode}` 
+                    : error.message,
+                error: "SERVER_ERROR"
+            });
+        }
+    };
+
+    /**
+     * Gerbang Deteksi Bypass Khusus:
+     * Jika user mengeksekusi dari Console Web bawaan (membawa cookie valid),
+     * rute akan diloloskan tanpa mengecek apikey parameter.
+     */
+    const bypassOrCheckApiKey = (req, res, next) => {
+        const hasApiKey = req.query.apikey || req.headers['x-api-key'];
         
-        return res.json({
-            status: true,
-            message: "Berhasil mengambil data tweet",
-            data: formattedData
-        });
+        if (!hasApiKey && (req.cookies?.session || req.cookies?.token)) {
+            return next();
+        }
+        
+        return apiKeyMiddleware(req, res, next);
+    };
 
-    } catch (error) {
-        // Penanganan error Axios yang lebih aman
-        const statusCode = error.response ? error.response.status : 500;
-        return res.status(statusCode).json({
-            status: false,
-            message: error.response 
-                ? `X API returned error status ${statusCode}` 
-                : `Internal Server Error: ${error.message}`
-        });
-    }
-});
-
-module.exports = router;
+    // Daftarkan rute ke Express (Menggunakan path yang sinkron dengan settings.json)
+    app.get("/api/download/twitter", bypassOrCheckApiKey, handleTwitter);
+    app.post("/api/download/twitter", bypassOrCheckApiKey, handleTwitter);
+};
