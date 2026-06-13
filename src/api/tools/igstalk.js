@@ -60,7 +60,7 @@ module.exports = function (app) {
         statusCode: 200,
         message: "Success stalking Instagram profile",
         creator: "Andri Api",
-        author: "DEFAN",
+        author: "ANDRI STORE",
         data: {
           username: u.username,
           full_name: u.full_name || "",
