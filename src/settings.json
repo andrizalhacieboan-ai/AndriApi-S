@@ -205,9 +205,8 @@
           "params": [
             { "name": "url", "required": true, "type": "text" },
             { "name": "type", "required": false, "type": "text", "default": "welcome" },
-            { "name": "text", "required": false, "type": "text", "default": "" },
-            { "name": "group", "required": false, "type": "text", "default": "Grup Chat" },
-            { "name": "desc", "required": false, "type": "text", "default": "Selamat datang di komunitas kami!" }
+            { "name": "text", "required": false, "type": "text", "default": "" }
+            
           ]
         }
       ]
