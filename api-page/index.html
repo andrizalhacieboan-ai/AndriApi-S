@@ -422,7 +422,7 @@ footer{
 
 <section><div class="container"><div class="s-tag reveal">How It Works</div><h2 class="s-h reveal stagger-1">Mulai dalam<br>3 langkah</h2><div class="steps"><div class="step reveal stagger-1"><div class="step-num">01</div><h4>Daftar Akun</h4><p>Buat akun gratis. Langsung masuk dashboard.</p></div><div class="step reveal stagger-2"><div class="step-num">02</div><h4>Pilih Plan</h4><p>Gunakan free atau upgrade melalui payment otomatis.</p></div><div class="step reveal stagger-3"><div class="step-num">03</div><h4>Mulai Coding</h4><p>Sertakan API key atau gunakan session.</p></div></div></div></section>
 
-<section id="payment" style="background:rgba(0,0,0,0.01);border-top:1px solid rgba(0,0,0,0.03)"><div class="container"><div class="s-tag reveal">Payment via Pakasir</div><h2 class="s-h reveal stagger-1">Bayar otomatis,<br>plan aktif instan</h2><p class="s-p reveal stagger-2">Semua pembayaran diproses otomatis via Pakasir.</p><div class="pm-grid"><div class="pm-badge">QRIS</div><div class="pm-badge">BNI VA</div><div class="pm-badge">BRI VA</div><div class="pm-badge">BCA VA</div><div class="pm-badge">GoPay</div><div class="pm-badge">OVO</div><div class="pm-badge">DANA</div><div class="pm-badge">ShopeePay</div><div class="pm-badge">Credit Card</div><div class="pm-badge">Indomaret</div><div class="pm-badge">Alfamart</div></div></div></section>
+<section id="payment" style="background:rgba(0,0,0,0.01);border-top:1px solid rgba(0,0,0,0.03)"><div class="container"><div class="s-tag reveal">Payment via QRIS otomatis</div><h2 class="s-h reveal stagger-1">Bayar otomatis,<br>plan aktif instan</h2><p class="s-p reveal stagger-2">Semua pembayaran diproses otomatis via Pakasir.</p><div class="pm-grid"><div class="pm-badge">QRIS</div><div class="pm-badge">BNI VA</div><div class="pm-badge">BRI VA</div><div class="pm-badge">BCA VA</div><div class="pm-badge">GoPay</div><div class="pm-badge">OVO</div><div class="pm-badge">DANA</div><div class="pm-badge">ShopeePay</div><div class="pm-badge">Credit Card</div><div class="pm-badge">Indomaret</div><div class="pm-badge">Alfamart</div></div></div></section>
 
 <section id="api-console" style="background:rgba(0,0,0,0.02);border-top:1px solid rgba(0,0,0,0.03);border-bottom:1px solid rgba(0,0,0,0.03)">
   <div class="container">
@@ -574,14 +574,14 @@ fetch(safeUrl('/api/stats'), { credentials: 'include' })
 
 let userApiKey = null;
 let userPlan = null;
-let isUserLoggedIn = false; // Tambahan flag deteksi login global
+let isUserLoggedIn = false;
 
 async function loadUserAndApiKey() {
   try {
     const res = await fetch(safeUrl('/api/auth/me'), { credentials: 'include' });
     const data = await res.json();
     if (data.status && data.data) {
-      isUserLoggedIn = true; // Sesi login terverifikasi
+      isUserLoggedIn = true;
       const name = data.data.name || 'User';
       const href = data.data.role === 'admin' ? '/admin' : '/profile';
       document.getElementById('navCta').innerHTML = `<a href="/dashboard" class="btn btn-ghost">Dashboard</a><a href="${href}" class="btn btn-primary">${name}</a>`;
@@ -663,7 +663,14 @@ function renderConsoleCards(apis) {
   let html = '';
   apis.forEach(api => {
     const apiStr = JSON.stringify(api).replace(/'/g, "&apos;");
-    html += `<div class="api-card" data-api='${apiStr}'><span class="api-method">${api.method}</span><h4>${escapeHtml(api.name)}</h4><p>${escapeHtml(api.desc || '')}</p><button class="btn btn-sm btn-dark try-console-btn">Try</button></div>`;
+    // Penyesuaian struktur tampilan: Category [newline] Nama Endpoint
+    html += `<div class="api-card" data-api='${apiStr}'>
+              <span class="api-method">${api.method}</span>
+              <div style="font-size: 0.72rem; color: var(--muted); font-family: var(--mono); text-transform: uppercase; margin-top: 0.4rem; margin-bottom: 0.1rem; font-weight: 700; letter-spacing: 0.3px;">${escapeHtml(api.category)}</div>
+              <h4>${escapeHtml(api.name)}</h4>
+              <p>${escapeHtml(api.desc || '')}</p>
+              <button class="btn btn-sm btn-dark try-console-btn">Try</button>
+            </div>`;
   });
   container.innerHTML = html;
   document.querySelectorAll('.try-console-btn').forEach(btn => {
@@ -681,7 +688,6 @@ let lastResponseHeaders = null;
 let lastResponseData = null;
 let lastCurlCommand = '';
 
-// Helper Markdown-Color Highlighters 
 function syntaxHighlightJson(jsonStr) {
   try {
     if (typeof jsonStr !== 'string') jsonStr = JSON.stringify(jsonStr, null, 2);
@@ -786,7 +792,6 @@ async function executeApiRequest() {
   let curlCmd = `curl -X ${api.method} '${curlUrl}'`;
   if (userApiKey) {
     if (api.method.toUpperCase() === 'GET') {
-      let separator = url.includes('?') ? '&' : '?';
       curlCmd = `curl -X ${api.method} '${url}'`;
     } else {
       curlCmd = `curl -X ${api.method} '${curlUrl}' \\\n  -H 'Content-Type: application/json' \\\n  -H 'x-api-key: ${userApiKey}' \\\n  -d '${JSON.stringify(params)}'`;
@@ -884,7 +889,6 @@ document.getElementById('clearResponseBtn')?.addEventListener('click', () => {
   document.getElementById('curlContent').innerText = '';
 });
 
-// Listener Event Salin (Copy Event Handler)
 $(document).on('click', '.btn-copy-pane', function() {
   const targetId = $(this).data('target');
   const targetEl = document.getElementById(targetId);
@@ -932,7 +936,6 @@ let checkPaymentStatusTimer = null;
 $('.btn-checkout-plan').on('click', async function(e) {
   e.preventDefault();
   
-  // 1. Validasi Keharusan Login Terlebih Dahulu
   if (!isUserLoggedIn) {
     alert('Peringatan: Kamu harus login terlebih dahulu sebelum melakukan transaksi pembayaran plan!');
     window.location.href = '/login';
@@ -942,7 +945,6 @@ $('.btn-checkout-plan').on('click', async function(e) {
   const selectedPlan = $(this).data('plan');
   const paymentModalInstance = new bootstrap.Modal(document.getElementById('pakasirPaymentModal'));
 
-  // Reset Tampilan Awal Modal (Tampilkan Loading 3 Titik Terlebih Dahulu)
   $('#pakasirLoadingState').removeClass('d-none');
   $('#pakasirQrContainer').addClass('d-none');
   $('#pakasirCancelBtn').prop('disabled', false).text('Batal Pembayaran');
@@ -950,7 +952,6 @@ $('.btn-checkout-plan').on('click', async function(e) {
   paymentModalInstance.show();
 
   try {
-    // 2. Request hit endpoint backend /api/payment/create
     const response = await fetch(safeUrl('/api/payment/create'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -964,21 +965,18 @@ $('.btn-checkout-plan').on('click', async function(e) {
       return;
     }
 
-    // 3. Render Data QRIS Hasil Konversi Base64 dari Backend
     const checkoutData = result.data;
     currentActiveOrderId = checkoutData.order_id;
     currentActiveAmount = checkoutData.total_payment || checkoutData.amount;
 
     $('#pakasirActivePlan').text('Plan ' + selectedPlan.toUpperCase());
     $('#pakasirTotalPayment').text('Rp ' + Number(currentActiveAmount).toLocaleString('id-ID'));
-    $('#pakasirQrImage').attr('src', checkoutData.payment_url); // Merender string dataURL qrcode Base64
+    $('#pakasirQrImage').attr('src', checkoutData.payment_url);
     $('#pakasirOrderIdText').text('ID: ' + currentActiveOrderId);
 
-    // Tukar View State dari Loading ke Gambar QRIS
     $('#pakasirLoadingState').addClass('d-none');
     $('#pakasirQrContainer').removeClass('d-none');
 
-    // 4. Jalankan Interval Polling Status Pembayaran Realtime
     runRealtimePaymentChecker(currentActiveOrderId, currentActiveAmount, paymentModalInstance);
 
   } catch (error) {
@@ -988,7 +986,6 @@ $('.btn-checkout-plan').on('click', async function(e) {
   }
 });
 
-// Fungsi Manajemen Polling Status Pembayaran Ke Server
 function runRealtimePaymentChecker(orderId, amount, modalObj) {
   if (checkPaymentStatusTimer) clearInterval(checkPaymentStatusTimer);
 
@@ -1001,15 +998,14 @@ function runRealtimePaymentChecker(orderId, amount, modalObj) {
         clearInterval(checkPaymentStatusTimer);
         alert('Selamat! Pembayaran berhasil diverifikasi. Paket membership kamu otomatis aktif.');
         modalObj.hide();
-        window.location.reload(); // Muat ulang page untuk memperbarui state plan user
+        window.location.reload();
       }
     } catch (e) {
       console.warn('Gagal sinkronisasi status pembayaran saat ini:', e);
     }
-  }, 3000); // Sinkronisasi berkala setiap 3 detik
+  }, 3000);
 }
 
-// Handler Aksi Pembatalan Pesanan QRIS (Cancel Button)
 $('#pakasirCancelBtn').on('click', async function() {
   if (!currentActiveOrderId) return;
   
@@ -1041,7 +1037,6 @@ $('#pakasirCancelBtn').on('click', async function() {
   }
 });
 
-// Bersihkan interval detektor pembayaran jika modal ditutup paksa / manual
 document.getElementById('pakasirPaymentModal').addEventListener('hidden.bs.modal', function () {
   if (checkPaymentStatusTimer) {
     clearInterval(checkPaymentStatusTimer);
