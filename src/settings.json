@@ -78,6 +78,17 @@
           "params": [
             { "name": "url", "required": true, "type": "text" }
           ]
+        },
+        {
+          "name": "Pinterest Search",
+          "desc": "Search Pinterest pins and get results with media URLs.",
+          "method": "GET",
+          "path": "/api/search/pinterest",
+          "innerDesc": "Masukkan kata kunci pencarian pinterest.",
+          "params": [
+            { "name": "q", "required": true, "type": "text" },
+            { "name": "limit", "required": false, "type": "text", "default": "25" }
+          ]
         }
       ]
     },
@@ -137,6 +148,16 @@
           "method": "GET",
           "path": "/api/download/capcut",
           "innerDesc": "Masukkan URL video CapCut yang valid.",
+          "params": [
+            { "name": "url", "required": true, "type": "text" }
+          ]
+        },
+        {
+          "name": "Pinterest Downloader",
+          "desc": "Download media (Images, GIFs, Videos) from Pinterest using Pin URL.",
+          "method": "GET",
+          "path": "/api/download/pinterest",
+          "innerDesc": "Masukkan URL pinterest.",
           "params": [
             { "name": "url", "required": true, "type": "text" }
           ]
