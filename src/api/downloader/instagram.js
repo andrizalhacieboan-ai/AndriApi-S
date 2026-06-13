@@ -3,11 +3,9 @@
  * Ditulis khusus untuk backend Andri API (Downloader & Scraper Category)
  */
 
-const vm = require("vm");
-const sharp = require("sharp");
-const crypto = require("crypto");
-const { apiKeyMiddleware } = require('../../middleware/ratelimit'); 
 
+const sharp = require("sharp");
+const { apiKeyMiddleware } = require('../../middleware/ratelimit'); 
 const ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0";
 const site = "https://igram.world";
 const hub = "https://api-wh.igram.world";
