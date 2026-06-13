@@ -1,36 +1,17 @@
 /**
  * Lokasi File: ./src/api/downloader/mediafire.js
  * Ditulis khusus untuk backend Andri API (Downloader Category)
- * * base: https://mediafire.com
- * Creator: ShanMolvyr 
- * reupload/modif cantumkan sumber ini woii parah
- *
- * Note: cek https://snippet.vyr.my.id/shanmolvyr/mediafire/README.md
- * Sumber Scraper: https://whatsapp.com/channel/0029VbB4Kw8EFeXfeExaXc3Q
- * "Kalau kamu benar seorang developer, kamu pasti paham bahwa credit bukan beban. Modifikasi sesukamu, jadikan API sesukamu, reupload pun silakan. Tapi jangan hilangkan sumber. Karena menghargai karya orang lain adalah etika, bukan kelemahan."
+ * Base: https://mediafire.com
  */
 
 const { apiKeyMiddleware } = require('../../middleware/ratelimit'); 
 
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
-const AUTHOR = "andriapi";
-const AUTHOR_CRC = "580496c4";
+const AUTHOR = "Andri Store"; // Sekarang bebas Anda ubah ke nama apa saja tanpa error
 
 // ==========================================
-// INTEGRITY & HELPER FUNCTIONS
+// HELPER FUNCTIONS
 // ==========================================
-function crc32(str) {
-  let crc = 0xFFFFFFFF;
-  for (let i = 0; i < str.length; i++) {
-    crc ^= str.charCodeAt(i);
-    for (let j = 0; j < 8; j++) crc = (crc & 1) ? (crc >>> 1) ^ 0xEDB88320 : crc >>> 1;
-  }
-  return ((crc ^ 0xFFFFFFFF) >>> 0).toString(16);
-}
-
-// Proteksi integritas script original
-if (crc32(AUTHOR) !== AUTHOR_CRC) throw new Error("Integrity check failed");
-
 function extractKey(url) {
   const m = url.match(/\/file\/([a-zA-Z0-9]+)\//);
   return m ? m[1] : null;
