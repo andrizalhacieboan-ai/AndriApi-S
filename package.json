@@ -28,6 +28,7 @@
     "yt-search": "^2.12.1"
   },
   "optionalDependencies": {
-    "better-sqlite3": "^9.4.3"
+    "better-sqlite3": "^9.4.3", 
+    "@img/sharp-linux-x64": "^0.35.1"
   }
 }
