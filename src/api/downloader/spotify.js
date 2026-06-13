@@ -1,7 +1,7 @@
 /**
  * Lokasi File: ./src/api/downloader/spotify.js
  * Ditulis khusus untuk backend Andri API (Downloader Category)
- * Base Scraper: api.spotifydown.com (Anti-Cloudflare Block Edition)
+ * Fitur: Dual-Provider Auto Fallback (SpotifyDown + FabDL) Anti-Block Edition
  */
 
 const { apiKeyMiddleware } = require('../../middleware/ratelimit'); 
@@ -12,26 +12,11 @@ const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 // HELPER FUNCTIONS
 // ==========================================
 function extractTrackId(url) {
-  // Mendukung link normal spotify maupun format custom redirect Anda
   const match = url.match(/track[/:]([a-zA-Z0-9]+)/);
   if (match) return match[1];
-  
-  // Fallback jika hanya mengirimkan ID mentah
   const clean = url.trim().split('?')[0];
   const parts = clean.split('/');
   return parts[parts.length - 1];
-}
-
-function formatBytes(bytes) {
-  if (!bytes || Number.isNaN(Number(bytes))) return "Unknown";
-  const units = ["B", "KB", "MB", "GB"];
-  let value = Number(bytes);
-  let i = 0;
-  while (value >= 1024 && i < units.length - 1) {
-    value /= 1024;
-    i++;
-  }
-  return `${value.toFixed(2)} ${units[i]}`;
 }
 
 function safeFilename(title, artist) {
@@ -39,6 +24,65 @@ function safeFilename(title, artist) {
     .replace(/[\\/:*?"<>|]/g, "")
     .replace(/\s+/g, " ")
     .trim() + " (SPOTIFY).mp3";
+}
+
+// ==========================================
+// PROVIDER MODULES
+// ==========================================
+
+// Provider 1: SpotifyDown API
+async function getFromSpotifyDown(trackId) {
+  // Hit Metadata
+  const metaRes = await fetch(`https://api.spotifydown.com/metadata/track/${trackId}`, {
+    headers: { "User-Agent": UA, "Origin": "https://spotifydown.com", "Referer": "https://spotifydown.com/" }
+  });
+  if (!metaRes.ok) throw new Error("SpotifyDown Meta Failed");
+  const meta = await metaRes.json();
+  if (!meta.success) throw new Error("Track not found on SpotifyDown");
+
+  // Hit Download Link
+  const dlRes = await fetch(`https://api.spotifydown.com/download/${trackId}`, {
+    headers: { "User-Agent": UA, "Origin": "https://spotifydown.com", "Referer": "https://spotifydown.com/" }
+  });
+  if (!dlRes.ok) throw new Error("SpotifyDown Download Link Failed");
+  const dl = await dlRes.json();
+  if (!dl.success || !dl.link) throw new Error("Conversion failed on SpotifyDown");
+
+  return {
+    title: meta.title,
+    artists: meta.artists || "Unknown Artist",
+    album: meta.album || "Single",
+    cover: meta.cover || null,
+    downloadUrl: dl.link
+  };
+}
+
+// Provider 2: FabDL API (Bypass Cloud IP Firewalls)
+async function getFromFabDL(targetUrl) {
+  const getRes = await fetch(`https://api.fabdl.com/spotify/get?url=${encodeURIComponent(targetUrl)}`, {
+    headers: { "User-Agent": UA, "Origin": "https://fabdl.com", "Referer": "https://fabdl.com/" }
+  });
+  if (!getRes.ok) throw new Error("FabDL Get Failed");
+  const getJson = await getRes.json();
+  const result = getJson?.result;
+  if (!result || !result.id || !result.gid) throw new Error("Invalid response from FabDL");
+
+  // Hit Convert to MP3
+  const convertRes = await fetch(`https://api.fabdl.com/spotify/convert-mp3/${result.gid}/${result.id}`, {
+    headers: { "User-Agent": UA, "Origin": "https://fabdl.com", "Referer": "https://fabdl.com/" }
+  });
+  if (!convertRes.ok) throw new Error("FabDL Conversion Failed");
+  const convertJson = await convertRes.json();
+  const downloadUrl = convertJson?.result?.download_url || convertJson?.result?.url;
+  if (!downloadUrl) throw new Error("FabDL failed to return download URL");
+
+  return {
+    title: result.title,
+    artists: result.artists || "Unknown Artist",
+    album: result.album || "Single",
+    cover: result.image || null,
+    downloadUrl: downloadUrl.startsWith("http") ? downloadUrl : `https://api.fabdl.com${downloadUrl}`
+  };
 }
 
 // ==========================================
@@ -59,65 +103,41 @@ module.exports = function (app) {
       });
     }
 
+    let trackData = null;
+    let usedProvider = "SpotifyDown";
+
+    // CORE LOGIC: Menerapkan Sistem Deteksi Gagal Otomatis
     try {
       const trackId = extractTrackId(target);
-      if (!trackId || trackId.length < 15) {
-        return res.status(400).json({
-          status: false,
-          statusCode: 400,
-          message: "ID Track Spotify tidak valid atau tidak ditemukan dalam URL.",
-          error: "INVALID_SPOTIFY_URL"
-        });
-      }
-
-      // 1. Ambil Metadata Lagu dari API SpotifyDown
-      const metaResponse = await fetch(`https://api.spotifydown.com/metadata/track/${trackId}`, {
-        headers: { 
-          "User-Agent": UA,
-          "Origin": "https://spotifydown.com",
-          "Referer": "https://spotifydown.com/"
-        }
-      });
+      if (!trackId || trackId.length < 15) throw new Error("INVALID_TRACK_ID");
       
-      if (!metaResponse.ok) throw new Error("Gagal mengambil metadata lagu dari provider.");
-      const metaData = await metaResponse.json();
-
-      if (!metaData.success) {
-        return res.status(404).json({
-          status: false,
-          statusCode: 404,
-          message: "Lagu tidak ditemukan atau link salah.",
-          error: "TRACK_NOT_FOUND"
-        });
-      }
-
-      // 2. Ambil Direct Download Link (MP3 File)
-      const dlResponse = await fetch(`https://api.spotifydown.com/download/${trackId}`, {
-        headers: { 
-          "User-Agent": UA,
-          "Origin": "https://spotifydown.com",
-          "Referer": "https://spotifydown.com/"
-        }
-      });
-      
-      if (!dlResponse.ok) throw new Error("Gagal mengambil resource link download.");
-      const dlData = await dlResponse.json();
-
-      if (!dlData.success || !dlData.link) {
+      // Coba Provider Utama (SpotifyDown)
+      trackData = await getFromSpotifyDown(trackId);
+    } catch (primaryError) {
+      // Jika Provider Utama Gagal/Kena Blokir, Alihkan ke Provider Cadangan (FabDL)
+      try {
+        usedProvider = "FabDL";
+        trackData = await getFromFabDL(target);
+      } catch (backupError) {
+        // Jika Kedua Provider Mengalami Masalah/Down
         return res.status(500).json({
           status: false,
           statusCode: 500,
-          message: "Provider gagal mengonversi lagu ini ke berkas MP3.",
-          error: "CONVERSION_FAILED"
+          message: "Seluruh server target downloader sedang mengalami gangguan proteksi Cloudflare.",
+          error: "ALL_PROVIDERS_FAILED",
+          details: backupError.message,
+          creator: "Andri Api"
         });
       }
+    }
 
-      const filename = safeFilename(metaData.title, metaData.artists || "Various Artists");
+    try {
+      const filename = safeFilename(trackData.title, trackData.artists);
 
-      // 3. JIKA USER MEMINTA STREAM AUDIO LANGSUNG VIA BOT (&stream=true)
+      // 1. JIKA USER MEMINTA STREAM AUDIO BINARY LANGSUNG VIA BOT (&stream=true)
       if (wantStream) {
-        const audioFetch = await fetch(dlData.link, { headers: { "User-Agent": UA } });
-        if (!audioFetch.ok) throw new Error("Gagal melakukan streaming binary file dari hosting musik.");
+        const audioFetch = await fetch(trackData.downloadUrl, { headers: { "User-Agent": UA } });
+        if (!audioFetch.ok) throw new Error("Gagal mengambil data stream dari endpoint provider.");
         
         const arrayBuffer = await audioFetch.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
@@ -127,7 +147,7 @@ module.exports = function (app) {
         return res.send(buffer);
       }
 
-      // 4. JIKA USER MEMINTA RESPON DATA JSON STANDAR
+      // 2. JIKA USER MEMINTA RESPON DATA JSON STANDAR
       const currentApikey = req.query.apikey || req.headers['x-api-key'] || '';
       const streamUrl = `${req.protocol}://${req.get('host')}/api/download/spotify?url=${encodeURIComponent(target)}&stream=true${currentApikey ? `&apikey=${currentApikey}` : ''}`;
 
@@ -136,15 +156,14 @@ module.exports = function (app) {
         statusCode: 200,
         message: "Success downloading Spotify track",
         creator: "Andri Api",
+        provider: usedProvider, // Menunjukkan resource yang sukses dieksekusi
         data: {
-          id: trackId,
-          title: metaData.title,
-          artists: metaData.artists || "Unknown Artist",
-          album: metaData.album || "Single",
-          cover: metaData.cover || null,
-          release_date: metaData.releaseDate || null,
+          title: trackData.title,
+          artists: trackData.artists,
+          album: trackData.album,
+          cover: trackData.cover,
           filename: filename,
-          url: streamUrl // Link streaming MP3 direct untuk WhatsApp/Telegram Bot Anda
+          url: streamUrl // Direct Stream Link untuk Bot WhatsApp / Telegram Anda
         }
       });
 
@@ -152,8 +171,9 @@ module.exports = function (app) {
       return res.status(500).json({ 
         status: false, 
         statusCode: 500,
-        message: "Internal Server Error / Cloudflare bypass failure on target backend.", 
-        error: err.message || "SERVER_ERROR"
+        message: "Internal Server Error saat menyalurkan file audio.", 
+        error: err.message || "SERVER_ERROR",
+        creator: "Andri Api"
       });
     }
   };
