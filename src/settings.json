@@ -195,6 +195,20 @@
             { "name": "prompt", "required": true, "type": "text" },
             { "name": "action", "required": false, "type": "text", "default": "json" }
           ]
+        },
+        {
+          "name": "Welcome & Intro Card",
+          "desc": "Generate custom Welcome, Leave, or Intro cards using Canvas Engine.",
+          "method": "GET",
+          "path": "/api/tools/welcome",
+          "innerDesc": "Masukkan URL gambar avatar publik dan konfigurasi teks sesuai tipe kartu (welcome, leave, intro). Output berupa direct image PNG.",
+          "params": [
+            { "name": "url", "required": true, "type": "text" },
+            { "name": "type", "required": false, "type": "text", "default": "welcome" },
+            { "name": "text", "required": false, "type": "text", "default": "" },
+            { "name": "group", "required": false, "type": "text", "default": "Grup Chat" },
+            { "name": "desc", "required": false, "type": "text", "default": "Selamat datang di komunitas kami!" }
+          ]
         }
       ]
     }
