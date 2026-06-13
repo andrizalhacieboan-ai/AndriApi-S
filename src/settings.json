@@ -171,7 +171,18 @@
           "params": [
             { "name": "url", "required": true, "type": "text" }
           ]
-        }
+        }, 
+        {
+  "name": "Spotify Downloader",
+  "desc": "Download tracks from Spotify with full metadata. Support direct audio stream option.",
+  "method": "GET",
+  "path": "/api/download/spotify",
+  "innerDesc": "Masukkan URL Track / Lagu Spotify yang valid. Tambahkan parameter &stream=true jika bot Anda ingin mengambil file direct media mp3-nya langsung.",
+  "params": [
+    { "name": "url", "required": true, "type": "text" },
+    { "name": "stream", "required": false, "type": "text", "default": "false" }
+  ]
+}
       ]
     },
     {
