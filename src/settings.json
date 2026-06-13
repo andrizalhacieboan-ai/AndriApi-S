@@ -130,6 +130,16 @@
             { "name": "url", "required": true, "type": "text" },
             { "name": "format", "required": false, "type": "text", "default": "mp3" }
           ]
+        },
+        {
+          "name": "Instagram Downloader",
+          "desc": "Download Instagram media (Photos, Videos, Reels, Stories) or fetch user Profile data.",
+          "method": "GET",
+          "path": "/api/download/instagram",
+          "innerDesc": "Masukkan URL Instagram (Post, Reel, Story) atau Username yang valid untuk mengambil data.",
+          "params": [
+            { "name": "url", "required": true, "type": "text" }
+          ]
         }
       ]
     },
@@ -158,7 +168,7 @@
           "desc": "Edit images using AI prompt instructions (DeepAI Engine)",
           "method": "POST",
           "path": "/api/tools/deepai",
-          "innerDesc": "Masukkan URL gambar publik dan instruksi prompt perubahannya. Gunakan action=render untuk output gambar langsung.",
+          "innerDesc": "Masukkan URL gambar publik dan instruksi prompt perubahannya.",
           "params": [
             { "name": "url", "required": true, "type": "text" },
             { "name": "prompt", "required": true, "type": "text" },
