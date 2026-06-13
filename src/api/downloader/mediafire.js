@@ -10,13 +10,10 @@
  * "Kalau kamu benar seorang developer, kamu pasti paham bahwa credit bukan beban. Modifikasi sesukamu, jadikan API sesukamu, reupload pun silakan. Tapi jangan hilangkan sumber. Karena menghargai karya orang lain adalah etika, bukan kelemahan."
  */
 
-const axios = require("axios");
-const cheerio = require("cheerio");
 const { apiKeyMiddleware } = require('../../middleware/ratelimit'); 
 
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
-
-const AUTHOR = "Andri Andri";
+const AUTHOR = "ShanMolvyr";
 const AUTHOR_CRC = "580496c4";
 
 // ==========================================
@@ -31,6 +28,7 @@ function crc32(str) {
   return ((crc ^ 0xFFFFFFFF) >>> 0).toString(16);
 }
 
+// Proteksi integritas script original
 if (crc32(AUTHOR) !== AUTHOR_CRC) throw new Error("Integrity check failed");
 
 function extractKey(url) {
@@ -38,37 +36,48 @@ function extractKey(url) {
   return m ? m[1] : null;
 }
 
+// CORE SCRAPER MENGGUNAKAN NATIVE FETCH (ZERO DEPENDENCY)
 async function scrapeHtml(url) {
-  const res = await axios.get(url, {
+  const res = await fetch(url, {
     headers: {
       "User-Agent": UA,
       "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
       "Accept-Language": "en-US,en;q=0.5",
-    },
-    timeout: 15000,
+    }
   });
+  
+  if (!res.ok) throw new Error("Gagal mengambil halaman MediaFire");
+  const html = await res.text();
 
-  const $ = cheerio.load(res.data);
+  // Ekstraksi Direct Link Download via Regex
+  const linkMatch = html.match(/href="(https:\/\/download[^"]+)"/i);
+  const link = linkMatch ? linkMatch[1] : null;
+  if (!link) throw new Error("Direct download link tidak ditemukan atau file tidak ada");
 
-  const link = $("a[aria-label='Download file']").attr("href") || $("#downloadButton").attr("href");
-  if (!link || !link.startsWith("https://download")) throw new Error("Direct download link not found");
+  // Ekstraksi Judul File via Regex
+  let title = null;
+  const titleAttrMatch = html.match(/class="dl-btn-label"\s+title="([^"]+)"/i) || html.match(/title="([^"]+)"\s+class="dl-btn-label"/i);
+  if (titleAttrMatch) {
+    title = titleAttrMatch[1];
+  } else {
+    const textMatch = html.match(/<div[^>]*class="dl-btn-label"[^>]*>([\s\S]*?)<\/div>/i);
+    if (textMatch) title = textMatch[1].replace(/<[^>]*>/g, '').trim();
+  }
 
-  const title = $(".dl-btn-label").attr("title") || $(".dl-btn-label").text().trim();
-
-  const btnText = $("a[aria-label='Download file']").text().trim();
-  const sizeMatch = btnText.match(/\(([^)]+)\)/);
-  const size = sizeMatch ? sizeMatch[1] : "";
+  // Ekstraksi Ukuran File via Regex
+  let size = "";
+  const sizeMatch = html.match(/\(([\d.]+\s*(?:GB|MB|KB|B))\)/i);
+  if (sizeMatch) size = sizeMatch[1].trim();
 
   return { title, size, link };
 }
 
 async function getMetaFromApi(key) {
-  const res = await axios.get("https://www.mediafire.com/api/1.5/file/get_info.php", {
-    params: { quick_key: key, response_format: "json" },
-    headers: { "User-Agent": UA },
-    timeout: 10000,
+  const res = await fetch(`https://www.mediafire.com/api/1.5/file/get_info.php?quick_key=${key}&response_format=json`, {
+    headers: { "User-Agent": UA }
   });
-  const info = res.data?.response?.file_info;
+  const json = await res.json();
+  const info = json?.response?.file_info;
   if (!info) throw new Error("No file_info");
   return { title: info.filename, size: formatSize(info.size) };
 }
@@ -87,9 +96,7 @@ function formatSize(bytes) {
 // ==========================================
 module.exports = function (app) {
 
-    // Handler universal untuk melayani request download MediaFire
     const handleMediafire = async (req, res) => {
-        // Mendukung parameter url atau link dari body maupun query string
         const target = req.body.url || req.query.url || req.body.link || req.query.link;
 
         if (!target) {
@@ -111,10 +118,10 @@ module.exports = function (app) {
         }
 
         try {
-            // Eksekusi core scraping HTML MediaFire
+            // Jalankan native fetch scraper
             const data = await scrapeHtml(target);
 
-            // Fallback ke API Mediafire apabila data parsial kosong
+            // Fallback API Mediafire jika data parsial kosong
             if (!data.title || !data.size) {
                 const key = extractKey(target);
                 if (key) {
@@ -128,21 +135,19 @@ module.exports = function (app) {
                 }
             }
 
-            // Struktur respons standar sukses (status 200) sesuai spesifikasi Andri API
             return res.status(200).json({
                 status: true,
                 statusCode: 200,
                 message: "Success downloading MediaFire media",
                 author: AUTHOR,
                 data: {
-                    title: data.title || null,
-                    size: data.size || null,
+                    title: data.title || "Mediafire_File",
+                    size: data.size || "Unknown",
                     url: data.link
                 }
             });
 
         } catch (err) {
-            // Penanganan jika terjadi error server / link mati / gagal parsing
             return res.status(500).json({ 
                 status: false, 
                 statusCode: 500,
@@ -152,9 +157,6 @@ module.exports = function (app) {
         }
     };
 
-    /**
-     * Gerbang Deteksi Bypass Khusus Console Web / Session Cookie
-     */
     const bypassOrCheckApiKey = (req, res, next) => {
         const hasApiKey = req.query.apikey || req.headers['x-api-key'];
         
@@ -165,7 +167,6 @@ module.exports = function (app) {
         return apiKeyMiddleware(req, res, next);
     };
 
-    // Registrasi Rute Express (Mendukung GET dan POST)
     app.get("/api/download/mediafire", bypassOrCheckApiKey, handleMediafire);
     app.post("/api/download/mediafire", bypassOrCheckApiKey, handleMediafire);
 };
