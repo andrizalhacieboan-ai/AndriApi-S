@@ -197,13 +197,21 @@ try {
   console.error(`[API]   Reason: ${e.message}`);
 }
 
-
 try {
   require('./src/api/downloader/capcut.js')(app);
   loaded++;
   console.log(`[API] ✓ Loaded: capcut.js`);
 } catch (e) {
   console.error(`[API] ✗ FAILED to load ./src/api/downloader/capcut.js`);
+  console.error(`[API]   Reason: ${e.message}`);
+}
+
+try {
+  require('./src/api/downloader/pinterest.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: pinterest.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/downloader/pinterest.js`);
   console.error(`[API]   Reason: ${e.message}`);
 }
 console.log(`[API] ${loaded} route files successfully loaded`);
