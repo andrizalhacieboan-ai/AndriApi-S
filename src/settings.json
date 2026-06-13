@@ -217,7 +217,17 @@
             { "name": "type", "required": false, "type": "text", "default": "welcome" },
             { "name": "text", "required": false, "type": "text", "default": "" }
           ]
-        }
+        }, 
+        {
+  "name": "TikTok Stalker",
+  "desc": "Stalk TikTok profile information and statistics using username.",
+  "method": "GET",
+  "path": "/api/tools/tiktokstalk",
+  "innerDesc": "Masukkan username TikTok target (bisa menggunakan atau tanpa tanda @).",
+  "params": [
+    { "name": "username", "required": true, "type": "text" }
+  ]
+}
       ]
     }
   ]
