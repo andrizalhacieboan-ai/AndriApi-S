@@ -225,6 +225,15 @@ try {
 }
 
 try {
+  require('./src/api/downloader/spotify.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: spotify.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/downloader/spotify.js`);
+  console.error(`[API]   Reason: ${e.message}`);
+}
+
+try {
   require('./src/api/tools/welcome.js')(app);
   loaded++;
   console.log(`[API] ✓ Loaded: welcome.js`);
