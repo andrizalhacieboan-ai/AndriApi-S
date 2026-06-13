@@ -214,6 +214,15 @@ try {
   console.error(`[API] ✗ FAILED to load ./src/api/downloader/pinterest.js`);
   console.error(`[API]   Reason: ${e.message}`);
 }
+
+try {
+  require('./src/api/tools/welcome.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: welcome.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/tools/welcome.js`);
+  console.error(`[API]   Reason: ${e.message}`);
+}
 console.log(`[API] ${loaded} route files successfully loaded`);
 
 // ── API info ─────────────────────────────────────────────────────────────────
