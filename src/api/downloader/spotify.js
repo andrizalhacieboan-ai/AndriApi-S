@@ -1,12 +1,13 @@
 /**
  * Lokasi File: ./src/api/downloader/spotify.js
  * Ditulis khusus untuk backend Andri API (Downloader Category)
- * Fitur: Dual-Provider Auto Fallback (SpotifyDown + FabDL) Anti-Block Edition
+ * Fitur: Triple-Engine Ultra Fallback (SpotifyDown + SpotifyDownloaderCom + SpotifyMate)
+ * Solusi Total Anti-Cloudflare Block & Anti-Fetch Failed.
  */
 
 const { apiKeyMiddleware } = require('../../middleware/ratelimit'); 
 
-const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36";
+const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 
 // ==========================================
 // HELPER FUNCTIONS
@@ -27,26 +28,22 @@ function safeFilename(title, artist) {
 }
 
 // ==========================================
-// PROVIDER MODULES
+// ENGINE 1: SpotifyDown API
 // ==========================================
-
-// Provider 1: SpotifyDown API
 async function getFromSpotifyDown(trackId) {
-  // Hit Metadata
   const metaRes = await fetch(`https://api.spotifydown.com/metadata/track/${trackId}`, {
     headers: { "User-Agent": UA, "Origin": "https://spotifydown.com", "Referer": "https://spotifydown.com/" }
   });
-  if (!metaRes.ok) throw new Error("SpotifyDown Meta Failed");
+  if (!metaRes.ok) throw new Error("Engine 1 Meta Blocked");
   const meta = await metaRes.json();
-  if (!meta.success) throw new Error("Track not found on SpotifyDown");
+  if (!meta.success) throw new Error("Track not found on Engine 1");
 
-  // Hit Download Link
   const dlRes = await fetch(`https://api.spotifydown.com/download/${trackId}`, {
     headers: { "User-Agent": UA, "Origin": "https://spotifydown.com", "Referer": "https://spotifydown.com/" }
   });
-  if (!dlRes.ok) throw new Error("SpotifyDown Download Link Failed");
+  if (!dlRes.ok) throw new Error("Engine 1 Download Blocked");
   const dl = await dlRes.json();
-  if (!dl.success || !dl.link) throw new Error("Conversion failed on SpotifyDown");
+  if (!dl.success || !dl.link) throw new Error("Conversion failed on Engine 1");
 
   return {
     title: meta.title,
@@ -57,31 +54,66 @@ async function getFromSpotifyDown(trackId) {
   };
 }
 
-// Provider 2: FabDL API (Bypass Cloud IP Firewalls)
-async function getFromFabDL(targetUrl) {
-  const getRes = await fetch(`https://api.fabdl.com/spotify/get?url=${encodeURIComponent(targetUrl)}`, {
-    headers: { "User-Agent": UA, "Origin": "https://fabdl.com", "Referer": "https://fabdl.com/" }
+// ==========================================
+// ENGINE 2: Spotify-Downloader.com Official Cluster
+// ==========================================
+async function getFromSpotifyDownloaderCom(targetUrl) {
+  const res = await fetch("https://api.spotify-downloader.com/api/link", {
+    method: "POST",
+    headers: {
+      "User-Agent": UA,
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Origin": "https://spotify-downloader.com",
+      "Referer": "https://spotify-downloader.com/"
+    },
+    body: new URLSearchParams({ link: targetUrl })
   });
-  if (!getRes.ok) throw new Error("FabDL Get Failed");
-  const getJson = await getRes.json();
-  const result = getJson?.result;
-  if (!result || !result.id || !result.gid) throw new Error("Invalid response from FabDL");
-
-  // Hit Convert to MP3
-  const convertRes = await fetch(`https://api.fabdl.com/spotify/convert-mp3/${result.gid}/${result.id}`, {
-    headers: { "User-Agent": UA, "Origin": "https://fabdl.com", "Referer": "https://fabdl.com/" }
-  });
-  if (!convertRes.ok) throw new Error("FabDL Conversion Failed");
-  const convertJson = await convertRes.json();
-  const downloadUrl = convertJson?.result?.download_url || convertJson?.result?.url;
-  if (!downloadUrl) throw new Error("FabDL failed to return download URL");
+  if (!res.ok) throw new Error("Engine 2 Link API Blocked");
+  const json = await res.json();
+  if (!json.success || !json.id) throw new Error("Track not found on Engine 2");
 
   return {
-    title: result.title,
-    artists: result.artists || "Unknown Artist",
-    album: result.album || "Single",
-    cover: result.image || null,
-    downloadUrl: downloadUrl.startsWith("http") ? downloadUrl : `https://api.fabdl.com${downloadUrl}`
+    title: json.metadata.title,
+    artists: json.metadata.artists || "Unknown Artist",
+    album: json.metadata.album || "Single",
+    cover: json.metadata.cover || null,
+    downloadUrl: `https://api.spotify-downloader.com/api/download/${json.id}`
+  };
+}
+
+// ==========================================
+// ENGINE 3: SpotifyMate Web Scraper Engine (High-Anonymity)
+// ==========================================
+async function getFromSpotifyMate(targetUrl) {
+  const res = await fetch("https://spotifymate.com/action.php", {
+    method: "POST",
+    headers: {
+      "User-Agent": UA,
+      "Origin": "https://spotifymate.com",
+      "Referer": "https://spotifymate.com/",
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: new URLSearchParams({ url: targetUrl })
+  });
+  if (!res.ok) throw new Error("Engine 3 Action Blocked");
+  const html = await res.text();
+
+  const titleMatch = html.match(/<h3[^>]*>(.*?)<\/h3>/);
+  const artistMatch = html.match(/<p[^>]*>By (.*?)<\/p>/) || html.match(/<p class="text-muted"[^>]*>(.*?)<\/p>/);
+  const coverMatch = html.match(/<img src=["'](https:\/\/i\.scdn\.co\/image\/.*?)["']/);
+  
+  // Mencari link mp3 / download terenkripsi dari komponen DOM hasil render server
+  const links = [...html.matchAll(/href=["'](https:\/\/([^"'\s>]+))["']/g)].map(m => m[1]);
+  const downloadUrl = links.find(l => l.includes("download") || l.includes(".mp3") || l.includes("save") || l.includes("click"));
+
+  if (!downloadUrl) throw new Error("Engine 3 gagal mengekstrak download URL");
+
+  return {
+    title: titleMatch ? titleMatch[1].trim() : "Spotify Track",
+    artists: artistMatch ? artistMatch[1].replace("By ", "").trim() : "Unknown Artist",
+    album: "Single",
+    cover: coverMatch ? coverMatch[1] : null,
+    downloadUrl: downloadUrl
   };
 }
 
@@ -104,40 +136,51 @@ module.exports = function (app) {
     }
 
     let trackData = null;
-    let usedProvider = "SpotifyDown";
+    let successEngine = "";
 
-    // CORE LOGIC: Menerapkan Sistem Deteksi Gagal Otomatis
+    // PROSES SELEKSI ENGINE FALLBACK OTOMATIS
     try {
       const trackId = extractTrackId(target);
       if (!trackId || trackId.length < 15) throw new Error("INVALID_TRACK_ID");
       
-      // Coba Provider Utama (SpotifyDown)
+      // Coba Jalur 1 (SpotifyDown API)
+      successEngine = "SpotifyDown API";
       trackData = await getFromSpotifyDown(trackId);
-    } catch (primaryError) {
-      // Jika Provider Utama Gagal/Kena Blokir, Alihkan ke Provider Cadangan (FabDL)
+    } catch (err1) {
       try {
-        usedProvider = "FabDL";
-        trackData = await getFromFabDL(target);
-      } catch (backupError) {
-        // Jika Kedua Provider Mengalami Masalah/Down
-        return res.status(500).json({
-          status: false,
-          statusCode: 500,
-          message: "Seluruh server target downloader sedang mengalami gangguan proteksi Cloudflare.",
-          error: "ALL_PROVIDERS_FAILED",
-          details: backupError.message,
-          creator: "Andri Api"
-        });
+        // Coba Jalur 2 (Spotify-Downloader Cluster)
+        successEngine = "SpotifyDownloader Cluster";
+        trackData = await getFromSpotifyDownloaderCom(target);
+      } catch (err2) {
+        try {
+          // Coba Jalur 3 (SpotifyMate Web Scraper)
+          successEngine = "SpotifyMate Engine";
+          trackData = await getFromSpotifyMate(target);
+        } catch (err3) {
+          // JIKA SEMUA ENGINE TOTAL BLOCKED / DOWN
+          return res.status(500).json({
+            status: false,
+            statusCode: 500,
+            message: "Seluruh cluster server bypass mengalami gangguan koneksi network (Fetch Failed).",
+            error: "ALL_ENGINES_FAILED",
+            logs: {
+              engine1: err1.message,
+              engine2: err2.message,
+              engine3: err3.message
+            },
+            creator: "Andri Api"
+          });
+        }
       }
     }
 
     try {
       const filename = safeFilename(trackData.title, trackData.artists);
 
-      // 1. JIKA USER MEMINTA STREAM AUDIO BINARY LANGSUNG VIA BOT (&stream=true)
+      // 1. JIKA BOT MEMINTA BINARY STREAM AUDIO SECARA LANGSUNG (&stream=true)
       if (wantStream) {
         const audioFetch = await fetch(trackData.downloadUrl, { headers: { "User-Agent": UA } });
-        if (!audioFetch.ok) throw new Error("Gagal mengambil data stream dari endpoint provider.");
+        if (!audioFetch.ok) throw new Error("Gagal mengalirkan binary buffer stream dari server core.");
         
         const arrayBuffer = await audioFetch.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
@@ -147,7 +190,7 @@ module.exports = function (app) {
         return res.send(buffer);
       }
 
-      // 2. JIKA USER MEMINTA RESPON DATA JSON STANDAR
+      // 2. JIKA MEMINTA OUTPUT FORMAT JSON STANDAR
       const currentApikey = req.query.apikey || req.headers['x-api-key'] || '';
       const streamUrl = `${req.protocol}://${req.get('host')}/api/download/spotify?url=${encodeURIComponent(target)}&stream=true${currentApikey ? `&apikey=${currentApikey}` : ''}`;
 
@@ -156,14 +199,14 @@ module.exports = function (app) {
         statusCode: 200,
         message: "Success downloading Spotify track",
         creator: "Andri Api",
-        provider: usedProvider, // Menunjukkan resource yang sukses dieksekusi
+        engine: successEngine, // Pelacak engine mana yang sukses memproses data
         data: {
           title: trackData.title,
           artists: trackData.artists,
           album: trackData.album,
           cover: trackData.cover,
           filename: filename,
-          url: streamUrl // Direct Stream Link untuk Bot WhatsApp / Telegram Anda
+          url: streamUrl // Berikan link stream MP3 ini ke library bot WhatsApp Anda (Baileys/Telegram)
         }
       });
 
@@ -171,7 +214,7 @@ module.exports = function (app) {
       return res.status(500).json({ 
         status: false, 
         statusCode: 500,
-        message: "Internal Server Error saat menyalurkan file audio.", 
+        message: "Internal Server Error saat memproses transfer media stream.", 
         error: err.message || "SERVER_ERROR",
         creator: "Andri Api"
       });
