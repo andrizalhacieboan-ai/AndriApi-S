@@ -130,8 +130,17 @@
             { "name": "url", "required": true, "type": "text" },
             { "name": "format", "required": false, "type": "text", "default": "mp3" }
           ]
+        },
+        {
+          "name": "CapCut Downloader",
+          "desc": "Download CapCut videos without watermark using video URL.",
+          "method": "GET",
+          "path": "/api/download/capcut",
+          "innerDesc": "Masukkan URL video CapCut yang valid.",
+          "params": [
+            { "name": "url", "required": true, "type": "text" }
+          ]
         }
-        
       ]
     },
     {
