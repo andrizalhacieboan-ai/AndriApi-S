@@ -203,7 +203,7 @@ try {
   console.log(`[API] ✓ Loaded: instagram.js`);
 } catch (e) {
   console.error(`[API] ✗ FAILED to load ./src/api/downloader/instagram.js`);
-  console.error(`[API]   Reason: ${e.message}`);
+  console.error(e); // <--- Ubah jadi ini sementara untuk melihat error lengkapnya di terminal
 }
 
 console.log(`[API] ${loaded} route files successfully loaded`);
