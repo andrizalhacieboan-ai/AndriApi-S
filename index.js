@@ -250,6 +250,15 @@ try {
   console.error(`[API] ✗ FAILED to load ./src/api/tools/tiktokstalk.js`);
   console.error(`[API]   Reason: ${e.message}`);
 }
+
+try {
+  require('./src/api/tools/igstalk.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: igstalk.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/tools/igstalk.js`);
+  console.error(`[API]   Reason: ${e.message}`);
+}
 console.log(`[API] ${loaded} route files successfully loaded`);
 
 // ── API info ─────────────────────────────────────────────────────────────────
