@@ -331,6 +331,29 @@ footer{
 .foot-links a:hover{color:var(--text)}
 .foot-copy{color:var(--muted);font-family:var(--mono);font-size:.75rem;letter-spacing:0.3px}
 
+.btn-copy-pane {
+  position: absolute;
+  top: 0rem;
+  right: 0rem;
+  background: var(--surface);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  cursor: pointer;
+  box-shadow: var(--nm-outset-sm);
+  transition: all 0.2s ease;
+  z-index: 20;
+}
+.btn-copy-pane:hover {
+  box-shadow: var(--nm-inset-sm);
+  transform: scale(0.95);
+}
+
 @media(max-width:900px){
   nav{top:0;width:100%;border-radius:0;border-left:none;border-right:none;border-top:none;padding:0 1.5rem;height:68px}
   .hero{padding-top:9rem}
@@ -393,23 +416,23 @@ footer{
   <div class="stat-item reveal stagger-3"><div class="stat-n" id="statSupport" data-target="0">—</div><div class="stat-l">Support Hours</div></div>
 </div>
 
-<section id="features"><div class="container"><div class="s-tag reveal">Platform Features</div><h2 class="s-h reveal stagger-1">Semua yang kamu<br>butuhkan</h2><p class="s-p reveal stagger-2">Dari API key generation, rate limiting per plan, dashboard analytics, hingga payment otomatis.</p><div class="features-grid"><div class="feat-card reveal stagger-1"><div class="feat-icon">🔑</div><h3>Smart API Keys</h3><p>Setiap key berawalan <code>AND+</code> dengan 48 karakter custom.</p></div><div class="feat-card reveal stagger-2"><div class="feat-icon">⚡</div><h3>Rate Limiting per Plan</h3><p>Limit per menit, jam, dan hari.</p></div><div class="feat-card reveal stagger-3"><div class="feat-icon">📊</div><h3>Dashboard Analytics</h3><p>Grafik penggunaan harian, top endpoints, dll.</p></div><div class="feat-card reveal stagger-4"><div class="feat-icon">🚀</div><h3>RESS API</h3><p>Backend dengan plugin system.</p></div><div class="feat-card reveal stagger-5"><div class="feat-icon">🗃️</div><h3>SQLite Database</h3><p>libSQL serverless.</p></div><div class="feat-card reveal stagger-6"><div class="feat-icon">👤</div><h3>Session Auth</h3><p>Autentikasi session, bcrypt, IP logging.</p></div></div></div></section>
+<section id="features"><div class="container"><div class="s-tag reveal">Platform Features</div><h2 class="s-h reveal stagger-1">Semua yang kamu<br>butuhkan</h2><p class="s-p reveal stagger-2">Dari API key generation, rate limiting per plan, dashboard analytics, hingga payment otomatis.</p><div class="features-grid"><div class="feat-card reveal stagger-1"><div class="feat-icon">🔑</div><h3>Smart API Keys</h3><p>Setiap key berawalan <code>AND+</code> dengan 48 karakter custom. Generate manual dari halaman profile kapanpun.</p></div><div class="feat-card reveal stagger-2"><div class="feat-icon">⚡</div><h3>Rate Limiting per Plan</h3><p>Limit per menit, jam, dan hari. Setelah beli plan, limit langsung bertambah otomatis tanpa restart.</p></div><div class="feat-card reveal stagger-3"><div class="feat-icon">📊</div><h3>Dashboard Analytics</h3><p>Grafik penggunaan harian, top endpoints, status code distribution, dan monitoring real-time.</p></div><div class="feat-card reveal stagger-4"><div class="feat-icon">🚀</div><h3>RESS API</h3><p>Backend dengan plugin system.</p></div><div class="feat-card reveal stagger-5"><div class="feat-icon">🗃️</div><h3>SQLite Database</h3><p>Semua data tersimpan di (libSQL) — serverless, distributed, ultra-cepat.</p></div><div class="feat-card reveal stagger-6"><div class="feat-icon">👤</div><h3>Session Auth</h3><p>Autentikasi berbasis session yang disimpan di Database. Bcrypt password hashing, IP logging, CORS protection.</p></div></div></div></section>
 
 <section id="plans" style="background:rgba(0,0,0,0.01);border-top:1px solid rgba(0,0,0,0.03);border-bottom:1px solid rgba(0,0,0,0.03)"><div class="container"><div class="s-tag reveal">Pricing</div><h2 class="s-h reveal stagger-1">Pilih Plan<br>yang Tepat</h2><p class="s-p reveal stagger-2">Mulai gratis selamanya. Upgrade kapanpun, limit langsung bertambah otomatis.</p><div class="plans-grid"><div class="plan-card c-free reveal stagger-1"><div class="plan-tier">Free</div><div class="plan-price">Rp 0</div><div class="plan-sub">selamanya gratis</div><ul class="plan-feats"><li class="hl">100 req/hari</li><li class="hl">20 req/jam</li><li class="hl">5 req/menit</li><li>Endpoint public</li><li>Community support</li></ul><a href="/register" class="btn btn-ghost btn-plan">Mulai Gratis</a></div><div class="plan-card c-premium pop reveal stagger-2"><div class="pop-badge">POPULAR</div><div class="plan-tier">Premium</div><div class="plan-price">Rp 29K</div><div class="plan-sub">/bulan · QRIS</div><ul class="plan-feats"><li class="hl">1000 req/hari</li><li class="hl">100 req/jam</li><li class="hl">20 req/menit</li><li>Akses semua endpoint</li><li>Priority support</li></ul><button class="btn btn-primary btn-plan btn-checkout-plan" data-plan="premium" style="background:#f8fafc; color:#0f172a;">Upgrade Premium</button></div><div class="plan-card c-vip reveal stagger-3"><div class="plan-tier">VIP</div><div class="plan-price">Rp 79K</div><div class="plan-sub">/bulan · QRIS</div><ul class="plan-feats"><li class="hl">10.000 req/hari</li><li class="hl">500 req/jam</li><li class="hl">60 req/menit</li><li>Akses semua endpoint</li><li>24/7 support</li></ul><button class="btn btn-ghost btn-plan btn-checkout-plan" data-plan="vip">Upgrade VIP</button></div><div class="plan-card c-vvip reveal stagger-4"><div class="plan-tier">VVIP</div><div class="plan-price">Rp 199K</div><div class="plan-sub">/bulan · QRIS</div><ul class="plan-feats"><li class="hl">Unlimited requests</li><li>Unlimited rate</li><li>Priority queue tertinggi</li><li>3 API keys</li></ul><button class="btn btn-ghost btn-plan btn-checkout-plan" data-plan="vvip">Go VVIP</button></div></div></div></section>
 
-<section><div class="container"><div class="s-tag reveal">How It Works</div><h2 class="s-h reveal stagger-1">Mulai dalam<br>3 langkah</h2><div class="steps"><div class="step reveal stagger-1"><div class="step-num">01</div><h4>Daftar Akun</h4><p>Buat akun gratis. Langsung masuk dashboard.</p></div><div class="step reveal stagger-2"><div class="step-num">02</div><h4>Pilih Plan</h4><p>Gunakan free atau upgrade via Pakasir.</p></div><div class="step reveal stagger-3"><div class="step-num">03</div><h4>Mulai Coding</h4><p>Sertakan API key atau gunakan session.</p></div></div></div></section>
+<section><div class="container"><div class="s-tag reveal">How It Works</div><h2 class="s-h reveal stagger-1">Mulai dalam<br>3 langkah</h2><div class="steps"><div class="step reveal stagger-1"><div class="step-num">01</div><h4>Daftar Akun</h4><p>Buat akun gratis. Langsung masuk dashboard.</p></div><div class="step reveal stagger-2"><div class="step-num">02</div><h4>Pilih Plan</h4><p>Gunakan free atau upgrade melalui payment otomatis.</p></div><div class="step reveal stagger-3"><div class="step-num">03</div><h4>Mulai Coding</h4><p>Sertakan API key atau gunakan session.</p></div></div></div></section>
 
 <section id="payment" style="background:rgba(0,0,0,0.01);border-top:1px solid rgba(0,0,0,0.03)"><div class="container"><div class="s-tag reveal">Payment via Pakasir</div><h2 class="s-h reveal stagger-1">Bayar otomatis,<br>plan aktif instan</h2><p class="s-p reveal stagger-2">Semua pembayaran diproses otomatis via Pakasir.</p><div class="pm-grid"><div class="pm-badge">QRIS</div><div class="pm-badge">BNI VA</div><div class="pm-badge">BRI VA</div><div class="pm-badge">BCA VA</div><div class="pm-badge">GoPay</div><div class="pm-badge">OVO</div><div class="pm-badge">DANA</div><div class="pm-badge">ShopeePay</div><div class="pm-badge">Credit Card</div><div class="pm-badge">Indomaret</div><div class="pm-badge">Alfamart</div></div></div></section>
 
 <section id="api-console" style="background:rgba(0,0,0,0.02);border-top:1px solid rgba(0,0,0,0.03);border-bottom:1px solid rgba(0,0,0,0.03)">
   <div class="container">
-    <div class="s-tag reveal">Try API Console</div>
-    <h2 class="s-h reveal stagger-1">Uji Endpoint<br>Tanpa API Key</h2>
+    <div class="s-tag reveal">Eksekusi API Endpoint</div>
+    <h2 class="s-h reveal stagger-1">List Endpoint<br>BY ANDRI STORE</h2>
     <p class="s-p reveal stagger-2">Cukup login, lalu klik tombol <strong>Try</strong> di bawah. Session Anda akan otomatis digunakan.</p>
     
     <div class="mb-3 reveal stagger-3" style="max-width: 280px;">
       <select id="categorySelect" class="form-select" style="background: var(--surface); border-radius: 12px; box-shadow: var(--nm-outset-sm); border: 1px solid rgba(255,255,255,0.6); color: var(--text); font-size: 0.8rem; font-weight: 600; padding: 0.5rem 1rem; font-family: var(--mono);">
-        <option value="all">🔄 Memuat Kategori...</option>
+        <option value="all">Memuat...</option>
       </select>
     </div>
 
@@ -441,10 +464,19 @@ footer{
           <li class="nav-item" role="presentation"><button class="nav-link" id="headers-tab" data-bs-toggle="tab" data-bs-target="#headers" type="button" role="tab">Headers</button></li>
           <li class="nav-item" role="presentation"><button class="nav-link" id="curl-tab" data-bs-toggle="tab" data-bs-target="#curl" type="button" role="tab">CURL</button></li>
         </ul>
-        <div class="tab-content response-pane" id="responseTabContent" style="display:none;">
-          <div class="tab-pane fade show active" id="preview" role="tabpanel"><pre id="previewContent" style="margin:0;font-family:monospace;white-space:pre-wrap;"></pre></div>
-          <div class="tab-pane fade" id="headers" role="tabpanel"><pre id="headersContent" style="margin:0;font-family:monospace;white-space:pre-wrap;"></pre></div>
-          <div class="tab-pane fade" id="curl" role="tabpanel"><pre id="curlContent" style="margin:0;font-family:monospace;white-space:pre-wrap;"></pre></div>
+        <div class="tab-content response-pane" id="responseTabContent" style="display:none; position: relative;">
+          <div class="tab-pane fade show active" id="preview" role="tabpanel" style="position: relative;">
+            <button class="btn-copy-pane" data-target="previewContent" title="Salin Preview">📋</button>
+            <pre id="previewContent" style="margin:0;font-family:monospace;white-space:pre-wrap; padding-right: 35px;"></pre>
+          </div>
+          <div class="tab-pane fade" id="headers" role="tabpanel" style="position: relative;">
+            <button class="btn-copy-pane" data-target="headersContent" title="Salin Headers">📋</button>
+            <pre id="headersContent" style="margin:0;font-family:monospace;white-space:pre-wrap; padding-right: 35px;"></pre>
+          </div>
+          <div class="tab-pane fade" id="curl" role="tabpanel" style="position: relative;">
+            <button class="btn-copy-pane" data-target="curlContent" title="Salin CURL Command">📋</button>
+            <pre id="curlContent" style="margin:0;font-family:monospace;white-space:pre-wrap; padding-right: 35px;"></pre>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -649,6 +681,50 @@ let lastResponseHeaders = null;
 let lastResponseData = null;
 let lastCurlCommand = '';
 
+// Helper Markdown-Color Highlighters 
+function syntaxHighlightJson(jsonStr) {
+  try {
+    if (typeof jsonStr !== 'string') jsonStr = JSON.stringify(jsonStr, null, 2);
+    jsonStr = jsonStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return jsonStr.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g, function (match) {
+      let cls = 'number';
+      if (/^"/.test(match)) {
+        if (/:$/.test(match)) cls = 'key';
+        else cls = 'string';
+      } else if (/true|false/.test(match)) cls = 'boolean';
+      else if (/null/.test(match)) cls = 'null';
+      
+      if (cls === 'key') return `<span style="color: #c678dd; font-weight: 600;">${match.replace(':', '')}</span>:`;
+      if (cls === 'string') return `<span style="color: #98c379;">${match}</span>`;
+      if (cls === 'number') return `<span style="color: #d19a66;">${match}</span>`;
+      if (cls === 'boolean') return `<span style="color: #98c379;">${match}</span>`;
+      if (cls === 'null') return `<span style="color: #e06c75;">${match}</span>`;
+      return match;
+    });
+  } catch (e) { return jsonStr; }
+}
+
+function highlightHeaders(headersText) {
+  if (!headersText) return '';
+  return headersText.split('\n').map(line => {
+    let idx = line.indexOf(':');
+    if (idx > -1) {
+      let k = line.substring(0, idx);
+      let v = line.substring(idx + 1);
+      return `<span style="color: #e06c75; font-weight: 600;">${k}</span>:<span style="color: #61afef;">${v}</span>`;
+    }
+    return line;
+  }).join('\n');
+}
+
+function highlightCurl(curlText) {
+  if (!curlText) return '';
+  return curlText
+    .replace(/(curl -X [A-Z]+)/g, '<span style="color: #61afef; font-weight: bold;">$1</span>')
+    .replace(/(-H\s+'[^']+')/g, '<span style="color: #98c379;">$1</span>')
+    .replace(/(-d\s+'[^']+')/g, '<span style="color: #d19a66;">$1</span>');
+}
+
 function openApiModal(api) {
   currentApi = api;
   document.getElementById('apiModalTitle').innerText = `${api.method} ${api.name}`;
@@ -713,7 +789,7 @@ async function executeApiRequest() {
       let separator = url.includes('?') ? '&' : '?';
       curlCmd = `curl -X ${api.method} '${url}'`;
     } else {
-      curlCmd = `curl -X ${api.method} '${curlUrl}' \\\n  -H 'Content-Type: application/json' \\n  -H 'x-api-key: ${userApiKey}' \\n  -d '${JSON.stringify(params)}'`;
+      curlCmd = `curl -X ${api.method} '${curlUrl}' \\\n  -H 'Content-Type: application/json' \\\n  -H 'x-api-key: ${userApiKey}' \\\n  -d '${JSON.stringify(params)}'`;
     }
   } else {
     curlCmd = `API key tidak ditemukan, silakan login dan generate API key di profile\ncurl -X ${api.method} '${curlUrl}'`;
@@ -761,12 +837,25 @@ async function executeApiRequest() {
     responseStatusSpan.innerHTML = `<span class="badge-status">${res.status} ${res.statusText}</span>`;
     responseTimeSpan.innerText = elapsed;
     responseMeta.style.display = 'flex';
-    if (contentType.startsWith('image/')) previewContent.innerHTML = bodyText;
-    else previewContent.innerText = bodyText;
+    
+    if (!contentType.startsWith('image/')) {
+      previewContent.setAttribute('data-raw', bodyText);
+    } else {
+      previewContent.removeAttribute('data-raw');
+    }
+    
     let headersText = '';
     for (let [k, v] of Object.entries(headersObj)) headersText += `${k}: ${v}\n`;
-    headersContent.innerText = headersText;
-    curlContent.innerText = lastCurlCommand;
+    headersContent.setAttribute('data-raw', headersText);
+    curlContent.setAttribute('data-raw', lastCurlCommand);
+
+    if (contentType.startsWith('image/')) previewContent.innerHTML = bodyText;
+    else if (contentType.includes('application/json')) previewContent.innerHTML = syntaxHighlightJson(bodyText);
+    else previewContent.innerText = bodyText;
+    
+    headersContent.innerHTML = highlightHeaders(escapeHtml(headersText));
+    curlContent.innerHTML = highlightCurl(escapeHtml(lastCurlCommand));
+    
     responseTabs.style.display = 'flex';
     responseTabContent.style.display = 'block';
   } catch (err) {
@@ -793,6 +882,21 @@ document.getElementById('clearResponseBtn')?.addEventListener('click', () => {
   document.getElementById('previewContent').innerText = '';
   document.getElementById('headersContent').innerText = '';
   document.getElementById('curlContent').innerText = '';
+});
+
+// Listener Event Salin (Copy Event Handler)
+$(document).on('click', '.btn-copy-pane', function() {
+  const targetId = $(this).data('target');
+  const targetEl = document.getElementById(targetId);
+  const textToCopy = targetEl.getAttribute('data-raw') || targetEl.innerText;
+  
+  navigator.clipboard.writeText(textToCopy).then(() => {
+    const btn = $(this);
+    btn.html('✅');
+    setTimeout(() => { btn.html('📋'); }, 2000);
+  }).catch(err => {
+    console.error('Gagal menyalin teks: ', err);
+  });
 });
 
 loadEndpointsForConsole();
