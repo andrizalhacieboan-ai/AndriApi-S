@@ -161,6 +161,16 @@
           "params": [
             { "name": "url", "required": true, "type": "text" }
           ]
+        },
+        {
+          "name": "MediaFire Downloader",
+          "desc": "Download files from MediaFire and get the direct download link.",
+          "method": "GET",
+          "path": "/api/download/mediafire",
+          "innerDesc": "Masukkan URL MediaFire yang valid.",
+          "params": [
+            { "name": "url", "required": true, "type": "text" }
+          ]
         }
       ]
     },
@@ -206,7 +216,6 @@
             { "name": "url", "required": true, "type": "text" },
             { "name": "type", "required": false, "type": "text", "default": "welcome" },
             { "name": "text", "required": false, "type": "text", "default": "" }
-            
           ]
         }
       ]
