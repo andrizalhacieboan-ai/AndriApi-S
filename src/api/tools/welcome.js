@@ -1,7 +1,7 @@
 /**
  * Lokasi File: ./src/api/tools/welcome.js
  * Ditulis khusus untuk backend Andri API (Tools Category)
- * Menghasilkan output berupa gambar murni (Buffer Image)
+ * Pembaruan: Optimasi ketajaman teks, Drop Shadow, dan Kolom Presisi.
  */
 
 const { apiKeyMiddleware } = require('../../middleware/ratelimit'); 
@@ -33,7 +33,11 @@ function formatWaktuIndonesia() {
 async function drawWelcomeOrLeaveCard(type, avatarUrl, text, groupName, groupDesc, customBg) {
     const isWelcome = type === 'welcome';
     const backgroundURL = customBg || (isWelcome ? DEFAULT_BG_WELCOME : DEFAULT_BG_LEAVE);
-    const title = text || (isWelcome ? 'Selamat Datang' : 'Selamat Tinggal');
+    
+    // Header utama statis
+    const titleHeader = isWelcome ? 'Selamat Datang' : 'Selamat Tinggal';
+    // Nama member penarget (Jika kosong, default ke 'Member Baru')
+    const memberName = text || 'Member Baru';
     
     const width = 700;
     const height = 420;
@@ -44,13 +48,13 @@ async function drawWelcomeOrLeaveCard(type, avatarUrl, text, groupName, groupDes
     const bg = await loadImage(backgroundURL);
     ctx.drawImage(bg, 0, 0, width, height);
 
-    // Overlay gelap
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+    // Overlay gelap (menaikkan kontras latar belakang)
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.60)';
     ctx.fillRect(10, 10, width - 20, height - 20);
 
-    // Border
+    // Border Frame Luar
     ctx.strokeStyle = '#00BFFF';
-    ctx.lineWidth = 8;
+    ctx.lineWidth = 6;
     ctx.strokeRect(10, 10, width - 20, height - 20);
 
     // Load Avatar
@@ -61,9 +65,9 @@ async function drawWelcomeOrLeaveCard(type, avatarUrl, text, groupName, groupDes
         avatar = await loadImage(DEFAULT_AVATAR);
     }
 
-    const avatarSize = 140;
+    const avatarSize = 130;
     const avatarX = width / 2 - avatarSize / 2;
-    const avatarY = 60;
+    const avatarY = 45;
 
     // Lingkaran Avatar Clip
     ctx.save();
@@ -74,7 +78,7 @@ async function drawWelcomeOrLeaveCard(type, avatarUrl, text, groupName, groupDes
     ctx.drawImage(avatar, avatarX, avatarY, avatarSize, avatarSize);
     ctx.restore();
 
-    // Border Avatar
+    // Border Lingkaran Avatar
     ctx.beginPath();
     ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
     ctx.closePath();
@@ -82,30 +86,43 @@ async function drawWelcomeOrLeaveCard(type, avatarUrl, text, groupName, groupDes
     ctx.lineWidth = 5;
     ctx.stroke();
 
-    // Teks Utama (Title / Nama)
-    ctx.font = 'bold 42px Arial';
-    ctx.fillStyle = '#FFFFFF';
+    // ─── KONFIGURASI BAYANGAN TEKS (DROP SHADOW) AGAR JELAS ───
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetX = 3;
+    ctx.shadowOffsetY = 3;
+
+    // 1. Teks Status (Selamat Datang / Tinggal)
+    ctx.font = 'bold 34px "Arial, sans-serif"';
+    ctx.fillStyle = '#00D4FF'; // Warna cyan neon cerah
     ctx.textAlign = 'center';
-    ctx.fillText(title, width / 2, avatarY + avatarSize + 60);
+    ctx.fillText(titleHeader, width / 2, avatarY + avatarSize + 45);
 
-    // Nama Grup
-    ctx.font = '28px Arial';
-    ctx.fillStyle = '#E0FFFF';
-    ctx.fillText(groupName || 'Grup Chat', width / 2, avatarY + avatarSize + 100);
-
-    // Deskripsi
-    ctx.font = '20px Arial';
+    // 2. Teks Nama Member (Sekarang Muncul & Jelas!)
+    ctx.font = 'bold 28px "Arial, sans-serif"';
     ctx.fillStyle = '#FFFFFF';
-    const descLines = (groupDesc || 'Selamat datang di komunitas kami!').split('\n').slice(0, 3);
+    ctx.fillText(memberName, width / 2, avatarY + avatarSize + 85);
+
+    // 3. Nama Grup
+    ctx.font = 'italic 22px "Arial, sans-serif"';
+    ctx.fillStyle = '#E0FFFF';
+    ctx.fillText(`@ ${groupName || 'Grup Chat'}`, width / 2, avatarY + avatarSize + 120);
+
+    // 4. Deskripsi Grup (Batas 2 baris agar tidak tabrakan ke footer)
+    ctx.font = '16px "Arial, sans-serif"';
+    ctx.fillStyle = '#DCDCDC';
+    const cleanDesc = (groupDesc || 'Selamat bergabung di komunitas kami!').replace(/\r/g, '');
+    const descLines = cleanDesc.split('\n').filter(l => l.trim() !== '').slice(0, 2);
+    
     descLines.forEach((line, i) => {
-        ctx.fillText(line.substring(0, 60) + (line.length > 60 ? '...' : ''),
-                     width / 2, avatarY + avatarSize + 140 + i * 28);
+        const truncatedLine = line.substring(0, 65) + (line.length > 65 ? '...' : '');
+        ctx.fillText(truncatedLine, width / 2, avatarY + avatarSize + 155 + i * 24);
     });
 
-    // Waktu / Footer
-    ctx.font = '18px Arial';
+    // 5. Waktu / Footer regional
+    ctx.font = '14px "Arial, sans-serif"';
     ctx.fillStyle = '#B0E0E6';
-    ctx.fillText(formatWaktuIndonesia(), width / 2, height - 30);
+    ctx.fillText(formatWaktuIndonesia(), width / 2, height - 25);
 
     return canvas.toBuffer();
 }
@@ -118,7 +135,7 @@ async function drawIntroCard(avatarUrl, userData, customBg) {
     const motto    = userData.motto  || '-';
     const group    = userData.group  || 'Grup Kita';
 
-    const maxLength = 28;
+    const maxLength = 35;
     const short = (str) => str.length > maxLength ? str.substring(0, maxLength-3) + '...' : str;
 
     const width = 700;
@@ -130,13 +147,13 @@ async function drawIntroCard(avatarUrl, userData, customBg) {
     const bg = await loadImage(customBg || DEFAULT_BG_INTRO);
     ctx.drawImage(bg, 0, 0, width, height);
 
-    // Overlay gelap
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.62)';
+    // Overlay gelap kontras tinggi
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
     ctx.fillRect(20, 20, width - 40, height - 40);
 
-    // Border
+    // Border Frame
     ctx.strokeStyle = '#00D4FF';
-    ctx.lineWidth = 10;
+    ctx.lineWidth = 8;
     ctx.strokeRect(20, 20, width - 40, height - 40);
 
     // Load Avatar
@@ -147,9 +164,9 @@ async function drawIntroCard(avatarUrl, userData, customBg) {
         avatar = await loadImage(DEFAULT_AVATAR);
     }
 
-    const avatarSize = 120;
+    const avatarSize = 110;
     const avatarX = width / 2 - avatarSize / 2;
-    const avatarY = 45;
+    const avatarY = 40;
 
     // Crop Avatar Bulat
     ctx.save();
@@ -165,37 +182,51 @@ async function drawIntroCard(avatarUrl, userData, customBg) {
     ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
     ctx.closePath();
     ctx.strokeStyle = '#00D4FF';
-    ctx.lineWidth = 6;
+    ctx.lineWidth = 5;
     ctx.stroke();
 
-    // Judul
-    ctx.font = 'bold 32px Arial';
+    // ─── KONFIGURASI SHADOW ───
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+    ctx.shadowBlur = 5;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+
+    // Judul Besar Kartu
+    ctx.font = 'bold 30px "Arial, sans-serif"';
     ctx.fillStyle = '#FFFFFF';
     ctx.textAlign = 'center';
-    ctx.fillText('Kartu Intro', width / 2, avatarY + avatarSize + 60);
+    ctx.fillText('KARTU INTRODUKSI', width / 2, avatarY + avatarSize + 45);
 
-    // Teks Biodata Data Intro
-    ctx.font = 'bold 20px Arial';
-    ctx.fillStyle = '#E0FFFF';
-    ctx.textAlign = 'left';
+    // Pembagian Kolom Teks (Akurasi Sejajar Titik Dua Tanpa Rusak oleh Spasi Font Propropional)
+    const labels = ['Nama', 'Usia', 'Lokasi', 'Fun Fact', 'Motto'];
+    const values = [pushName, usia, lokasi, funfact, motto];
+    
+    const startY = avatarY + avatarSize + 95;
+    const lineHeight = 34;
+    const labelX = 80;       // Koordinat kiri awal teks Label
+    const valueX = 210;      // Koordinat kiri awal teks Value (Sejajar Sempurna!)
 
-    const startY = avatarY + avatarSize + 110;
-    const lineHeight = 35;
-    const leftMargin = 70;
+    labels.forEach((label, i) => {
+        // Menggambar Label Kiri (Cyan Neon)
+        ctx.font = 'bold 19px "Arial, sans-serif"';
+        ctx.fillStyle = '#00D4FF';
+        ctx.textAlign = 'left';
+        ctx.fillText(label, labelX, startY + i * lineHeight);
 
-    ctx.fillText(`Nama     : ${short(pushName)}`, leftMargin, startY);
-    ctx.fillText(`Usia     : ${short(usia)}`,     leftMargin, startY + lineHeight);
-    ctx.fillText(`Lokasi   : ${short(lokasi)}`,   leftMargin, startY + lineHeight * 2);
-    ctx.fillText(`Fun Fact : ${short(funfact)}`,  leftMargin, startY + lineHeight * 3);
-    ctx.fillText(`Motto    : ${short(motto)}`,    leftMargin, startY + lineHeight * 4);
+        // Menggambar Isi / Nilai Kanan (Putih)
+        ctx.font = '19px "Arial, sans-serif"';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText(`:  ${short(values[i])}`, valueX, startY + i * lineHeight);
+    });
 
-    // Footer Welcoming
-    ctx.font = 'italic 20px Arial';
+    // Footer Welcoming kalimat penutup
+    ctx.font = 'italic 18px "Arial, sans-serif"';
     ctx.fillStyle = '#B0E0E6';
     ctx.textAlign = 'center';
-    ctx.fillText(`Selamat bergabung di ${short(group)}! 🍃✨`, width / 2, height - 70);
+    ctx.fillText(`Selamat bergabung di ${short(group)}! 🍃✨`, width / 2, height - 65);
 
-    ctx.font = '16px Arial';
+    // Waktu Realtime Indonesia
+    ctx.font = '14px "Arial, sans-serif"';
     ctx.fillText(formatWaktuIndonesia(), width / 2, height - 35);
 
     return canvas.toBuffer();
@@ -205,17 +236,14 @@ async function drawIntroCard(avatarUrl, userData, customBg) {
 module.exports = function (app) {
 
     const handleGenerateCard = async (req, res) => {
-        // Ambil input utama dari body atau query string
-        const type = req.body.type || req.query.type || 'welcome'; // welcome, leave, intro
-        const url = req.body.url || req.query.url; // Gambar Avatar Utama
-        const text = req.body.text || req.query.text; // Text Kustom / Judul / Nama Utama
-        const bg = req.body.bg || req.query.bg; // Background Kustom opsional
+        const type = req.body.type || req.query.type || 'welcome'; 
+        const url = req.body.url || req.query.url; 
+        const text = req.body.text || req.query.text; 
+        const bg = req.body.bg || req.query.bg; 
         
-        // Parameter opsional pelengkap untuk tipe welcome/leave
         const group = req.body.group || req.query.group || 'Grup Chat';
         const desc = req.body.desc || req.query.desc || 'Selamat datang di komunitas kami!';
 
-        // Parameter opsional pelengkap khusus tipe intro
         const userData = {
             nama: text || req.body.nama || req.query.nama || 'Member Baru',
             usia: req.body.usia || req.query.usia || '-',
@@ -247,7 +275,6 @@ module.exports = function (app) {
 
             if (!buffer) throw new Error("Gagal memproses data gambar kartu.");
 
-            // Set Header agar browser membaca response langsung sebagai Gambar murni PNG
             res.set({
                 'Content-Type': 'image/png',
                 'Content-Length': buffer.length,
@@ -266,9 +293,6 @@ module.exports = function (app) {
         }
     };
 
-    /**
-     * Gerbang Deteksi Bypass Khusus Console Web / Session Cookie
-     */
     const bypassOrCheckApiKey = (req, res, next) => {
         const hasApiKey = req.query.apikey || req.headers['x-api-key'];
         if (!hasApiKey && (req.cookies?.session || req.cookies?.token)) {
@@ -277,7 +301,6 @@ module.exports = function (app) {
         return apiKeyMiddleware(req, res, next);
     };
 
-    // Registrasi Rute Express untuk Welcome Card Tools (GET & POST)
     app.get("/api/tools/welcome", bypassOrCheckApiKey, handleGenerateCard);
     app.post("/api/tools/welcome", bypassOrCheckApiKey, handleGenerateCard);
 };
