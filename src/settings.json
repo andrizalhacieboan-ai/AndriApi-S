@@ -173,16 +173,16 @@
           ]
         }, 
         {
-  "name": "Spotify Downloader",
-  "desc": "Download tracks from Spotify with full metadata. Support direct audio stream option.",
-  "method": "GET",
-  "path": "/api/download/spotify",
-  "innerDesc": "Masukkan URL Track / Lagu Spotify yang valid. Tambahkan parameter &stream=true jika bot Anda ingin mengambil file direct media mp3-nya langsung.",
-  "params": [
-    { "name": "url", "required": true, "type": "text" },
-    { "name": "stream", "required": false, "type": "text", "default": "false" }
-  ]
-}
+          "name": "Spotify Downloader",
+          "desc": "Download tracks from Spotify with full metadata. Support direct audio stream option.",
+          "method": "GET",
+          "path": "/api/download/spotify",
+          "innerDesc": "Masukkan URL Track / Lagu Spotify yang valid. Tambahkan parameter &stream=true jika bot Anda ingin mengambil file direct media mp3-nya langsung.",
+          "params": [
+            { "name": "url", "required": true, "type": "text" },
+            { "name": "stream", "required": false, "type": "text", "default": "false" }
+          ]
+        }
       ]
     },
     {
@@ -230,15 +230,25 @@
           ]
         }, 
         {
-  "name": "TikTok Stalker",
-  "desc": "Stalk TikTok profile information and statistics using username.",
-  "method": "GET",
-  "path": "/api/tools/tiktokstalk",
-  "innerDesc": "Masukkan username TikTok target (bisa menggunakan atau tanpa tanda @).",
-  "params": [
-    { "name": "username", "required": true, "type": "text" }
-  ]
-}
+          "name": "TikTok Stalker",
+          "desc": "Stalk TikTok profile information and statistics using username.",
+          "method": "GET",
+          "path": "/api/tools/tiktokstalk",
+          "innerDesc": "Masukkan username TikTok target (bisa menggunakan atau tanpa tanda @).",
+          "params": [
+            { "name": "username", "required": true, "type": "text" }
+          ]
+        },
+        {
+          "name": "Instagram Stalker",
+          "desc": "Stalk Instagram profile information and statistics using username.",
+          "method": "GET",
+          "path": "/api/tools/igstalk",
+          "innerDesc": "Masukkan username Instagram target (bisa menggunakan atau tanpa tanda @).",
+          "params": [
+            { "name": "username", "required": true, "type": "text" }
+          ]
+        }
       ]
     }
   ]
