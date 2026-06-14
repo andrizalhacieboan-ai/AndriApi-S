@@ -182,6 +182,17 @@
             { "name": "url", "required": true, "type": "text" },
             { "name": "stream", "required": false, "type": "text", "default": "false" }
           ]
+        },
+        {
+          "name": "SoundCloud Downloader",
+          "desc": "Download SoundCloud tracks with high quality audio.",
+          "method": "GET",
+          "path": "/api/download/scdl",
+          "innerDesc": "Masukkan URL Track / Lagu SoundCloud yang valid. Tambahkan parameter &stream=true jika bot Anda ingin mengambil file direct media mp3-nya langsung.",
+          "params": [
+            { "name": "url", "required": true, "type": "text" },
+            { "name": "stream", "required": false, "type": "text", "default": "false" }
+          ]
         }
       ]
     },
@@ -244,7 +255,7 @@
           "desc": "Stalk Instagram profile information and statistics using username.",
           "method": "GET",
           "path": "/api/tools/igstalk",
-          "innerDesc": "Masukkan username Instagram target (bisa menggunakan atau tanpa tanda @).",
+          "innerDesc": "Masukkan username Instagram target.",
           "params": [
             { "name": "username", "required": true, "type": "text" }
           ]
