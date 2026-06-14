@@ -153,6 +153,15 @@ try {
 }
 
 try {
+  require('./src/api/search/tts.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: tts.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/search/tts.js`);
+  console.error(`[API]   Reason: ${e.message}`);
+}
+
+try {
   require('./src/api/downloader/tiktok.js')(app);
   loaded++;
   console.log(`[API] ✓ Loaded: tiktok.js`);
