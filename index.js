@@ -162,6 +162,15 @@ try {
 }
 
 try {
+  require('./src/api/search/prompt.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: prompt.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/search/prompt.js`);
+  console.error(`[API]   Reason: ${e.message}`);
+}
+
+try {
   require('./src/api/downloader/tiktok.js')(app);
   loaded++;
   console.log(`[API] ✓ Loaded: tiktok.js`);
