@@ -288,6 +288,15 @@ try {
 }
 
 try {
+  require('./src/api/tools/bypassunlock.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: bypassunlock.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/tools/bypassunlock.js`);
+  console.error(`[API]   Reason: ${e.message}`);
+}
+
+try {
   require('./src/api/convert/upscale.js')(app);
   loaded++;
   console.log(`[API] ✓ Loaded: upscale.js`);
