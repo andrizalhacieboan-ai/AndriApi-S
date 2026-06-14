@@ -3,6 +3,7 @@
  * * [•] DESCRIPTION :: Download SoundCloud tracks with high quality audio
  * [•] BASE        :: Convertico Engine Proxy
  * * [!] INTEGRATED FOR ANDRI API (Category: Downloader)
+ * [•] FIX         :: Auto-expand shortlinks (on.soundcloud.com)
  */
 
 const axios = require('axios');
@@ -34,26 +35,42 @@ module.exports = function (app) {
       });
     }
 
-    if (!target.includes('soundcloud.com')) {
-      return res.status(400).json({
-        status: false,
-        statusCode: 400,
-        message: 'URL yang dimasukkan bukan tautan SoundCloud yang sah.',
-        error: 'INVALID_SOUNDCLOUD_URL'
-      });
-    }
-
-    // FIX 1: Bersihkan URL dari parameter tracking (?si=... / ?utm_source=...)
-    const cleanUrl = target.split('?')[0].trim();
-
-    const headers = {
-      'accept': '*/*',
-      'origin': BASE,
-      'referer': BASE + 'soundcloud-downloader/',
-      'user-agent': UA
-    };
+    let cleanUrl = target.trim();
 
     try {
+      // FIX: Jika user menginput shortlink dari aplikasi mobile (on.soundcloud.com)
+      if (cleanUrl.includes('on.soundcloud.com')) {
+        const expandRes = await axios.get(cleanUrl, {
+          maxRedirects: 5,
+          headers: { 'User-Agent': UA }
+        });
+        
+        // Ambil URL penuh hasil redirect akhir dari instansi Axios Node.js
+        if (expandRes.request?.res?.responseUrl) {
+          cleanUrl = expandRes.request.res.responseUrl;
+        }
+      }
+
+      // Bersihkan parameter tracking (?si=... / ?utm_source=...) dari URL utama
+      cleanUrl = cleanUrl.split('?')[0].trim();
+
+      // Validasi setelah di-expand apakah benar tautan SoundCloud sah
+      if (!cleanUrl.includes('soundcloud.com')) {
+        return res.status(400).json({
+          status: false,
+          statusCode: 400,
+          message: 'URL yang dimasukkan bukan tautan SoundCloud yang sah.',
+          error: 'INVALID_SOUNDCLOUD_URL'
+        });
+      }
+
+      const headers = {
+        'accept': '*/*',
+        'origin': BASE,
+        'referer': BASE + 'soundcloud-downloader/',
+        'user-agent': UA
+      };
+
       // 1. Ambil Metadata & Info Lagu SoundCloud
       const responseInfo = await axios.post(ENDPOINT, new URLSearchParams({
         action: 'fetch',
@@ -70,7 +87,7 @@ module.exports = function (app) {
         });
       }
 
-      // FIX 2: Ambil session cookie dari request pertama dan pasang ke request berikutnya
+      // Ambil session cookie dari request pertama dan pasang ke request berikutnya
       const setCookieHeaders = responseInfo.headers['set-cookie'];
       if (setCookieHeaders) {
         headers['cookie'] = setCookieHeaders.map(c => c.split(';')[0]).join('; ');
@@ -86,7 +103,6 @@ module.exports = function (app) {
 
       const dl = responseDl.data;
       
-      // FIX 3: Jika gagal, ikut sertakan respon mentah (dl) agar alasan penolakan terlihat jelas
       if (!dl || !dl.file_url) {
         return res.status(500).json({
           status: false,
