@@ -295,6 +295,16 @@
           "params": [
             { "name": "username", "required": true, "type": "text" }
           ]
+        }, 
+        {
+          "name": "BypassUnlock",
+          "desc": "Bypass link restrictions (Linkvertise, etc.) using BypassUnlock Engine.",
+          "method": "GET",
+          "path": "/api/tools/bypassunlock",
+          "innerDesc": "Masukkan URL tautan terproteksi (seperti Linkvertise, dll) untuk di-bypass langsung.",
+          "params": [
+            { "name": "url", "required": true, "type": "text" }
+          ]
         }
       ]
     }
