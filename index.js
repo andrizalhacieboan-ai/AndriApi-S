@@ -243,6 +243,15 @@ try {
 }
 
 try {
+  require('./src/api/downloader/threads.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: threads.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/downloader/threads.js`);
+  console.error(`[API]   Reason: ${e.message}`);
+}
+
+try {
   require('./src/api/tools/welcome.js')(app);
   loaded++;
   console.log(`[API] ✓ Loaded: welcome.js`);
