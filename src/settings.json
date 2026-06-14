@@ -112,7 +112,20 @@
             { "name": "q", "required": true, "type": "text" },
             { "name": "limit", "required": false, "type": "text", "default": "25" }
           ]
-        }
+        }, 
+        {
+  "name": "TikTok Search & Audio",
+  "desc": "Search TikTok videos by query and automatically extract clean video and converted direct MP3 links.",
+  "method": "GET",
+  "path": "/api/search/tiktok",
+  "innerDesc": "Masukkan kata kunci video TikTok yang ingin dicari. Parameter count, cursor, dan hd bersifat opsional.",
+  "params": [
+    { "name": "q", "required": true, "type": "text" },
+    { "name": "count", "required": false, "type": "text", "default": "12" },
+    { "name": "cursor", "required": false, "type": "text", "default": "0" },
+    { "name": "hd", "required": false, "type": "text", "default": "1" }
+  ]
+}
       ]
     },
     {
