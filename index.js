@@ -286,6 +286,15 @@ try {
   console.error(`[API] ✗ FAILED to load ./src/api/tools/igstalk.js`);
   console.error(`[API]   Reason: ${e.message}`);
 }
+
+try {
+  require('./src/api/convert/upscale.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: upscale.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/convert/upscale.js`);
+  console.error(`[API]   Reason: ${e.message}`);
+}
 console.log(`[API] ${loaded} route files successfully loaded`);
 
 // ── API info ─────────────────────────────────────────────────────────────────
