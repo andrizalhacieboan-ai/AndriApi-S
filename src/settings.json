@@ -125,6 +125,18 @@
     { "name": "cursor", "required": false, "type": "text", "default": "0" },
     { "name": "hd", "required": false, "type": "text", "default": "1" }
   ]
+}, 
+        {
+  "name": "AI Prompt Search",
+  "desc": "Search high-quality text prompts and negative prompts for Stable Diffusion, Midjourney, etc.",
+  "method": "GET",
+  "path": "/api/search/prompt",
+  "innerDesc": "Masukkan kata kunci konsep gambar AI yang ingin dicari prompt-nya (Contoh: cyberpunk anime girl, cinematic hd). Parameter page dan limit bersifat opsional.",
+  "params": [
+    { "name": "q", "required": true, "type": "text" },
+    { "name": "page", "required": false, "type": "text", "default": "1" },
+    { "name": "limit", "required": false, "type": "text", "default": "10" }
+  ]
 }
       ]
     },
