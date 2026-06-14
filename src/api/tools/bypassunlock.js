@@ -62,7 +62,7 @@ module.exports = function (app) {
         return res.status(422).json({
           status: false,
           statusCode: 422,
-          message: data.message || data.error || "Proses bypass tautan link gagal.",
+          message: data.message || data.error,
           error: "BYPASS_FAILED",
           creator: "Andri Api"
         });
