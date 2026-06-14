@@ -12,7 +12,6 @@ const BASE = 'https://convertico.com/';
 const ENDPOINT = BASE + 'soundcloud-downloader/soundcloud-downloader.php';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
-// Helper penamaan berkas musik agar bersih dari karakter ilegal
 function safeFilename(title, uploader) {
   return `${uploader} - ${title}`
     .replace(/[\\/:*?"<>|]/g, "")
@@ -20,13 +19,9 @@ function safeFilename(title, uploader) {
     .trim() + " (SOUNDCLOUD).mp3";
 }
 
-// ==========================================
-// EXPRESS ROUTING MODULE FOR ANDRI API
-// ==========================================
 module.exports = function (app) {
 
   const handleScdl = async (req, res) => {
-    // Mendukung pembacaan via query string ataupun body json
     const target = req.body.url || req.query.url || req.body.link || req.query.link;
     const wantStream = req.query.stream === 'true' || req.body.stream === true;
 
@@ -39,7 +34,6 @@ module.exports = function (app) {
       });
     }
 
-    // Validasi dasar link SoundCloud
     if (!target.includes('soundcloud.com')) {
       return res.status(400).json({
         status: false,
@@ -48,6 +42,9 @@ module.exports = function (app) {
         error: 'INVALID_SOUNDCLOUD_URL'
       });
     }
+
+    // FIX 1: Bersihkan URL dari parameter tracking (?si=... / ?utm_source=...)
+    const cleanUrl = target.split('?')[0].trim();
 
     const headers = {
       'accept': '*/*',
@@ -60,7 +57,7 @@ module.exports = function (app) {
       // 1. Ambil Metadata & Info Lagu SoundCloud
       const responseInfo = await axios.post(ENDPOINT, new URLSearchParams({
         action: 'fetch',
-        url: target
+        url: cleanUrl
       }), { headers });
 
       const info = responseInfo.data;
@@ -73,25 +70,34 @@ module.exports = function (app) {
         });
       }
 
+      // FIX 2: Ambil session cookie dari request pertama dan pasang ke request berikutnya
+      const setCookieHeaders = responseInfo.headers['set-cookie'];
+      if (setCookieHeaders) {
+        headers['cookie'] = setCookieHeaders.map(c => c.split(';')[0]).join('; ');
+      }
+
       // 2. Ambil Link Download & Kalkulasi Ukuran File
       const responseDl = await axios.post(ENDPOINT, new URLSearchParams({
         action: 'download',
-        url: target,
+        url: cleanUrl,
         quality: '192',
         is_playlist: '0'
       }), { headers });
 
       const dl = responseDl.data;
+      
+      // FIX 3: Jika gagal, ikut sertakan respon mentah (dl) agar alasan penolakan terlihat jelas
       if (!dl || !dl.file_url) {
         return res.status(500).json({
           status: false,
           statusCode: 500,
           message: "Server convertico gagal merender tautan unduhan MP3.",
-          error: "GENERATE_LINK_FAILED"
+          error: "GENERATE_LINK_FAILED",
+          details: dl || "No response data dari server convertico.",
+          creator: "Andri Api"
         });
       }
 
-      // Format Encode URL Download Sesuai Standar Convertico
       const downloadUrl = BASE + 'soundcloud-downloader/' + dl.file_url.split('/').map(encodeURIComponent).join('/');
       const filename = safeFilename(info.title, info.author);
 
@@ -107,9 +113,9 @@ module.exports = function (app) {
         return res.send(Buffer.from(audioFetch.data));
       }
 
-      // 4. JIKA USER MEMINTA RESPON DATA JSON STANDAR UNTUK WEB DOCUMENTATION
+      // 4. JIKA USER MEMINTA RESPON DATA JSON STANDAR
       const currentApikey = req.query.apikey || req.headers['x-api-key'] || '';
-      const streamUrl = `${req.protocol}://${req.get('host')}/api/download/scdl?url=${encodeURIComponent(target)}&stream=true${currentApikey ? `&apikey=${currentApikey}` : ''}`;
+      const streamUrl = `${req.protocol}://${req.get('host')}/api/download/scdl?url=${encodeURIComponent(cleanUrl)}&stream=true${currentApikey ? `&apikey=${currentApikey}` : ''}`;
 
       return res.status(200).json({
         status: true,
@@ -126,7 +132,7 @@ module.exports = function (app) {
           size: `${(dl.size / 1024 / 1024).toFixed(2)} MB`,
           format: dl.format || "mp3",
           filename: filename,
-          url: streamUrl // Mengarahkan ke stream audio internal bot
+          url: streamUrl
         }
       });
 
@@ -141,7 +147,6 @@ module.exports = function (app) {
     }
   };
 
-  // Sistem bypass API Key jika user terdeteksi login melalui session cookie dashboard web
   const bypassOrCheckApiKey = (req, res, next) => {
     const hasApiKey = req.query.apikey || req.headers['x-api-key'];
     if (!hasApiKey && (req.cookies?.session || req.cookies?.token)) {
@@ -150,7 +155,6 @@ module.exports = function (app) {
     return apiKeyMiddleware(req, res, next);
   };
 
-  // Daftarkan endpoint ke router utama (Mendukung GET dan POST di path /api/download/scdl)
   app.get("/api/download/scdl", bypassOrCheckApiKey, handleScdl);
   app.post("/api/download/scdl", bypassOrCheckApiKey, handleScdl);
 };
