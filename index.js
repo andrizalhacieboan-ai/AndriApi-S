@@ -117,6 +117,15 @@ try {
 }
 
 try {
+  require('./src/api/ai/gpt.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: gpt.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/ai/gpt.js`);
+  console.error(`[API]   Reason: ${e.message}`);
+}
+
+try {
   require('./src/api/random/random-bluearchive.js')(app);
   loaded++;
   console.log(`[API] ✓ Loaded: random-bluearchive.js`);
