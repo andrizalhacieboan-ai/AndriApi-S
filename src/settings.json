@@ -205,15 +205,15 @@
           ]
         }, 
         {
-  "name": "Shopee Downloader",
-  "desc": "Download Shopee videos without watermark using video URL.",
-  "method": "GET",
-  "path": "/api/download/shopee",
-  "innerDesc": "Masukkan URL postingan atau video Shopee yang valid (Mendukung link shope.ee / shopee.co.id).",
-  "params": [
-    { "name": "url", "required": true, "type": "text" }
-  ]
-}
+          "name": "Shopee Downloader",
+          "desc": "Download Shopee videos without watermark using video URL.",
+          "method": "GET",
+          "path": "/api/download/shopee",
+          "innerDesc": "Masukkan URL postingan atau video Shopee yang valid (Mendukung link shope.ee / shopee.co.id).",
+          "params": [
+            { "name": "url", "required": true, "type": "text" }
+          ]
+        }
       ]
     },
     {
@@ -229,6 +229,22 @@
             { "name": "text", "required": true, "type": "text" },
             { "name": "background", "required": false, "type": "text", "default": "#8ace00" },
             { "name": "color", "required": false, "type": "text", "default": "#000000" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Convert",
+      "items": [
+        {
+          "name": "Image Upscaler",
+          "desc": "Upscale and enhance image resolution (2x, 4x) using ai.",
+          "method": "GET",
+          "path": "/api/convert/upscale",
+          "innerDesc": "Masukkan URL gambar publik yang ingin ditingkatkan kualitas tajamnya. Output berupa direct image JPEG.",
+          "params": [
+            { "name": "url", "required": true, "type": "text" },
+            { "name": "scale", "required": false, "type": "text", "default": "4" }
           ]
         }
       ]
