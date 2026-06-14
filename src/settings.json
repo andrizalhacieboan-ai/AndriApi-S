@@ -203,7 +203,17 @@
           "params": [
             { "name": "url", "required": true, "type": "text" }
           ]
-        }
+        }, 
+        {
+  "name": "Shopee Downloader",
+  "desc": "Download Shopee videos without watermark using video URL.",
+  "method": "GET",
+  "path": "/api/download/shopee",
+  "innerDesc": "Masukkan URL postingan atau video Shopee yang valid (Mendukung link shope.ee / shopee.co.id).",
+  "params": [
+    { "name": "url", "required": true, "type": "text" }
+  ]
+}
       ]
     },
     {
