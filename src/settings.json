@@ -51,6 +51,18 @@
             { "name": "prompt", "required": true, "type": "text" },
             { "name": "temperature", "required": false, "type": "text", "default": "0.5" }
           ]
+        }, 
+        {
+          "name": "Gemini AI",
+          "desc": "Chat with Gemini AI with custom core instructions and multi-turn session tracker.",
+          "method": "POST",
+          "path": "/api/ai/gemini",
+          "innerDesc": "Masukkan parameter prompt obrolan. Gunakan token sessionId hasil response sebelumnya untuk melanjutkan obrolan bertingkat.",
+          "params": [
+            { "name": "prompt", "required": true, "type": "text" },
+            { "name": "instruction", "required": false, "type": "text", "default": "jawab pake bahasa gaul gen z banget..." },
+            { "name": "sessionId", "required": false, "type": "text", "default": "" }
+          ]
         }
       ]
     },
