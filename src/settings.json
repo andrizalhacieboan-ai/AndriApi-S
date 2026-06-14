@@ -40,6 +40,17 @@
             { "name": "prompt", "required": true, "type": "text" },
             { "name": "template", "required": false, "type": "text", "default": "logical" }
           ]
+        }, 
+         {
+          "name": "GPT 3.5 Turbo",
+          "desc": "Chat with GPT-3.5 Turbo via Chat Everywhere engine.",
+          "method": "POST",
+          "path": "/api/ai/gpt",
+          "innerDesc": "Masukkan pesan/prompt obrolan atau kode. Menggunakan engine proxy Chat Everywhere.",
+          "params": [
+            { "name": "prompt", "required": true, "type": "text" },
+            { "name": "temperature", "required": false, "type": "text", "default": "0.5" }
+          ]
         }
       ]
     },
