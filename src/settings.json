@@ -193,6 +193,16 @@
             { "name": "url", "required": true, "type": "text" },
             { "name": "stream", "required": false, "type": "text", "default": "false" }
           ]
+        },
+        {
+          "name": "Threads Downloader",
+          "desc": "Download Threads media (Videos/Images).",
+          "method": "GET",
+          "path": "/api/download/threads",
+          "innerDesc": "Masukkan URL postingan Threads yang valid.",
+          "params": [
+            { "name": "url", "required": true, "type": "text" }
+          ]
         }
       ]
     },
