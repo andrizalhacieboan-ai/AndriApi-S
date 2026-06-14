@@ -4,6 +4,7 @@
  * [•] BASE        :: ShopeeNoWatermark Engine Proxy
  * * [!] INTEGRATED FOR ANDRI API (Category: Downloader)
  * [•] CREDIT      :: ShanMolvyr (Jangan hapus, hargai rakyat kecil)
+ * [•] FIX         :: Support new shortlink domain (id.shp.ee) + Auto Resolver
  */
 
 const axios = require('axios');
@@ -37,19 +38,34 @@ module.exports = function (app) {
       });
     }
 
-    // Validasi basic domain Shopee (Mendukung shopee.co.id, shope.ee, dll)
-    if (!target.includes('shopee.') && !target.includes('shope.ee')) {
-      return res.status(400).json({
-        status: false,
-        statusCode: 400,
-        message: 'URL yang dimasukkan bukan tautan Shopee yang sah.',
-        error: 'INVALID_SHOPEE_URL'
-      });
-    }
+    let cleanUrl = target.trim();
 
     try {
-      // Menggunakan URLSearchParams agar terkirim sebagai form-urlencoded yang kompatibel dengan API target
-      const payload = new URLSearchParams({ url: target.trim() });
+      // FIX 1: Deteksi & Auto-Expand jika user mengirimkan shortlink mobile (shope.ee / id.shp.ee)
+      if (cleanUrl.includes('shope.ee') || cleanUrl.includes('shp.ee')) {
+        const expandRes = await axios.get(cleanUrl, {
+          maxRedirects: 5,
+          headers: { 'User-Agent': UA },
+          validateStatus: () => true // Mencegah crash jika ada redirect handling khusus dari Shopee
+        });
+        
+        if (expandRes.request?.res?.responseUrl) {
+          cleanUrl = expandRes.request.res.responseUrl;
+        }
+      }
+
+      // FIX 2: Perluasan pola validasi domain Shopee agar mencakup sub-domain shp.ee
+      if (!cleanUrl.includes('shopee') && !cleanUrl.includes('shope.ee') && !cleanUrl.includes('shp.ee')) {
+        return res.status(400).json({
+          status: false,
+          statusCode: 400,
+          message: 'URL yang dimasukkan bukan tautan Shopee yang sah.',
+          error: 'INVALID_SHOPEE_URL'
+        });
+      }
+
+      // Menggunakan URLSearchParams agar terkirim sebagai form-urlencoded ke API target
+      const payload = new URLSearchParams({ url: cleanUrl });
 
       const response = await axios.post(`${BASE_URL}/api/extract`, payload.toString(), {
         headers: {
@@ -72,7 +88,6 @@ module.exports = function (app) {
         });
       }
 
-      // Ambil stream video terbaik menggunakan helper
       const streamsArray = data.streams_array || [];
       const best = bestStream(streamsArray);
 
@@ -86,7 +101,6 @@ module.exports = function (app) {
         });
       }
 
-      // Response sukses standar Andri API
       return res.status(200).json({
         status: true,
         statusCode: 200,
@@ -130,7 +144,6 @@ module.exports = function (app) {
     return apiKeyMiddleware(req, res, next);
   };
 
-  // Daftarkan routing endpoint ke Express
   app.get("/api/download/shopee", bypassOrCheckApiKey, handleShopeeDL);
   app.post("/api/download/shopee", bypassOrCheckApiKey, handleShopeeDL);
 };
