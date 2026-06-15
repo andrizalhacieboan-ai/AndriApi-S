@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Cek apakah user sudah login (session)
     let isLoggedIn = false;
     let userPlan = 'free';
+    let userApiKey = ''; // 🔥 MOD: Variabel global penampung API Key
+
     try {
         const me = await fetch('/api/auth/me', { credentials: 'include' });
         const data = await me.json();
@@ -13,6 +15,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             isLoggedIn = true;
             userPlan = data.data.plan;
             console.log('Logged in as', data.data.name);
+
+            // 🔥 MOD: Ambil API Key user secara diam-diam dari database Turso lewat endpoint stats
+            try {
+                const statsResponse = await fetch('/api/dashboard/stats');
+                const statsData = await statsResponse.json();
+                if (statsData.status && statsData.data.keys && statsData.data.keys.length > 0) {
+                    // Cari key yang aktif, jika tidak ada ambil yang pertama
+                    const activeKeyObj = statsData.data.keys.find(k => k.is_active === 1 || k.is_active === true) || statsData.data.keys[0];
+                    userApiKey = activeKeyObj.key;
+                    console.log('🔒 Auto-inject API Key initialized!');
+                }
+            } catch (err) {
+                console.error('Gagal memuat token API Key:', err);
+            }
+
         } else {
             // Redirect ke login jika belum login
             window.location.href = '/login';
@@ -164,6 +181,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     input.placeholder = `${p.name} ${p.required ? '(wajib)' : '(opsional)'}`;
                     input.dataset.param = p.name;
                     input.required = p.required || false;
+                    
+                    // 🔥 MOD: Jika kolom input adalah apikey, otomatis isi dengan API Key asli milik user
+                    if (p.name.toLowerCase() === 'apikey' && userApiKey) {
+                        input.value = userApiKey;
+                    }
+
                     if (p.required) input.addEventListener('input', validateInputs);
                     group.appendChild(input);
                     container.appendChild(group);
@@ -190,7 +213,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     });
                     if (!valid) return;
 
-                    // Execute API request with session cookie (no API key needed)
                     executeApiRequest(method, apiPath, paramValues, refs);
                 };
             } else {
@@ -218,6 +240,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             refs.endpoint.classList.add('d-none');
             refs.submitBtn.disabled = true;
 
+            // 🔥 MOD: Suntik apikey otomatis ke dalam parameter objek data sebelum dikirim
+            if (userApiKey && !params.apikey) {
+                params.apikey = userApiKey;
+            }
+
             let url = path;
             let options = {
                 method: method,
@@ -234,8 +261,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 options.body = JSON.stringify(params);
             }
 
-            // Tampilkan URL endpoint
-            refs.endpoint.textContent = `${method} ${url}`;
+            // 🔥 MOD: Ubah tampilan teks agar menampilkan FULL URL lengkap dengan domain asli Anda
+            const absoluteUrl = `${window.location.origin}${url}`;
+            refs.endpoint.textContent = `${method} ${absoluteUrl}`;
             refs.endpoint.classList.remove('d-none');
 
             try {
