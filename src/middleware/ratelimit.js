@@ -38,7 +38,7 @@ async function apiKeyMiddleware(req, res, next) {
     });
   }
 
-  if (!raw.startsWith('AND+')) {
+  if (!raw.startsWith('AND_')) {
     return res.status(401).json({
       status:false, statusCode:401,
       message:'Format API key tidak valid.',
