@@ -2,8 +2,9 @@
 const crypto = require('crypto');
 
 function generateApiKey() {
+  // 🔥 UBAH: Mengganti '+' menjadi '_' agar aman saat dikirim lewat URL parameter / cURL
   const hex = crypto.randomBytes(24).toString('hex').toUpperCase();
-  return `AND+${hex}`;
+  return `AND_${hex}`; 
 }
 
 function generateSessionId() {
