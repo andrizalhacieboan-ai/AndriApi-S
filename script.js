@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Cek apakah user sudah login (session)
     let isLoggedIn = false;
     let userPlan = 'free';
-    let userApiKey = ''; // 🔥 MOD: Variabel global penampung API Key
+    let userApiKey = ''; // 🔥 Variabel global penampung API Key
 
     try {
         const me = await fetch('/api/auth/me', { credentials: 'include' });
@@ -16,19 +16,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             userPlan = data.data.plan;
             console.log('Logged in as', data.data.name);
 
-            // 🔥 MOD: Ambil API Key user secara diam-diam dari database Turso lewat endpoint stats
-            try {
-                const statsResponse = await fetch('/api/dashboard/stats');
-                const statsData = await statsResponse.json();
-                if (statsData.status && statsData.data.keys && statsData.data.keys.length > 0) {
-                    // Cari key yang aktif, jika tidak ada ambil yang pertama
-                    const activeKeyObj = statsData.data.keys.find(k => k.is_active === 1 || k.is_active === true) || statsData.data.keys[0];
-                    userApiKey = activeKeyObj.key;
-                    console.log('🔒 Auto-inject API Key initialized!');
-                }
-            } catch (err) {
-                console.error('Gagal memuat token API Key:', err);
-            }
+            // 🔥 LANGSUNG AMBIL DARI PROFILE USER YANG SUDAH GENERATED
+            // Menyesuaikan apakah nama field di database/profile-mu 'apikey' atau 'api_key'
+            userApiKey = data.data.apikey || data.data.api_key || ''; 
+            console.log('🔒 Auto-inject API Key dari profile sukses!');
 
         } else {
             // Redirect ke login jika belum login
@@ -182,7 +173,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     input.dataset.param = p.name;
                     input.required = p.required || false;
                     
-                    // 🔥 MOD: Jika kolom input adalah apikey, otomatis isi dengan API Key asli milik user
+                    // 🔥 Otomatis isi jika input adalah parameter apikey
                     if (p.name.toLowerCase() === 'apikey' && userApiKey) {
                         input.value = userApiKey;
                     }
@@ -240,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             refs.endpoint.classList.add('d-none');
             refs.submitBtn.disabled = true;
 
-            // 🔥 MOD: Suntik apikey otomatis ke dalam parameter objek data sebelum dikirim
+            // 🔥 Otomatis pasang apikey dari profile jika belum ada di objek parameter
             if (userApiKey && !params.apikey) {
                 params.apikey = userApiKey;
             }
@@ -261,7 +252,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 options.body = JSON.stringify(params);
             }
 
-            // 🔥 MOD: Ubah tampilan teks agar menampilkan FULL URL lengkap dengan domain asli Anda
+            // 🔥 Cetak full url absolut beserta domainnya agar mudah di-copy untuk curl/bot
             const absoluteUrl = `${window.location.origin}${url}`;
             refs.endpoint.textContent = `${method} ${absoluteUrl}`;
             refs.endpoint.classList.remove('d-none');
