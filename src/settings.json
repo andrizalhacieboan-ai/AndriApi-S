@@ -388,6 +388,17 @@
             { "name": "apikey", "required": true, "type": "text" },
             { "name": "url", "required": true, "type": "text" }
           ]
+        },
+        {
+          "name": "Fake OVO Generator",
+          "desc": "Generate a custom fake OVO balance receipt image using Canvas Engine.",
+          "method": "GET",
+          "path": "/api/tools/fakeovo",
+          "innerDesc": "Masukkan nominal jumlah saldo OVO yang ingin di-generate. Output berupa direct image PNG.",
+          "params": [
+            { "name": "apikey", "required": true, "type": "text" },
+            { "name": "amount", "required": true, "type": "text" }
+          ]
         }
       ]
     }
