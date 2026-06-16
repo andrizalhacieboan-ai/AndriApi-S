@@ -43,8 +43,28 @@ module.exports = function (app) {
 
             // Step 1: Ambil Key Otentikasi Epsilon
             const authRes = await fetch(`https://epsilon.epsiloncloud.org/api/v1/auth?_=${ts()}`, { headers: hdrs });
+            
+            if (!authRes.ok) {
+                return res.status(502).json({
+                    status: false,
+                    statusCode: 502,
+                    message: `Epsilon Auth Server merespons dengan status ${authRes.status}`,
+                    error: "AUTH_SERVER_ERROR"
+                });
+            }
+
             const authText = await authRes.text();
-            const { key } = JSON.parse(authText);
+            let key;
+            try {
+                key = JSON.parse(authText).key;
+            } catch (e) {
+                return res.status(502).json({
+                    status: false,
+                    statusCode: 502,
+                    message: "Format respons dari Auth Server Epsilon tidak valid (Bukan JSON).",
+                    error: "INVALID_AUTH_JSON"
+                });
+            }
 
             if (!key) {
                 return res.status(502).json({
@@ -59,8 +79,28 @@ module.exports = function (app) {
             const initRes = await fetch(`https://epsilon.epsiloncloud.org/api/v1/init?_=${ts()}`, {
                 headers: { ...hdrs, Authorization: `Bearer ${key}` }
             });
+
+            if (!initRes.ok) {
+                return res.status(502).json({
+                    status: false,
+                    statusCode: 502,
+                    message: `Epsilon Init Server merespons dengan status ${initRes.status}`,
+                    error: "INIT_SERVER_ERROR"
+                });
+            }
+
             const initText = await initRes.text();
-            const { convertURL } = JSON.parse(initText);
+            let convertURL;
+            try {
+                convertURL = JSON.parse(initText).convertURL;
+            } catch (e) {
+                return res.status(502).json({
+                    status: false,
+                    statusCode: 502,
+                    message: "Format respons dari Init Server Epsilon tidak valid.",
+                    error: "INVALID_INIT_JSON"
+                });
+            }
 
             if (!convertURL) {
                 return res.status(502).json({
@@ -76,13 +116,21 @@ module.exports = function (app) {
             let url = `${convertURL}&v=${videoId}&f=${format}&_=${ts()}`;
             let attempts = 0;
 
-            while (attempts < 15) { // Proteksi infinite loop max 15 kali pencarian
+            while (attempts < 15) { 
                 attempts++;
-                const resFetch = await fetch(url, { headers: hdrs }); // FIX: Diubah dari { hdrs } menjadi { headers: hdrs }
-                const text = await resFetch.text();
-                result = JSON.parse(text);
+                const resFetch = await fetch(url, { headers: hdrs });
                 
-                if (!result.redirect) break;
+                if (!resFetch.ok) break;
+
+                const text = await resFetch.text();
+                try {
+                    result = JSON.parse(text);
+                } catch (e) {
+                    result = null;
+                    break;
+                }
+                
+                if (!result || !result.redirect) break;
                 url = result.redirectURL;
             }
 
@@ -90,12 +138,12 @@ module.exports = function (app) {
                 return res.status(422).json({
                     status: false,
                     statusCode: 422,
-                    message: "Gagal memproses konversi video. Silakan coba beberapa saat lagi.",
+                    message: "Gagal memproses konversi video atau video tidak ditemukan.",
                     error: "CONVERSION_FAILED"
                 });
             }
 
-            // Struktur respons standar sukses (status 200) sesuai sistem Andri API
+            // Struktur respons standar sukses (status 200)
             return res.status(200).json({
                 status: true,
                 statusCode: 200,
@@ -118,20 +166,7 @@ module.exports = function (app) {
         }
     };
 
-    /**
-     * Gerbang Deteksi Bypass Khusus Console Web / Session Cookie
-     */
-    const bypassOrCheckApiKey = (req, res, next) => {
-        const hasApiKey = req.query.apikey || req.headers['x-api-key'];
-        
-        if (!hasApiKey && (req.cookies?.session || req.cookies?.token)) {
-            return next();
-        }
-        
-        return apiKeyMiddleware(req, res, next);
-    };
-
-    // Registrasi Rute Express (Mendukung GET dan POST)
-    app.get("/api/download/ytmp3", bypassOrCheckApiKey, handleYtmp3);
-    app.post("/api/download/ytmp3", bypassOrCheckApiKey, handleYtmp3);
+    // 🔥 SEKARANG MURNI MANDIRI: Langsung lewati apiKeyMiddleware resmi Anda tanpa bypass cookie
+    app.get("/api/download/ytmp3", apiKeyMiddleware, handleYtmp3);
+    app.post("/api/download/ytmp3", apiKeyMiddleware, handleYtmp3);
 };
