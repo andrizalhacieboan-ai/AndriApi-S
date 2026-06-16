@@ -37,6 +37,7 @@
           "path": "/api/ai/dolphin",
           "innerDesc": "Masukkan pesan. Template opsional: logical, creative, summarize, code-beginner, code-advanced (default logical).",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "prompt", "required": true, "type": "text" },
             { "name": "template", "required": false, "type": "text", "default": "logical" }
           ]
@@ -48,6 +49,7 @@
           "path": "/api/ai/gpt",
           "innerDesc": "Masukkan pesan/prompt obrolan atau kode. Menggunakan engine proxy Chat Everywhere.",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "prompt", "required": true, "type": "text" },
             { "name": "temperature", "required": false, "type": "text", "default": "0.5" }
           ]
@@ -59,6 +61,7 @@
           "path": "/api/ai/gemini",
           "innerDesc": "Masukkan parameter prompt obrolan. Gunakan token sessionId hasil response sebelumnya untuk melanjutkan obrolan bertingkat.",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "prompt", "required": true, "type": "text" },
             { "name": "instruction", "required": false, "type": "text", "default": "jawab pake bahasa gaul gen z banget..." },
             { "name": "sessionId", "required": false, "type": "text", "default": "" }
@@ -75,7 +78,9 @@
           "method": "GET",
           "path": "/api/random/ba",
           "innerDesc": "Klik Execute untuk mendapatkan gambar random Blue Archive.",
-          "params": []
+          "params": [
+            { "name": "apikey", "required": true, "type": "text" }
+          ]
         }
       ]
     },
@@ -89,6 +94,7 @@
           "path": "/api/search/youtube",
           "innerDesc": "Masukkan kata kunci pencarian.",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "q", "required": true, "type": "text" }
           ]
         },
@@ -99,6 +105,7 @@
           "path": "/api/tools/glen",
           "innerDesc": "Masukkan URL gambar publik yang ingin dilacak menggunakan Google Lens.",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "url", "required": true, "type": "text" }
           ]
         },
@@ -109,35 +116,38 @@
           "path": "/api/search/pinterest",
           "innerDesc": "Masukkan kata kunci pencarian pinterest.",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "q", "required": true, "type": "text" },
             { "name": "limit", "required": false, "type": "text", "default": "25" }
           ]
         }, 
         {
-  "name": "TikTok Search & Audio",
-  "desc": "Search TikTok videos by query and automatically extract clean video and converted direct MP3 links.",
-  "method": "GET",
-  "path": "/api/search/tiktok",
-  "innerDesc": "Masukkan kata kunci video TikTok yang ingin dicari. Parameter count, cursor, dan hd bersifat opsional.",
-  "params": [
-    { "name": "q", "required": true, "type": "text" },
-    { "name": "count", "required": false, "type": "text", "default": "12" },
-    { "name": "cursor", "required": false, "type": "text", "default": "0" },
-    { "name": "hd", "required": false, "type": "text", "default": "1" }
-  ]
-}, 
+          "name": "TikTok Search & Audio",
+          "desc": "Search TikTok videos by query and automatically extract clean video and converted direct MP3 links.",
+          "method": "GET",
+          "path": "/api/search/tiktok",
+          "innerDesc": "Masukkan kata kunci video TikTok yang ingin dicari. Parameter count, cursor, dan hd bersifat opsional.",
+          "params": [
+            { "name": "apikey", "required": true, "type": "text" },
+            { "name": "q", "required": true, "type": "text" },
+            { "name": "count", "required": false, "type": "text", "default": "12" },
+            { "name": "cursor", "required": false, "type": "text", "default": "0" },
+            { "name": "hd", "required": false, "type": "text", "default": "1" }
+          ]
+        }, 
         {
-  "name": "AI Prompt Search",
-  "desc": "Search high-quality text prompts and negative prompts for Stable Diffusion, Midjourney, etc.",
-  "method": "GET",
-  "path": "/api/search/prompt",
-  "innerDesc": "Masukkan kata kunci konsep gambar AI yang ingin dicari prompt-nya (Contoh: cyberpunk anime girl, cinematic hd). Parameter page dan limit bersifat opsional.",
-  "params": [
-    { "name": "q", "required": true, "type": "text" },
-    { "name": "page", "required": false, "type": "text", "default": "1" },
-    { "name": "limit", "required": false, "type": "text", "default": "10" }
-  ]
-}
+          "name": "AI Prompt Search",
+          "desc": "Search high-quality text prompts and negative prompts for Stable Diffusion, Midjourney, etc.",
+          "method": "GET",
+          "path": "/api/search/prompt",
+          "innerDesc": "Masukkan kata kunci konsep gambar AI yang ingin dicari prompt-nya (Contoh: cyberpunk anime girl, cinematic hd). Parameter page dan limit bersifat opsional.",
+          "params": [
+            { "name": "apikey", "required": true, "type": "text" },
+            { "name": "q", "required": true, "type": "text" },
+            { "name": "page", "required": false, "type": "text", "default": "1" },
+            { "name": "limit", "required": false, "type": "text", "default": "10" }
+          ]
+        }
       ]
     },
     {
@@ -150,6 +160,7 @@
           "path": "/api/download/tiktok",
           "innerDesc": "Masukkan URL video TikTok yang valid.",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "url", "required": true, "type": "text" }
           ]
         },
@@ -160,6 +171,7 @@
           "path": "/api/download/facebook",
           "innerDesc": "Masukkan URL postingan/video Facebook yang valid. Cookie dan UserAgent opsional.",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "url", "required": true, "type": "text" },
             { "name": "cookie", "required": false, "type": "text", "default": "" },
             { "name": "useragent", "required": false, "type": "text", "default": "" }
@@ -172,11 +184,8 @@
           "path": "/api/download/twitter",
           "innerDesc": "Masukkan URL tweet X/Twitter yang valid.",
           "params": [
-            {
-              "name": "url",
-              "type": "text",
-              "required": true
-            }
+            { "name": "apikey", "required": true, "type": "text" },
+            { "name": "url", "type": "text", "required": true }
           ]
         },
         {
@@ -186,6 +195,7 @@
           "path": "/api/download/ytmp3",
           "innerDesc": "Masukkan URL video YouTube atau Video ID yang valid. Parameter format bersifat opsional (mp3 / mp4).",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "url", "required": true, "type": "text" },
             { "name": "format", "required": false, "type": "text", "default": "mp3" }
           ]
@@ -197,6 +207,7 @@
           "path": "/api/download/capcut",
           "innerDesc": "Masukkan URL video CapCut yang valid.",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "url", "required": true, "type": "text" }
           ]
         },
@@ -207,6 +218,7 @@
           "path": "/api/download/pinterest",
           "innerDesc": "Masukkan URL pinterest.",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "url", "required": true, "type": "text" }
           ]
         },
@@ -217,6 +229,7 @@
           "path": "/api/download/mediafire",
           "innerDesc": "Masukkan URL MediaFire yang valid.",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "url", "required": true, "type": "text" }
           ]
         }, 
@@ -227,6 +240,7 @@
           "path": "/api/download/spotify",
           "innerDesc": "Masukkan URL Track / Lagu Spotify yang valid. Tambahkan parameter &stream=true jika bot Anda ingin mengambil file direct media mp3-nya langsung.",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "url", "required": true, "type": "text" },
             { "name": "stream", "required": false, "type": "text", "default": "false" }
           ]
@@ -238,6 +252,7 @@
           "path": "/api/download/scdl",
           "innerDesc": "Masukkan URL Track / Lagu SoundCloud yang valid. Tambahkan parameter &stream=true jika bot Anda ingin mengambil file direct media mp3-nya langsung.",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "url", "required": true, "type": "text" },
             { "name": "stream", "required": false, "type": "text", "default": "false" }
           ]
@@ -249,6 +264,7 @@
           "path": "/api/download/threads",
           "innerDesc": "Masukkan URL postingan Threads yang valid.",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "url", "required": true, "type": "text" }
           ]
         }, 
@@ -259,6 +275,7 @@
           "path": "/api/download/shopee",
           "innerDesc": "Masukkan URL postingan atau video Shopee yang valid (Mendukung link shope.ee / shopee.co.id).",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "url", "required": true, "type": "text" }
           ]
         }
@@ -274,6 +291,7 @@
           "path": "/api/sticker/brat",
           "innerDesc": "Masukkan teks untuk diubah menjadi gaya text Brat sticker.",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "text", "required": true, "type": "text" },
             { "name": "background", "required": false, "type": "text", "default": "#8ace00" },
             { "name": "color", "required": false, "type": "text", "default": "#000000" }
@@ -291,6 +309,7 @@
           "path": "/api/convert/upscale",
           "innerDesc": "Masukkan URL gambar publik yang ingin ditingkatkan kualitas tajamnya. Output berupa direct image JPEG.",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "url", "required": true, "type": "text" },
             { "name": "scale", "required": false, "type": "text", "default": "4" }
           ]
@@ -307,6 +326,7 @@
           "path": "/api/tools/deepai",
           "innerDesc": "Masukkan URL gambar publik dan instruksi prompt perubahannya.",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "url", "required": true, "type": "text" },
             { "name": "prompt", "required": true, "type": "text" },
             { "name": "action", "required": false, "type": "text", "default": "json" }
@@ -319,6 +339,7 @@
           "path": "/api/tools/welcome",
           "innerDesc": "Masukkan URL gambar avatar publik dan konfigurasi teks sesuai tipe kartu (welcome, leave, intro). Output berupa direct image PNG.",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "url", "required": true, "type": "text" },
             { "name": "type", "required": false, "type": "text", "default": "welcome" },
             { "name": "text", "required": false, "type": "text", "default": "" }
@@ -331,6 +352,7 @@
           "path": "/api/tools/tiktokstalk",
           "innerDesc": "Masukkan username TikTok target (bisa menggunakan atau tanpa tanda @).",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "username", "required": true, "type": "text" }
           ]
         },
@@ -341,6 +363,7 @@
           "path": "/api/tools/igstalk",
           "innerDesc": "Masukkan username Instagram target.",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "username", "required": true, "type": "text" }
           ]
         }, 
@@ -351,6 +374,7 @@
           "path": "/api/tools/bypassunlock",
           "innerDesc": "Masukkan URL tautan terproteksi (seperti Linkvertise, dll) untuk di-bypass langsung.",
           "params": [
+            { "name": "apikey", "required": true, "type": "text" },
             { "name": "url", "required": true, "type": "text" }
           ]
         }
