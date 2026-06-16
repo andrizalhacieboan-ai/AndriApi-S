@@ -399,7 +399,18 @@
             { "name": "apikey", "required": true, "type": "text" },
             { "name": "amount", "required": true, "type": "text" }
           ]
-        }
+        }, 
+        {
+  "name": "TikTok Story Viewer",
+  "desc": "View and download active TikTok stories by andri api.",
+  "method": "GET",
+  "path": "/api/tools/ttsw",
+  "innerDesc": "Masukkan username target (contoh: khaby.lame) atau paste langsung link profile utuh target.",
+  "params": [
+    { "name": "apikey", "required": true, "type": "text" },
+    { "name": "username", "required": true, "type": "text" }
+  ]
+}
       ]
     }
   ]
