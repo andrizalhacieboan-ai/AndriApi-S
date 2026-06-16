@@ -377,8 +377,9 @@ footer{
     <li><a href="#api-console">Try API</a></li>
   </ul>
   <div class="nav-cta" id="navCta">
-    <a href="/login" class="btn btn-ghost">Login</a>
-    <a href="/register" class="btn btn-primary">Get API Key →</a>
+    <div class="d-flex align-items-center gap-2">
+      <input type="text" id="navApiKeyInput" class="form-control form-control-sm font-monospace" style="width:160px; font-size:0.75rem; border-radius:10px;" placeholder="Memuat API Key...">
+    </div>
   </div>
 </nav>
 
@@ -416,11 +417,11 @@ footer{
   <div class="stat-item reveal stagger-3"><div class="stat-n" id="statSupport" data-target="0">—</div><div class="stat-l">Support Hours</div></div>
 </div>
 
-<section id="features"><div class="container"><div class="s-tag reveal">Platform Features</div><h2 class="s-h reveal stagger-1">Semua yang kamu<br>butuhkan</h2><p class="s-p reveal stagger-2">Dari API key generation, rate limiting per plan, dashboard analytics, hingga payment otomatis.</p><div class="features-grid"><div class="feat-card reveal stagger-1"><div class="feat-icon">🔑</div><h3>Smart API Keys</h3><p>Setiap key berawalan <code>AND+</code> dengan 48 karakter custom. Generate manual dari halaman profile kapanpun.</p></div><div class="feat-card reveal stagger-2"><div class="feat-icon">⚡</div><h3>Rate Limiting per Plan</h3><p>Limit per menit, jam, dan hari. Setelah beli plan, limit langsung bertambah otomatis tanpa restart.</p></div><div class="feat-card reveal stagger-3"><div class="feat-icon">📊</div><h3>Dashboard Analytics</h3><p>Grafik penggunaan harian, top endpoints, status code distribution, dan monitoring real-time.</p></div><div class="feat-card reveal stagger-4"><div class="feat-icon">🚀</div><h3>RESS API</h3><p>Backend dengan plugin system.</p></div><div class="feat-card reveal stagger-5"><div class="feat-icon">🗃️</div><h3>SQLite Database</h3><p>Semua data tersimpan di (libSQL) — serverless, distributed, ultra-cepat.</p></div><div class="feat-card reveal stagger-6"><div class="feat-icon">👤</div><h3>Session Auth</h3><p>Autentikasi berbasis session yang disimpan di Database. Bcrypt password hashing, IP logging, CORS protection.</p></div></div></div></section>
+<section id="features"><div class="container"><div class="s-tag reveal">Platform Features</div><h2 class="s-h reveal stagger-1">Semua yang kamu<br>butuhkan</h2><p class="s-p reveal stagger-2">Dari API key generation, rate limiting per plan, dashboard analytics, hingga payment otomatis.</p><div class="features-grid"><div class="feat-card reveal stagger-1"><div class="feat-icon">🔑</div><h3>Smart API Keys</h3><p>Setiap key berawalan <code>AND+</code> dengan 48 karakter custom. Gunakan langsung di lintas browser atau bot WA.</p></div><div class="feat-card reveal stagger-2"><div class="feat-icon">⚡</div><h3>Rate Limiting per Plan</h3><p>Limit per menit, jam, dan hari. Setelah beli plan, limit langsung bertambah otomatis tanpa restart.</p></div><div class="feat-card reveal stagger-3"><div class="feat-icon">📊</div><h3>Dashboard Analytics</h3><p>Grafik penggunaan harian, top endpoints, status code distribution, dan monitoring real-time.</p></div><div class="feat-card reveal stagger-4"><div class="feat-icon">🚀</div><h3>RESS API</h3><p>Backend dengan plugin system.</p></div><div class="feat-card reveal stagger-5"><div class="feat-icon">🗃️</div><h3>SQLite Database</h3><p>Semua data tersimpan di (libSQL) — serverless, distributed, ultra-cepat.</p></div><div class="feat-card reveal stagger-6"><div class="feat-icon">🔒</div><h3>Stateless Auth</h3><p>Autentikasi murni berbasis API Key parameter atau header. Sangat fleksibel digunakan tanpa dependensi session browser.</p></div></div></div></section>
 
 <section id="plans" style="background:rgba(0,0,0,0.01);border-top:1px solid rgba(0,0,0,0.03);border-bottom:1px solid rgba(0,0,0,0.03)"><div class="container"><div class="s-tag reveal">Pricing</div><h2 class="s-h reveal stagger-1">Pilih Plan<br>yang Tepat</h2><p class="s-p reveal stagger-2">Mulai gratis selamanya. Upgrade kapanpun, limit langsung bertambah otomatis.</p><div class="plans-grid"><div class="plan-card c-free reveal stagger-1"><div class="plan-tier">Free</div><div class="plan-price">Rp 0</div><div class="plan-sub">selamanya gratis</div><ul class="plan-feats"><li class="hl">100 req/hari</li><li class="hl">20 req/jam</li><li class="hl">5 req/menit</li><li>Endpoint public</li><li>Community support</li></ul><a href="/register" class="btn btn-ghost btn-plan">Mulai Gratis</a></div><div class="plan-card c-premium pop reveal stagger-2"><div class="pop-badge">POPULAR</div><div class="plan-tier">Premium</div><div class="plan-price">Rp 29K</div><div class="plan-sub">/bulan · QRIS</div><ul class="plan-feats"><li class="hl">1000 req/hari</li><li class="hl">100 req/jam</li><li class="hl">20 req/menit</li><li>Akses semua endpoint</li><li>Priority support</li></ul><button class="btn btn-primary btn-plan btn-checkout-plan" data-plan="premium" style="background:#f8fafc; color:#0f172a;">Upgrade Premium</button></div><div class="plan-card c-vip reveal stagger-3"><div class="plan-tier">VIP</div><div class="plan-price">Rp 79K</div><div class="plan-sub">/bulan · QRIS</div><ul class="plan-feats"><li class="hl">10.000 req/hari</li><li class="hl">500 req/jam</li><li class="hl">60 req/menit</li><li>Akses semua endpoint</li><li>24/7 support</li></ul><button class="btn btn-ghost btn-plan btn-checkout-plan" data-plan="vip">Upgrade VIP</button></div><div class="plan-card c-vvip reveal stagger-4"><div class="plan-tier">VVIP</div><div class="plan-price">Rp 199K</div><div class="plan-sub">/bulan · QRIS</div><ul class="plan-feats"><li class="hl">Unlimited requests</li><li>Unlimited rate</li><li>Priority queue tertinggi</li><li>3 API keys</li></ul><button class="btn btn-ghost btn-plan btn-checkout-plan" data-plan="vvip">Go VVIP</button></div></div></div></section>
 
-<section><div class="container"><div class="s-tag reveal">How It Works</div><h2 class="s-h reveal stagger-1">Mulai dalam<br>3 langkah</h2><div class="steps"><div class="step reveal stagger-1"><div class="step-num">01</div><h4>Daftar Akun</h4><p>Buat akun gratis. Langsung masuk dashboard.</p></div><div class="step reveal stagger-2"><div class="step-num">02</div><h4>Pilih Plan</h4><p>Gunakan free atau upgrade melalui payment otomatis.</p></div><div class="step reveal stagger-3"><div class="step-num">03</div><h4>Mulai Coding</h4><p>Sertakan API key atau gunakan session.</p></div></div></div></section>
+<section><div class="container"><div class="s-tag reveal">How It Works</div><h2 class="s-h reveal stagger-1">Mulai dalam<br>3 langkah</h2><div class="steps"><div class="step reveal stagger-1"><div class="step-num">01</div><h4>Daftar Akun</h4><p>Buat akun gratis. Dapatkan kredensial API Key Anda.</p></div><div class="step reveal stagger-2"><div class="step-num">02</div><h4>Pilih Plan</h4><p>Gunakan free atau upgrade melalui payment otomatis.</p></div><div class="step reveal stagger-3"><div class="step-num">03</div><h4>Mulai Coding</h4><p>Sertakan API key pada header atau query parameter bot Anda.</p></div></div></div></section>
 
 <section id="payment" style="background:rgba(0,0,0,0.01);border-top:1px solid rgba(0,0,0,0.03)"><div class="container"><div class="s-tag reveal">Payment via QRIS otomatis</div><h2 class="s-h reveal stagger-1">Bayar otomatis,<br>plan aktif instan</h2><p class="s-p reveal stagger-2">Semua pembayaran diproses otomatis via Pakasir.</p><div class="pm-grid"><div class="pm-badge">QRIS</div><div class="pm-badge">BNI VA</div><div class="pm-badge">BRI VA</div><div class="pm-badge">BCA VA</div><div class="pm-badge">GoPay</div><div class="pm-badge">OVO</div><div class="pm-badge">DANA</div><div class="pm-badge">ShopeePay</div><div class="pm-badge">Credit Card</div><div class="pm-badge">Indomaret</div><div class="pm-badge">Alfamart</div></div></div></section>
 
@@ -428,7 +429,7 @@ footer{
   <div class="container">
     <div class="s-tag reveal">Eksekusi API Endpoint</div>
     <h2 class="s-h reveal stagger-1">List Endpoint<br>BY ANDRI STORE</h2>
-    <p class="s-p reveal stagger-2">Cukup login, lalu klik tombol <strong>Try</strong> di bawah. Session Anda akan otomatis digunakan.</p>
+    <p class="s-p reveal stagger-2">Masukkan API Key Anda di kolom atas navigasi, lalu klik tombol <strong>Try</strong> di bawah untuk menguji.</p>
     
     <div class="mb-3 reveal stagger-3" style="max-width: 280px;">
       <select id="categorySelect" class="form-select" style="background: var(--surface); border-radius: 12px; box-shadow: var(--nm-outset-sm); border: 1px solid rgba(255,255,255,0.6); color: var(--text); font-size: 0.8rem; font-weight: 600; padding: 0.5rem 1rem; font-family: var(--mono);">
@@ -560,7 +561,8 @@ const counterObs = new IntersectionObserver((entries) => {
 }, { threshold: .5 });
 document.querySelectorAll('[data-target]').forEach(el => counterObs.observe(el));
 
-fetch(safeUrl('/api/stats'), { credentials: 'include' })
+// UPDATE: Hapus credentials include dari stats (Stateless)
+fetch(safeUrl('/api/stats'))
   .then(r => r.json()).then(d => {
     if (d.status && d.data) {
       const map = { statUptime: d.data.uptime || 0, statEndpoints: d.data.endpoints || 0, statPlans: d.data.plans || 0, statSupport: d.data.support_hours || 0 };
@@ -572,30 +574,88 @@ fetch(safeUrl('/api/stats'), { credentials: 'include' })
     }
   }).catch(() => {});
 
-let userApiKey = null;
-let userPlan = null;
-let isUserLoggedIn = false;
+// UPDATE: Auth State menggunakan LocalStorage & API Key murni (Stateless)
+let userApiKey = localStorage.getItem('user_api_key') || null;
+let userPlan = 'free';
+let isUserLoggedIn = !!userApiKey;
 
 async function loadUserAndApiKey() {
+  if (!userApiKey) {
+    isUserLoggedIn = false;
+    updateAuthUI();
+    return;
+  }
   try {
-    const res = await fetch(safeUrl('/api/auth/me'), { credentials: 'include' });
+    // Pengecekan status murni melempar parameter header x-api-key, tanpa cookie browser session
+    const res = await fetch(safeUrl('/api/auth/me'), {
+      method: 'GET',
+      headers: { 'x-api-key': userApiKey }
+    });
     const data = await res.json();
     if (data.status && data.data) {
       isUserLoggedIn = true;
+      userPlan = data.data.plan || 'free';
       const name = data.data.name || 'User';
-      const href = data.data.role === 'admin' ? '/admin' : '/profile';
-      document.getElementById('navCta').innerHTML = `<a href="/dashboard" class="btn btn-ghost">Dashboard</a><a href="${href}" class="btn btn-primary">${name}</a>`;
-      userPlan = data.data.plan;
-      if (data.data.api_keys && data.data.api_keys.length > 0) {
-        userApiKey = data.data.api_keys[0].key;
-      } else {
-        console.warn('Tidak ada API key ditemukan, user mungkin belum generate');
-      }
+      const href = data.data.role === 'admin' ? '/admin' : '/dashboard';
+      
+      document.getElementById('navCta').innerHTML = `
+        <div class="d-flex align-items-center gap-2">
+          <input type="text" id="navApiKeyInput" class="form-control form-control-sm font-monospace" value="${userApiKey}" style="width:160px; font-size:0.75rem; border-radius:10px;" placeholder="API Key">
+          <button onclick="updateApiKeyFromInput()" class="btn btn-sm btn-dark py-1 px-2" style="font-size:0.7rem; border-radius:8px;">Update</button>
+          <a href="${href}" class="btn btn-sm btn-primary py-1 px-2" style="font-size:0.75rem; border-radius:10px;">${name}</a>
+          <button onclick="clearApiKey()" class="btn btn-sm btn-ghost text-danger py-1 px-2" style="font-size:0.7rem; border-radius:8px;">❌</button>
+        </div>
+      `;
     } else {
       isUserLoggedIn = false;
-      document.getElementById('navCta').innerHTML = `<a href="/login" class="btn btn-ghost">Login</a><a href="/register" class="btn btn-primary">Get API Key →</a>`;
+      updateAuthUI();
     }
-  } catch(e) { console.error(e); }
+  } catch(e) { 
+    console.error(e);
+    updateAuthUI();
+  }
+}
+
+function updateAuthUI() {
+  const navCta = document.getElementById('navCta');
+  if (userApiKey) {
+    navCta.innerHTML = `
+      <div class="d-flex align-items-center gap-2">
+        <input type="text" id="navApiKeyInput" class="form-control form-control-sm font-monospace" value="${userApiKey}" style="width:160px; font-size:0.75rem; border-radius:10px;" placeholder="API Key">
+        <button onclick="updateApiKeyFromInput()" class="btn btn-sm btn-dark py-1 px-2" style="font-size:0.7rem; border-radius:8px;">Update</button>
+        <button onclick="clearApiKey()" class="btn btn-sm btn-ghost text-danger py-1 px-2" style="font-size:0.7rem; border-radius:8px;">Clear</button>
+      </div>
+    `;
+  } else {
+    navCta.innerHTML = `
+      <div class="d-flex align-items-center gap-2">
+        <input type="text" id="navApiKeyInput" class="form-control form-control-sm font-monospace" style="width:160px; font-size:0.75rem; border-radius:10px;" placeholder="Tempel API Key (AND+...)">
+        <button onclick="updateApiKeyFromInput()" class="btn btn-sm btn-primary py-1 px-2" style="font-size:0.75rem; border-radius:10px;">Gunakan</button>
+        <a href="/login" class="btn btn-sm btn-ghost py-1 px-2" style="font-size:0.75rem; border-radius:10px;">Login</a>
+      </div>
+    `;
+  }
+}
+
+function updateApiKeyFromInput() {
+  const val = document.getElementById('navApiKeyInput').value.trim();
+  if (val) {
+    localStorage.setItem('user_api_key', val);
+    userApiKey = val;
+    isUserLoggedIn = true;
+  } else {
+    localStorage.removeItem('user_api_key');
+    userApiKey = null;
+    isUserLoggedIn = false;
+  }
+  window.location.reload();
+}
+
+function clearApiKey() {
+  localStorage.removeItem('user_api_key');
+  userApiKey = null;
+  isUserLoggedIn = false;
+  window.location.reload();
 }
 
 loadUserAndApiKey();
@@ -663,7 +723,6 @@ function renderConsoleCards(apis) {
   let html = '';
   apis.forEach(api => {
     const apiStr = JSON.stringify(api).replace(/'/g, "&apos;");
-    // Penyesuaian struktur tampilan: Category [newline] Nama Endpoint
     html += `<div class="api-card" data-api='${apiStr}'>
               <span class="api-method">${api.method}</span>
               <div style="font-size: 0.72rem; color: var(--muted); font-family: var(--mono); text-transform: uppercase; margin-top: 0.4rem; margin-bottom: 0.1rem; font-weight: 700; letter-spacing: 0.3px;">${escapeHtml(api.category)}</div>
@@ -758,6 +817,7 @@ function openApiModal(api) {
   new bootstrap.Modal(document.getElementById('apiModal')).show();
 }
 
+// UPDATE: Hapus credentials include, support parsing full stateless parameter & cURL generator
 async function executeApiRequest() {
   const api = currentApi;
   const params = {};
@@ -769,7 +829,6 @@ async function executeApiRequest() {
   let url = api.path.startsWith('http') ? api.path : window.location.origin + api.path;
   let options = {
     method: api.method,
-    credentials: 'include',
     headers: { 'Content-Type': 'application/json' }
   };
 
@@ -797,7 +856,7 @@ async function executeApiRequest() {
       curlCmd = `curl -X ${api.method} '${curlUrl}' \\\n  -H 'Content-Type: application/json' \\\n  -H 'x-api-key: ${userApiKey}' \\\n  -d '${JSON.stringify(params)}'`;
     }
   } else {
-    curlCmd = `API key tidak ditemukan, silakan login dan generate API key di profile\ncurl -X ${api.method} '${curlUrl}'`;
+    curlCmd = `curl -X ${api.method} '${curlUrl}'`;
   }
   lastCurlCommand = curlCmd;
 
@@ -933,12 +992,12 @@ let currentActiveOrderId = null;
 let currentActiveAmount = 0;
 let checkPaymentStatusTimer = null;
 
+// UPDATE: Modifikasi handler checkout menggunakan identifikasi x-api-key secara stateless
 $('.btn-checkout-plan').on('click', async function(e) {
   e.preventDefault();
   
-  if (!isUserLoggedIn) {
-    alert('Peringatan: Kamu harus login terlebih dahulu sebelum melakukan transaksi pembayaran plan!');
-    window.location.href = '/login';
+  if (!userApiKey) {
+    alert('Peringatan: Kamu harus memasukkan atau menempelkan API Key kamu di kolom navigasi atas terlebih dahulu sebelum melakukan transaksi pembayaran plan!');
     return;
   }
 
@@ -954,7 +1013,10 @@ $('.btn-checkout-plan').on('click', async function(e) {
   try {
     const response = await fetch(safeUrl('/api/payment/create'), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-api-key': userApiKey 
+      },
       body: JSON.stringify({ plan: selectedPlan })
     });
     const result = await response.json();
@@ -986,12 +1048,15 @@ $('.btn-checkout-plan').on('click', async function(e) {
   }
 });
 
+// UPDATE: Melempar x-api-key pada interval checker status payment
 function runRealtimePaymentChecker(orderId, amount, modalObj) {
   if (checkPaymentStatusTimer) clearInterval(checkPaymentStatusTimer);
 
   checkPaymentStatusTimer = setInterval(async () => {
     try {
-      const checkRes = await fetch(safeUrl(`/api/payment/status?order_id=${orderId}&amount=${amount}`));
+      const checkRes = await fetch(safeUrl(`/api/payment/status?order_id=${orderId}&amount=${amount}`), {
+        headers: { 'x-api-key': userApiKey }
+      });
       const checkJSON = await checkRes.json();
 
       if (checkJSON.status && (checkJSON.payment_status === 'completed' || checkJSON.payment_status === 'success' || checkJSON.payment_status === 'paid')) {
@@ -1006,6 +1071,7 @@ function runRealtimePaymentChecker(orderId, amount, modalObj) {
   }, 3000);
 }
 
+// UPDATE: Melempar x-api-key pada saat request pembatalan transaksi QRIS
 $('#pakasirCancelBtn').on('click', async function() {
   if (!currentActiveOrderId) return;
   
@@ -1017,7 +1083,10 @@ $('#pakasirCancelBtn').on('click', async function() {
   try {
     const cancelResponse = await fetch(safeUrl('/api/payment/cancel'), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-api-key': userApiKey
+      },
       body: JSON.stringify({ order_id: currentActiveOrderId, amount: currentActiveAmount })
     });
     const cancelJSON = await cancelResponse.json();
