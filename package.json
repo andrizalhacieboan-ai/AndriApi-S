@@ -12,6 +12,7 @@
   "license": "MIT",
   "dependencies": {
     "@napi-rs/canvas": "^1.0.0",
+    "@fontsource/plus-jakarta-sans": "^5.2.8",
     "axios": "^1.6.8",
     "tough-cookie": "^4.1.4",
     "axios-cookiejar-support": "^4.0.3", 
