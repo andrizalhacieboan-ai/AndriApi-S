@@ -130,8 +130,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const innerDesc = btn.dataset.innerDesc;
             let params = JSON.parse(btn.dataset.params || '[]');
 
-            // 🔥 MOD: Cek apakah parameter 'apikey' sudah terdaftar di settings.json untuk endpoint ini.
-            // Jika belum ada, paksa masukkan parameter 'apikey' di urutan paling atas secara otomatis!
+            // 🔥 Cek apakah parameter 'apikey' sudah terdaftar di settings.json untuk endpoint ini.
             const hasApiKeyParam = params.some(p => p.name.toLowerCase() === 'apikey');
             if (!hasApiKeyParam) {
                 params.unshift({ name: 'apikey', required: true });
@@ -175,8 +174,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     input.dataset.param = p.name;
                     input.required = p.required || false;
                     
-                    // 🔥 MOD: Otomatis isi kolom 'apikey' dengan key dari profile user agar mempermudah,
-                    // tapi bebas di-hapus/di-overwrite/di-paste manual oleh user dengan key lain.
+                    // 🔥 Otomatis isi kolom 'apikey' dengan key dari profile user
                     if (p.name.toLowerCase() === 'apikey' && userApiKey) {
                         input.value = userApiKey;
                     }
@@ -211,7 +209,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     });
                     if (!valid) return;
 
-                    // Eksekusi murni menggunakan query string (Tanpa Session Cookie browser)
                     executeApiRequest(method, apiPath, paramValues, refs);
                 };
             } else {
@@ -241,8 +238,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             let url = path;
             let options = {
                 method: method,
-                // 🔥 MOD: HAPUS `credentials: 'include'` agar browser TIDAK membocorkan cookie login.
-                // Request dipaksa murni mengandalkan string API key seperti Bot WA / cURL.
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -255,7 +250,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 options.body = JSON.stringify(params);
             }
 
-            // 🔥 MOD: Tampilkan Full Link URL beserta domain aslinya agar gampang di-copy user untuk Bot WA / cURL luar
             const absoluteUrl = `${window.location.origin}${url}`;
             refs.endpoint.textContent = `${method} ${absoluteUrl}`;
             refs.endpoint.classList.remove('d-none');
@@ -263,7 +257,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const response = await fetch(url, options);
                 const contentType = response.headers.get('Content-Type') || '';
+                
+                // Bersihkan kontainer utama sebelum diisi media / text baru
+                refs.content.innerHTML = ''; 
 
+                // 1. HANDLE OUTPUT GAMBAR (JPEG, PNG, GIF, dll)
                 if (contentType.startsWith('image/')) {
                     const blob = await response.blob();
                     const img = document.createElement('img');
@@ -271,11 +269,37 @@ document.addEventListener('DOMContentLoaded', async () => {
                     img.alt = refs.label.textContent;
                     img.style.maxWidth = '100%';
                     img.style.borderRadius = '5px';
-                    refs.content.innerHTML = '';
                     refs.content.appendChild(img);
-                } else {
+
+                // 2. 🔥 FIX BUG: HANDLE OUTPUT AUDIO (Spotify, SoundCloud, ytmp3 stream)
+                } else if (contentType.startsWith('audio/')) {
+                    const blob = await response.blob();
+                    const audio = document.createElement('audio');
+                    audio.src = URL.createObjectURL(blob);
+                    audio.controls = true;
+                    audio.className = 'w-100 mt-2';
+                    refs.content.appendChild(audio);
+
+                // 3. 🔥 FIX BUG: HANDLE OUTPUT VIDEO (TikTok, CapCut direct mp4)
+                } else if (contentType.startsWith('video/')) {
+                    const blob = await response.blob();
+                    const video = document.createElement('video');
+                    video.src = URL.createObjectURL(blob);
+                    video.controls = true;
+                    video.style.maxWidth = '100%';
+                    video.style.borderRadius = '5px';
+                    video.className = 'w-100 mt-2';
+                    refs.content.appendChild(video);
+
+                // 4. HANDLE OUTPUT JSON RESMI
+                } else if (contentType.includes('application/json')) {
                     const data = await response.json();
                     refs.content.textContent = JSON.stringify(data, null, 2);
+
+                // 5. 🔥 FIX BUG: HANDLE TEXT BIASA / HTML ERROR DARI VERCEL/RAILWAY
+                } else {
+                    const text = await response.text();
+                    refs.content.textContent = text;
                 }
             } catch (err) {
                 refs.content.textContent = `Error: ${err.message}`;
