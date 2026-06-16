@@ -11,6 +11,7 @@
   "author": "Andri",
   "license": "MIT",
   "dependencies": {
+    "@napi-rs/canvas": "^1.0.0",
     "axios": "^1.6.8",
     "tough-cookie": "^4.1.4",
     "axios-cookiejar-support": "^4.0.3", 
@@ -30,6 +31,5 @@
   },
   "optionalDependencies": {
     "better-sqlite3": "^9.4.3"
-    
   }
 }
