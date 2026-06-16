@@ -342,6 +342,15 @@ try {
 }
 
 try {
+  require('./src/api/tools/fakeovo.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: fakeovo.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/tools/fakeovo.js`);
+  console.error(`[API]   Reason: ${e.message}`);
+}
+
+try {
   require('./src/api/convert/upscale.js')(app);
   loaded++;
   console.log(`[API] ✓ Loaded: upscale.js`);
