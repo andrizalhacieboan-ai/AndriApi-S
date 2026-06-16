@@ -1,17 +1,15 @@
 /**
  * Lokasi File: ./src/api/tools/fakeovo.js
  * Ditulis khusus untuk backend Andri API (Tools Category)
+ * Refactored: Pure memory buffer transmission (Vercel & Cloud Serverless Ready)
  */
 
 const { createCanvas, loadImage, GlobalFonts } = require("@napi-rs/canvas");
 const fs = require("fs");
-const fsp = require("fs/promises");
 const path = require("path");
 const { apiKeyMiddleware } = require('../../middleware/ratelimit'); 
 
 const ROOT = process.cwd();
-const OUTPUT_DIR = path.join(ROOT, "tmp");
-
 const IMAGE_URL = "https://raw.githubusercontent.com/Ditzzx-vibecoder/Assets/main/Image/file_0000000078bc71fa87da5cf26dc6c008.jpeg";
 
 const WIDTH = 841;
@@ -86,12 +84,7 @@ module.exports = function (app) {
     }
 
     try {
-      // Pastikan direktori penampung sementara tersedia
-      if (!fs.existsSync(OUTPUT_DIR)) {
-        fs.mkdirSync(OUTPUT_DIR, { recursive: true });
-      }
-
-      // Load font secara aman
+      // Load font secara aman (Membaca node_modules diperbolehkan di Vercel karena bersifat Read-Only)
       registerFont();
 
       // Memproses render gambar canvas
@@ -115,22 +108,15 @@ module.exports = function (app) {
       ctx.font = `${AMOUNT_STYLE.weight} ${AMOUNT_STYLE.size}px "Plus Jakarta Sans"`;
       ctx.fillText(AMOUNT_TEXT, AMOUNT_STYLE.x, AMOUNT_STYLE.y);
 
-      // Encode canvas ke buffer PNG dan tulis ke file temporer
+      // Encode canvas langsung ke dalam bentuk Buffer binary (Disimpan di RAM sementara)
       const buffer = await canvas.encode("png");
-      const uniqueOutput = path.join(OUTPUT_DIR, `ovo-render-${Date.now()}.png`);
-      await fsp.writeFile(uniqueOutput, buffer);
 
       // Set header respons sebagai gambar PNG murni
       res.setHeader("Content-Type", "image/png");
-      
-      // Kirim file ke client, lalu hapus file dari direktori /tmp agar penyimpanan disk tetap bersih
-      return res.sendFile(uniqueOutput, (err) => {
-        if (err) {
-          console.error("Gagal mengirim file gambar:", err);
-        }
-        // Garbage collection: hapus file setelah koneksi selesai/terputus
-        fs.unlink(uniqueOutput, () => {});
-      });
+      res.setHeader("Cache-Control", "public, max-age=60"); // Cache opsional selama 1 menit agar performa makin enteng
+
+      // Kirim data buffer langsung ke client tanpa menulis file ke disk
+      return res.send(buffer);
 
     } catch (error) {
       return res.status(500).json({
