@@ -201,6 +201,17 @@
           ]
         },
         {
+          "name": "Instagram Downloader",
+          "desc": "Download Instagram media (Videos, Reels, Images) using post URL.",
+          "method": "GET",
+          "path": "/api/download/ig",
+          "innerDesc": "Masukkan URL postingan, reel, atau foto Instagram yang valid.",
+          "params": [
+            { "name": "apikey", "required": true, "type": "text" },
+            { "name": "url", "required": true, "type": "text" }
+          ]
+        },
+        {
           "name": "CapCut Downloader",
           "desc": "Download CapCut videos without watermark using video URL.",
           "method": "GET",
