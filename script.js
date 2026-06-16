@@ -3,10 +3,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const body = document.body;
     body.classList.add("no-scroll");
 
-    // Cek apakah user sudah login (session)
+    // Cek apakah user sudah login (session untuk masuk dashboard utama)
     let isLoggedIn = false;
     let userPlan = 'free';
-    let userApiKey = ''; // 🔥 Variabel global penampung API Key
+    let userApiKey = ''; // Penampung API key resmi dari database user
 
     try {
         const me = await fetch('/api/auth/me', { credentials: 'include' });
@@ -14,15 +14,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (data.status) {
             isLoggedIn = true;
             userPlan = data.data.plan;
-            console.log('Logged in as', data.data.name);
-
-            // 🔥 LANGSUNG AMBIL DARI PROFILE USER YANG SUDAH GENERATED
-            // Menyesuaikan apakah nama field di database/profile-mu 'apikey' atau 'api_key'
+            // Ambil API key asli milik user dari sesi profile-nya
             userApiKey = data.data.apikey || data.data.api_key || ''; 
-            console.log('🔒 Auto-inject API Key dari profile sukses!');
-
+            console.log('Logged in as', data.data.name);
         } else {
-            // Redirect ke login jika belum login
+            // Redirect ke login jika belum login ke dashboard
             window.location.href = '/login';
             return;
         }
@@ -83,7 +79,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const sortedItems = [...category.items].sort((a, b) => a.name.localeCompare(b.name));
             const categoryContent = sortedItems.map((item, index, array) => {
                 const isLastItem = index === array.length - 1;
-                const methodClass = (item.method || 'GET').toLowerCase();
                 return `
                 <div class="col-md-6 col-lg-4 api-item ${isLastItem ? 'mb-4' : 'mb-2'}"
                      data-name="${item.name}" data-desc="${item.desc || ''}">
@@ -133,7 +128,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             const apiName = btn.dataset.name;
             const apiDesc = btn.dataset.desc;
             const innerDesc = btn.dataset.innerDesc;
-            const params = JSON.parse(btn.dataset.params || '[]');
+            let params = JSON.parse(btn.dataset.params || '[]');
+
+            // 🔥 MOD: Cek apakah parameter 'apikey' sudah terdaftar di settings.json untuk endpoint ini.
+            // Jika belum ada, paksa masukkan parameter 'apikey' di urutan paling atas secara otomatis!
+            const hasApiKeyParam = params.some(p => p.name.toLowerCase() === 'apikey');
+            if (!hasApiKeyParam) {
+                params.unshift({ name: 'apikey', required: true });
+            }
 
             const modal = new bootstrap.Modal(document.getElementById('apiResponseModal'));
             const refs = {
@@ -159,7 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             refs.submitBtn.disabled = false;
             refs.submitBtn.textContent = `Execute ${method}`;
 
-            // Jika ada parameter yang perlu diisi user (dari settings item.params)
+            // Render Form Parameter Input
             if (params.length > 0) {
                 const container = document.createElement('div');
                 container.className = 'param-container';
@@ -173,7 +175,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     input.dataset.param = p.name;
                     input.required = p.required || false;
                     
-                    // 🔥 Otomatis isi jika input adalah parameter apikey
+                    // 🔥 MOD: Otomatis isi kolom 'apikey' dengan key dari profile user agar mempermudah,
+                    // tapi bebas di-hapus/di-overwrite/di-paste manual oleh user dengan key lain.
                     if (p.name.toLowerCase() === 'apikey' && userApiKey) {
                         input.value = userApiKey;
                     }
@@ -189,6 +192,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     container.appendChild(info);
                 }
                 refs.inputWrap.appendChild(container);
+                
+                // Trigger check pertama kali saat modal terbuka
+                validateInputs();
+
                 refs.submitBtn.onclick = () => {
                     const inputs = refs.inputWrap.querySelectorAll('input');
                     let valid = true;
@@ -204,10 +211,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     });
                     if (!valid) return;
 
+                    // Eksekusi murni menggunakan query string (Tanpa Session Cookie browser)
                     executeApiRequest(method, apiPath, paramValues, refs);
                 };
             } else {
-                // No parameters needed
                 refs.inputWrap.innerHTML = '<div class="alert alert-info">Tidak ada parameter yang diperlukan. Klik Execute.</div>';
                 refs.submitBtn.onclick = () => {
                     executeApiRequest(method, apiPath, {}, refs);
@@ -231,15 +238,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             refs.endpoint.classList.add('d-none');
             refs.submitBtn.disabled = true;
 
-            // 🔥 Otomatis pasang apikey dari profile jika belum ada di objek parameter
-            if (userApiKey && !params.apikey) {
-                params.apikey = userApiKey;
-            }
-
             let url = path;
             let options = {
                 method: method,
-                credentials: 'include', // kirim cookie session
+                // 🔥 MOD: HAPUS `credentials: 'include'` agar browser TIDAK membocorkan cookie login.
+                // Request dipaksa murni mengandalkan string API key seperti Bot WA / cURL.
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -252,7 +255,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 options.body = JSON.stringify(params);
             }
 
-            // 🔥 Cetak full url absolut beserta domainnya agar mudah di-copy untuk curl/bot
+            // 🔥 MOD: Tampilkan Full Link URL beserta domain aslinya agar gampang di-copy user untuk Bot WA / cURL luar
             const absoluteUrl = `${window.location.origin}${url}`;
             refs.endpoint.textContent = `${method} ${absoluteUrl}`;
             refs.endpoint.classList.remove('d-none');
