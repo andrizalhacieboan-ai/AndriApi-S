@@ -351,6 +351,15 @@ try {
 }
 
 try {
+  require('./src/api/tools/ttsw.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: ttsw.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/tools/ttsw.js`);
+  console.error(`[API]   Reason: ${e.message}`);
+}
+
+try {
   require('./src/api/convert/upscale.js')(app);
   loaded++;
   console.log(`[API] ✓ Loaded: upscale.js`);
