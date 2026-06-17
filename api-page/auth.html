@@ -89,7 +89,7 @@ body::after{
 }
 .sliding-auth-container.right-panel-active .form-tag{color:var(--warn)}
 .form-title{
-  font-size:1.6rem;font-weight:800;letter-spacing:-1px;margin-bottom:2rem;
+  font-size:1.6rem;font-weight:800;letter-spacing:-1px;margin-bottom:1.5rem;
   line-height:1.2;color:var(--accent);text-align:left;
 }
 
@@ -144,6 +144,14 @@ body::after{
   margin-top:.5rem;overflow:hidden;position:relative;
 }
 .strength-fill{height:100%;border-radius:10px;transition:all 0.4s ease;width:0}
+
+/* Container hCaptcha custom styling agar simetris */
+.captcha-field {
+  margin-bottom: 1.15rem;
+  width: 100%;
+  display: none; /* Sembunyikan default */
+  justify-content: center;
+}
 
 .sliding-primary-btn {
   width: 100%;
@@ -439,13 +447,16 @@ body::after{
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
+
+<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+<script src="https://www.google.com/recaptcha/api.js?render=JANGAN_LUPA_GANTI_SITE_KEY_GOOGLE_V3_KAMU"></script>
+
 </head>
 <body>
 
 <div class="wrapper">
   <div class="sliding-auth-container" id="portal">
 
-    <!-- SIGN UP (REGISTER) CONTAINER -->
     <div class="sliding-form-container sliding-sign-up-container">
       <div class="sliding-auth-form">
         <div class="form-inner">
@@ -494,7 +505,6 @@ body::after{
       </div>
     </div>
 
-    <!-- SIGN IN (LOGIN) CONTAINER -->
     <div class="sliding-form-container sliding-sign-in-container">
       <div class="sliding-auth-form">
         <div class="form-inner">
@@ -523,6 +533,15 @@ body::after{
             </div>
           </div>
 
+          <div class="captcha-field" id="hcaptchaLoginField">
+            <div 
+              class="h-captcha" 
+              id="hcaptchaWidget"
+              data-sitekey="2bb87ae2-4ef0-48e4-889a-555c8b9c44b4" 
+              data-theme="dark"
+            ></div>
+          </div>
+
           <button class="sliding-primary-btn btn-login" id="loginBtn" onclick="doLogin()">Gass Masuk</button>
 
           <div class="mobile-toggle-helper">
@@ -532,11 +551,9 @@ body::after{
       </div>
     </div>
 
-    <!-- OVERLAY PANEL -->
     <div class="sliding-overlay-container">
       <div class="sliding-overlay">
 
-        <!-- LEFT PANEL -->
         <div class="sliding-overlay-panel sliding-overlay-left">
           <div class="slide-logo">ANDRI<span>Api's</span></div>
           <div class="slide-title">Sudah punya<br>akun?</div>
@@ -544,7 +561,6 @@ body::after{
           <button class="sliding-ghost-btn" id="signInBtn" onclick="toggleMode()">Masuk Sekarang</button>
         </div>
 
-        <!-- RIGHT PANEL -->
         <div class="sliding-overlay-panel sliding-overlay-right">
           <div class="slide-logo">ANDRI<span>Api's</span></div>
           <div class="slide-title">Belum punya<br>akun?</div>
@@ -601,7 +617,8 @@ function showMsg(elId, msg, ok) {
 
 function clearMsg() {
   for (var i = 0; i < arguments.length; i++) {
-    document.getElementById(arguments[i]).style.display = 'none';
+    var el = document.getElementById(arguments[i]);
+    if(el) el.style.display = 'none';
   }
 }
 
@@ -610,22 +627,71 @@ async function doLogin() {
   var btn = document.getElementById('loginBtn');
   var email = document.getElementById('loginEmail').value.trim();
   var pass = document.getElementById('loginPass').value;
-  if (!email || !pass) { showMsg('loginErr', 'Email dan password wajib diisi.'); return; }
-  btn.disabled = true; btn.classList.add('spin'); btn.textContent = 'Masuk';
+  
+  if (!email || !pass) { 
+    showMsg('loginErr', 'Email dan password wajib diisi.'); 
+    return; 
+  }
+  
+  btn.disabled = true; 
+  btn.classList.add('spin'); 
+  btn.textContent = 'Memverifikasi keamanan...';
+
   try {
-    var r = await fetch('/api/auth/login', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email, password: pass }) });
+    // 1. Eksekusi Google reCAPTCHA v3 secara asinkron menggunakan Promise
+    var recaptchaToken = await new Promise(function(resolve, reject) {
+      grecaptcha.ready(function() {
+        grecaptcha.execute('6Lc1ryMtAAAAAKqamGe0Ca5NAKGgVQDjMDz4FeM4', { action: 'login' })
+          .then(resolve)
+          .catch(reject);
+      });
+    });
+
+    // 2. Ambil token hCaptcha jika widget penyesuaian gambar sedang aktif/diisi
+    var hcaptchaToken = window.hcaptcha ? hcaptcha.getResponse() : null;
+
+    // 3. Kirim data autentikasi lengkap ke API Backend
+    var r = await fetch('/api/auth/login', { 
+      method: 'POST', 
+      credentials: 'include', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify({ 
+        email: email, 
+        password: pass,
+        recaptchaToken: recaptchaToken,
+        hcaptchaToken: hcaptchaToken
+      }) 
+    });
+    
     var d = await r.json();
+
     if (d.status) {
       showMsg('loginOk', 'Login berhasil! Mengalihkan...', true);
       var dest = (d.data && d.data.role === 'admin') ? '/admin' : '/dashboard';
       setTimeout(function() { window.location.href = dest; }, 1000);
     } else {
-      showMsg('loginErr', d.message || 'Login gagal.');
-      btn.disabled = false; btn.classList.remove('spin'); btn.textContent = 'Masuk ke Dashboard';
+      // 4. JIKA SERVER MEMINTA FALLBACK HCAPTCHA (SKOR GOOGLE < 0.5)
+      if (d.error === 'TRIGGER_HCAPTCHA') {
+        document.getElementById('hcaptchaLoginField').style.display = 'flex';
+        showMsg('loginErr', d.message || 'Verifikasi penyesuaian gambar diperlukan.');
+      } else {
+        showMsg('loginErr', d.message || 'Login gagal.');
+      }
+      
+      // Reset hCaptcha state jika terjadi kegagalan input kredensial biasa
+      if (window.hcaptcha && hcaptchaToken) {
+        hcaptcha.reset();
+      }
+
+      btn.disabled = false; 
+      btn.classList.remove('spin'); 
+      btn.textContent = 'Gass Masuk';
     }
   } catch (e) {
-    showMsg('loginErr', 'Koneksi gagal. Coba lagi.');
-    btn.disabled = false; btn.classList.remove('spin'); btn.textContent = 'Masuk ke Dashboard';
+    showMsg('loginErr', 'Koneksi gagal atau validasi captcha bermasalah. Coba lagi.');
+    btn.disabled = false; 
+    btn.classList.remove('spin'); 
+    btn.textContent = 'Gass Masuk';
   }
 }
 
