@@ -77,12 +77,16 @@ module.exports = function(app) {
         return res.status(400).json({ status: false, statusCode: 400, message: 'Sistem mendeteksi anomali. Token reCAPTCHA wajib disertakan.', error: 'RECAPTCHA_REQUIRED' });
       }
 
+      // Ambil IP user untuk remoteip verification
+      const userIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || '';
+
       // 3. Eksekusi Verifikasi Google reCAPTCHA v3 ke Server Google
       const googleRes = await axios.post(
         `https://www.google.com/recaptcha/api/siteverify`,
         new URLSearchParams({
           secret: process.env.RECAPTCHA_SECRET_KEY,
-          response: recaptchaToken
+          response: recaptchaToken,
+          remoteip: userIp
         }).toString(),
         { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
       );
@@ -92,14 +96,25 @@ module.exports = function(app) {
         return res.status(400).json({ status: false, statusCode: 400, message: 'Sesi reCAPTCHA kedaluwarsa atau tidak valid.', error: 'INVALID_RECAPTCHA' });
       }
 
+      // Validasi hostname agar token dari domain lain ditolak
+      const expectedHostname = process.env.SITE_DOMAIN;
+      if (expectedHostname && googleRes.data.hostname !== expectedHostname) {
+        return res.status(400).json({ status: false, statusCode: 400, message: 'Verifikasi keamanan gagal: domain tidak sesuai.', error: 'HOSTNAME_MISMATCH' });
+      }
+
       // Keamanan Ketat Google (Best Practice): Validasi tipe action agar token tidak bisa di-reuse
       if (googleRes.data.action !== 'login') {
         return res.status(400).json({ status: false, statusCode: 400, message: 'Keamanan mendeteksi manipulasi aksi token.', error: 'BAD_CAPTCHA_ACTION' });
       }
 
-      // 4. Evaluasi Skor Bot vs Manusia (Batas aman default: 0.5)
-      // Jika skor < 0.5 dan user belum mencoba melewati tebak gambar (hCaptcha), lemparkan trigger hCaptcha
-      if (googleRes.data.score < 0.5 && !hcaptchaToken) {
+      // Cek keberadaan skor — jika undefined, tolak akses
+      if (typeof googleRes.data.score === 'undefined') {
+        return res.status(400).json({ status: false, statusCode: 400, message: 'Gagal memvalidasi skor keamanan reCAPTCHA.', error: 'SCORE_UNAVAILABLE' });
+      }
+
+      // 4. Evaluasi Skor Bot vs Manusia
+      const RECAPTCHA_MIN_SCORE = parseFloat(process.env.RECAPTCHA_MIN_SCORE) || 0.5;
+      if (googleRes.data.score < RECAPTCHA_MIN_SCORE && !hcaptchaToken) {
         return res.status(403).json({
           status: false,
           statusCode: 403,
@@ -109,12 +124,13 @@ module.exports = function(app) {
       }
 
       // 5. Jika Skor Rendah tapi User Berhasil Mengisi hCaptcha Gambar, Verifikasi Token hCaptcha-nya
-      if (googleRes.data.score < 0.5 && hcaptchaToken) {
+      if (googleRes.data.score < RECAPTCHA_MIN_SCORE && hcaptchaToken) {
         const hcaptchaRes = await axios.post(
-          `https://hcaptcha.com/siteverify`,
+          `https://api.hcaptcha.com/siteverify`,
           new URLSearchParams({
             secret: process.env.HCAPTCHA_SECRET_KEY,
-            response: hcaptchaToken
+            response: hcaptchaToken,
+            remoteip: userIp
           }).toString(),
           { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
         );
