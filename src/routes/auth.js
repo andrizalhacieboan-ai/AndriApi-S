@@ -1,10 +1,20 @@
+/**
+ * Lokasi File: ./src/routes/auth.js
+ * Ditulis khusus untuk backend Andri API
+ * Update: Integrasi Hybrid Captcha (Google reCAPTCHA v3 + hCaptcha) - Production Security Level
+ */
+
 const bcrypt = require('bcryptjs');
+const axios = require('axios');
 const { getDb } = require('../db/turso');
 const { createSession, destroySession, requireAuthJson } = require('../middleware/auth');
 const { generateApiKey, generateUUID } = require('../utils/apikey');
 
 module.exports = function(app) {
 
+  // ==========================================
+  // ENDPOINT: REGISTER
+  // ==========================================
   app.post('/api/auth/register', async (req, res) => {
     try {
       const { name, email, password } = req.body;
@@ -50,13 +60,76 @@ module.exports = function(app) {
     }
   });
 
+  // ==========================================
+  // ENDPOINT: LOGIN (WITH HYBRID CAPTCHA PROTECTION)
+  // ==========================================
   app.post('/api/auth/login', async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { email, password, recaptchaToken, hcaptchaToken } = req.body;
+      
+      // 1. Validasi Kredensial Dasar
       if (!email || !password) {
         return res.status(400).json({ status: false, statusCode: 400, message: 'Email dan password wajib diisi.', error: 'VALIDATION_ERROR' });
       }
 
+      // 2. Wajibkan Token Google reCAPTCHA v3 dari Frontend
+      if (!recaptchaToken) {
+        return res.status(400).json({ status: false, statusCode: 400, message: 'Sistem mendeteksi anomali. Token reCAPTCHA wajib disertakan.', error: 'RECAPTCHA_REQUIRED' });
+      }
+
+      // 3. Eksekusi Verifikasi Google reCAPTCHA v3 ke Server Google
+      const googleRes = await axios.post(
+        `https://www.google.com/recaptcha/api/siteverify`,
+        new URLSearchParams({
+          secret: process.env.RECAPTCHA_SECRET_KEY,
+          response: recaptchaToken
+        }).toString(),
+        { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+      );
+
+      // Keamanan Dasar Google: Sesi harus valid & sukses
+      if (!googleRes.data.success) {
+        return res.status(400).json({ status: false, statusCode: 400, message: 'Sesi reCAPTCHA kedaluwarsa atau tidak valid.', error: 'INVALID_RECAPTCHA' });
+      }
+
+      // Keamanan Ketat Google (Best Practice): Validasi tipe action agar token tidak bisa di-reuse
+      if (googleRes.data.action !== 'login') {
+        return res.status(400).json({ status: false, statusCode: 400, message: 'Keamanan mendeteksi manipulasi aksi token.', error: 'BAD_CAPTCHA_ACTION' });
+      }
+
+      // 4. Evaluasi Skor Bot vs Manusia (Batas aman default: 0.5)
+      // Jika skor < 0.5 dan user belum mencoba melewati tebak gambar (hCaptcha), lemparkan trigger hCaptcha
+      if (googleRes.data.score < 0.5 && !hcaptchaToken) {
+        return res.status(403).json({
+          status: false,
+          statusCode: 403,
+          message: 'Aktivitas mencurigakan terdeteksi. Silakan selesaikan tantangan penyesuaian gambar di bawah.',
+          error: 'TRIGGER_HCAPTCHA'
+        });
+      }
+
+      // 5. Jika Skor Rendah tapi User Berhasil Mengisi hCaptcha Gambar, Verifikasi Token hCaptcha-nya
+      if (googleRes.data.score < 0.5 && hcaptchaToken) {
+        const hcaptchaRes = await axios.post(
+          `https://hcaptcha.com/siteverify`,
+          new URLSearchParams({
+            secret: process.env.HCAPTCHA_SECRET_KEY,
+            response: hcaptchaToken
+          }).toString(),
+          { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+        );
+
+        if (!hcaptchaRes.data.success) {
+          return res.status(400).json({ 
+            status: false, 
+            statusCode: 400, 
+            message: 'Gagal memverifikasi kecocokan gambar hCaptcha. Silakan coba lagi.', 
+            error: 'INVALID_HCAPTCHA' 
+          });
+        }
+      }
+
+      // 6. Jalankan Autentikasi User ke Database Turso (Lolos Semua Filter Keamanan)
       const db = getDb();
       const r = await db.execute({
         sql: 'SELECT id, name, email, password, role, plan, plan_expires_at, avatar, bio, is_active, created_at FROM users WHERE email=? AND is_active=1',
@@ -72,6 +145,7 @@ module.exports = function(app) {
         return res.status(401).json({ status: false, statusCode: 401, message: 'Email atau password salah.', error: 'INVALID_CREDENTIALS' });
       }
 
+      // Buat sesi login aktif
       await createSession(user.id, req, res);
 
       return res.status(200).json({
@@ -81,15 +155,21 @@ module.exports = function(app) {
       });
     } catch (err) {
       console.error('[Auth] login:', err);
-      return res.status(500).json({ status: false, statusCode: 500, message: 'Login gagal.', error: 'SERVER_ERROR' });
+      return res.status(500).json({ status: false, statusCode: 500, message: 'Login gagal akibat gangguan internal server.', error: 'SERVER_ERROR' });
     }
   });
 
+  // ==========================================
+  // ENDPOINT: LOGOUT
+  // ==========================================
   app.post('/api/auth/logout', async (req, res) => {
     await destroySession(req, res);
     return res.status(200).json({ status: true, statusCode: 200, message: 'Logout berhasil.' });
   });
 
+  // ==========================================
+  // ENDPOINT: GET PROFILE DATA (ME)
+  // ==========================================
   app.get('/api/auth/me', requireAuthJson, async (req, res) => {
     try {
       const db = getDb();
