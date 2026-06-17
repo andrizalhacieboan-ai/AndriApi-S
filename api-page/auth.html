@@ -449,7 +449,7 @@ body::after{
 </style>
 
 <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
-<script src="https://www.google.com/recaptcha/api.js?render=JANGAN_LUPA_GANTI_SITE_KEY_GOOGLE_V3_KAMU"></script>
+<script src="https://www.google.com/recaptcha/api.js?render=6Lc1ryMtAAAAAKqamGe0Ca5NAKGgVQDjMDz4FeM4"></script>
 
 </head>
 <body>
@@ -534,12 +534,7 @@ body::after{
           </div>
 
           <div class="captcha-field" id="hcaptchaLoginField">
-            <div 
-              class="h-captcha" 
-              id="hcaptchaWidget"
-              data-sitekey="2bb87ae2-4ef0-48e4-889a-555c8b9c44b4" 
-              data-theme="dark"
-            ></div>
+            <div id="hcaptchaWidget"></div>
           </div>
 
           <button class="sliding-primary-btn btn-login" id="loginBtn" onclick="doLogin()">Gass Masuk</button>
@@ -577,6 +572,7 @@ body::after{
 <script>
 var mode = location.pathname === '/register' ? 'register' : 'login';
 var portal = document.getElementById('portal');
+var hcaptchaWidgetId = null; 
 
 function toggleMode() {
   mode = mode === 'login' ? 'register' : 'login';
@@ -638,17 +634,20 @@ async function doLogin() {
   btn.textContent = 'Memverifikasi keamanan...';
 
   try {
-    // 1. Eksekusi Google reCAPTCHA v3 secara asinkron menggunakan Promise
-    var recaptchaToken = await new Promise(function(resolve, reject) {
-      grecaptcha.ready(function() {
-        grecaptcha.execute('6Lc1ryMtAAAAAKqamGe0Ca5NAKGgVQDjMDz4FeM4', { action: 'login' })
-          .then(resolve)
-          .catch(reject);
+    // 1. Eksekusi Google reCAPTCHA v3 secara asinkron (Aman dari Ad-blocker)
+    var recaptchaToken = null;
+    if (typeof grecaptcha !== 'undefined') {
+      recaptchaToken = await new Promise(function(resolve, reject) {
+        grecaptcha.ready(function() {
+          grecaptcha.execute('6Lc1ryMtAAAAAKqamGe0Ca5NAKGgVQDjMDz4FeM4', { action: 'login' })
+            .then(resolve)
+            .catch(reject);
+        });
       });
-    });
+    }
 
     // 2. Ambil token hCaptcha jika widget penyesuaian gambar sedang aktif/diisi
-    var hcaptchaToken = window.hcaptcha ? hcaptcha.getResponse() : null;
+    var hcaptchaToken = (window.hcaptcha && hcaptchaWidgetId !== null) ? hcaptcha.getResponse(hcaptchaWidgetId) : null;
 
     // 3. Kirim data autentikasi lengkap ke API Backend
     var r = await fetch('/api/auth/login', { 
@@ -673,14 +672,23 @@ async function doLogin() {
       // 4. JIKA SERVER MEMINTA FALLBACK HCAPTCHA (SKOR GOOGLE < 0.5)
       if (d.error === 'TRIGGER_HCAPTCHA') {
         document.getElementById('hcaptchaLoginField').style.display = 'flex';
-        showMsg('loginErr', d.message || 'Verifikasi penyesuaian gambar diperlukan.');
+        
+        // Render hCaptcha secara dinamis (mencegah bug rendering display:none)
+        if (window.hcaptcha && hcaptchaWidgetId === null) {
+          hcaptchaWidgetId = hcaptcha.render('hcaptchaWidget', {
+            sitekey: '2bb87ae2-4ef0-48e4-889a-555c8b9c44b4',
+            theme: 'dark'
+          });
+        }
+        
+        showMsg('loginErr', d.message || 'Verifikasi tambahan diperlukan.');
       } else {
         showMsg('loginErr', d.message || 'Login gagal.');
       }
       
       // Reset hCaptcha state jika terjadi kegagalan input kredensial biasa
-      if (window.hcaptcha && hcaptchaToken) {
-        hcaptcha.reset();
+      if (window.hcaptcha && hcaptchaWidgetId !== null && hcaptchaToken) {
+        hcaptcha.reset(hcaptchaWidgetId);
       }
 
       btn.disabled = false; 
