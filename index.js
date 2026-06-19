@@ -360,6 +360,15 @@ try {
 }
 
 try {
+  require('./src/api/tools/am.js')(app);
+  loaded++;
+  console.log(`[API] ✓ Loaded: am.js`);
+} catch (e) {
+  console.error(`[API] ✗ FAILED to load ./src/api/tools/am.js`);
+  console.error(`[API]   Reason: ${e.message}`);
+}
+
+try {
   require('./src/api/convert/upscale.js')(app);
   loaded++;
   console.log(`[API] ✓ Loaded: upscale.js`);
