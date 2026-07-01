@@ -725,7 +725,7 @@ async function doRegister() {
     var d = await r.json();
     if (d.status) {
       showMsg('regOk', 'Akun berhasil dibuat! Mengalihkan...', true);
-      setTimeout(function() { window.location.href = '/dashboard'; }, 1200);
+      setTimeout(function() { window.location.href = '/index'; }, 1200);
     } else {
       showMsg('regErr', d.message || 'Registrasi gagal.');
       btn.disabled = false; btn.classList.remove('spin'); btn.textContent = 'Buat Akun';
