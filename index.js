@@ -55,6 +55,7 @@ app.use(function dbGuard(req, res, next) {
 
 // ── Static Files ─────────────────────────────────────────────────────────────
 app.use('/assets', express.static(path.join(__dirname, 'api-page/assets')));
+app.get('/design-system.css', (req, res) => res.sendFile(path.join(__dirname, 'api-page/design-system.css')));
 app.get('/script.js',          (req, res) => res.sendFile(path.join(__dirname, 'script.js')));
 app.get('/src/settings.json',  (req, res) => res.sendFile(path.join(__dirname, 'src/settings.json')));
 
