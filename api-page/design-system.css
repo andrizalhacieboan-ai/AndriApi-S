@@ -1,0 +1,200 @@
+/* Andri API — editorial warm-paper design system
+   Adapted from DESAIN.md visual tokens. UI content and JavaScript behavior are preserved. */
+:root {
+  --color-ink: #101820;
+  --color-orange: #E97832;
+  --color-orange-dark: #B95016;
+  --color-paper: #F7F5F0;
+  --color-white: #FFFFFF;
+  --color-text: #202830;
+  --color-muted: #66717C;
+  --color-border: #DEDCD5;
+  --color-surface: #EFEEE8;
+  --color-success: #237A57;
+  --color-warning: #A96716;
+  --color-danger: #B83B35;
+  --color-focus: #245DAB;
+
+  --bg: var(--color-paper) !important;
+  --surface: var(--color-paper) !important;
+  --border: var(--color-border) !important;
+  --accent: var(--color-ink) !important;
+  --accent2: var(--color-orange-dark) !important;
+  --green: var(--color-success) !important;
+  --warn: var(--color-warning) !important;
+  --red: var(--color-danger) !important;
+  --text: var(--color-text) !important;
+  --muted: var(--color-muted) !important;
+  --head: "Manrope", system-ui, sans-serif !important;
+  --body: "Inter", system-ui, sans-serif;
+  --nm-outset: 0 12px 32px rgba(16,24,32,.06) !important;
+  --nm-inset: inset 0 0 0 1px var(--color-border) !important;
+  --nm-outset-sm: 0 5px 16px rgba(16,24,32,.05) !important;
+  --nm-inset-sm: inset 0 0 0 1px var(--color-border) !important;
+}
+html { scroll-behavior: smooth; }
+body {
+  background: var(--color-paper) !important;
+  color: var(--color-text) !important;
+  font-family: var(--body) !important;
+  line-height: 1.65;
+}
+h1,h2,h3,h4,h5,h6,.hero-h,.form-title,.prof-name,.gc-title,.page-title,.brand {
+  font-family: "Manrope", system-ui, sans-serif !important;
+  letter-spacing: -.035em;
+}
+p, label, input, textarea, select, button, .nav-links, .nav-item, .s-link {
+  font-family: "Inter", system-ui, sans-serif;
+}
+a { text-underline-offset: .22em; }
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible,
+select:focus-visible, [tabindex]:focus-visible {
+  outline: 3px solid var(--color-focus) !important;
+  outline-offset: 3px !important;
+}
+::selection { background: rgba(233,120,50,.22); color: var(--color-ink); }
+
+/* Remove the old neumorphic look and use restrained editorial surfaces. */
+.panel, .g-card, .sc, .doc-card, .endpoint-row, .prof-header, .profile-card,
+.card, .modal-content, .form-inner, .field-input-wrapper, .stat-c, .gc,
+.table-wrap, .data-card, .settings-card, .payment-card, .api-card {
+  box-shadow: 0 8px 26px rgba(16,24,32,.045) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 14px !important;
+}
+input, textarea, select, .field-input, .sliding-input, .field-input-wrapper {
+  background: #fff !important;
+  border-color: var(--color-border) !important;
+  box-shadow: none !important;
+  color: var(--color-text) !important;
+}
+input::placeholder, textarea::placeholder { color: #89919A !important; }
+button, .btn, .nav-cta, .btn-login, .prof-edit-btn, .menu-toggle, .primary-btn,
+button[type="submit"], input[type="submit"] {
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease,
+              transform 180ms ease, box-shadow 180ms ease !important;
+}
+.btn-primary, .nav-cta, .btn-login, .primary-btn, button[type="submit"], input[type="submit"] {
+  background: var(--color-orange) !important;
+  color: var(--color-ink) !important;
+  border: 1px solid var(--color-orange) !important;
+  box-shadow: none !important;
+  font-weight: 750 !important;
+}
+.btn-primary:hover, .nav-cta:hover, .btn-login:hover, .primary-btn:hover,
+button[type="submit"]:hover, input[type="submit"]:hover {
+  background: #F08A48 !important;
+  border-color: #F08A48 !important;
+  color: var(--color-ink) !important;
+  transform: translateY(-1px);
+}
+.btn-ghost, .btn-secondary, .secondary-btn {
+  background: transparent !important;
+  color: var(--color-ink) !important;
+  border: 1px solid var(--color-ink) !important;
+  box-shadow: none !important;
+}
+.btn-ghost:hover, .btn-secondary:hover, .secondary-btn:hover {
+  background: var(--color-surface) !important;
+}
+.badge, .badge-pill, .form-tag, .admin-pill, .user-pill, .api-status {
+  letter-spacing: .04em;
+}
+.badge, .form-tag {
+  border-radius: 5px !important;
+}
+.badge-dot, .dot-live { background-color: var(--color-success) !important; }
+
+/* Warm paper backgrounds and fine technical grid. */
+.grid-lines, body::before {
+  background-image:
+    linear-gradient(rgba(16,24,32,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16,24,32,.035) 1px, transparent 1px) !important;
+  background-size: 48px 48px !important;
+  opacity: .55;
+}
+body::after { pointer-events: none; }
+
+/* Public homepage: editorial contrast, orange accents, and clean terminal panel. */
+nav, .navbar, .topbar {
+  border-bottom: 1px solid var(--color-border) !important;
+}
+.nav-logo, .brand, .logo-box { color: var(--color-ink) !important; }
+.nav-links li a:hover, .nav-links a:hover, .s-link:hover, .nl:hover {
+  color: var(--color-orange-dark) !important;
+}
+.hero-h, .hero h1, h1 { color: var(--color-ink); }
+.hero-h .gr, .gradient-text, .text-gradient, .highlight {
+  color: var(--color-orange-dark) !important;
+  background: none !important;
+  -webkit-text-fill-color: var(--color-orange-dark) !important;
+}
+.hero, .identity, .section, section { scroll-margin-top: 90px; }
+.terminal, .code-window, pre, code, .code-block {
+  background-color: #101820;
+  color: #F7F5F0;
+}
+.terminal, .code-window {
+  border: 1px solid rgba(255,255,255,.12) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 18px 42px rgba(16,24,32,.14) !important;
+}
+.terminal .t-header, .code-window .t-header {
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+
+/* Docs: make navigation and code samples feel like a technical index. */
+.sidebar, .gs, .glass-sidebar, .gsw, .glass-sidebar-wrapper {
+  background: var(--color-ink) !important;
+  color: #F7F5F0 !important;
+  border-color: rgba(255,255,255,.12) !important;
+  box-shadow: none !important;
+}
+.sidebar a, .gs a, .glass-sidebar a, .nav-item, .nl {
+  transition: color 160ms ease, background-color 160ms ease;
+}
+.sidebar .active, .s-link.active, .nav-item.active, .nl.active {
+  color: var(--color-orange) !important;
+}
+.main, .content, .wrapper, .docs-content {
+  color: var(--color-text);
+}
+.endpoint-row, .doc-card {
+  background: #fff !important;
+}
+.endpoint-url, .mono, .endpoint-url code {
+  font-family: "Space Mono", ui-monospace, monospace !important;
+}
+.m-get { background: rgba(35,122,87,.12) !important; color: #237A57 !important; }
+.m-post { background: rgba(233,120,50,.16) !important; color: #9A4516 !important; }
+.m-put { background: rgba(36,93,171,.12) !important; color: #245DAB !important; }
+.m-delete { background: rgba(184,59,53,.12) !important; color: #B83B35 !important; }
+
+/* Auth/profile/admin: functional surfaces stay familiar, with the same design tokens. */
+.sliding-overlay, .sliding-overlay-left, .auth-visual, .auth-side {
+  background: var(--color-ink) !important;
+  color: var(--color-paper) !important;
+}
+.sliding-overlay::before { opacity: .18; }
+.form-title, .prof-name, .gc-title { color: var(--color-ink) !important; }
+.nav-links .active, .nav-item.active, .nl.active {
+  background: rgba(233,120,50,.13) !important;
+  border-color: rgba(233,120,50,.25) !important;
+}
+.sc-val, .stat-val, .gc-title { color: var(--color-ink) !important; }
+.badge, .admin-pill { border-color: var(--color-border); }
+hr, .divider, .section-line { border-color: var(--color-border) !important; }
+
+/* Accessible motion and mobile behavior. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+@media (max-width: 768px) {
+  .hero-h, .hero h1 { letter-spacing: -.045em !important; }
+  .content, .main { min-width: 0; }
+}
